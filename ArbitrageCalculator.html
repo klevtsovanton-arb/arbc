@@ -10,7 +10,12 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tw);min-height:100vh}
 .wrap{max-width:1400px;margin:0 auto;padding:12px}
 .hdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.tabs{display:flex;gap:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.hdr-left{display:flex;flex-direction:column;gap:6px;min-width:0}
+.contract-pills{display:flex;gap:4px;padding-left:2px}
+.cpill{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);color:var(--tm);background:transparent;transition:all .15s;font-family:inherit}
+.cpill:hover{border-color:var(--cyan);color:var(--tl)}
+.cpill.on{color:#000;border-color:transparent;background:var(--cyan)}
 .tab{padding:10px 24px;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--border);color:var(--tl);background:none;transition:all .2s}
 .tab.on{color:#000;border-color:transparent}
 .hdr-right{text-align:right}
@@ -78,6 +83,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <body>
 <div class="wrap">
   <div class="hdr">
+    <div class="hdr-left">
     <div class="tabs">
       <button class="tab on" id="tabOvw" onclick="switchTo('OVW')" style="font-size:13px;background:var(--green)">📊 Обзор</button>
       <button class="tab" id="tabEU" onclick="switchTo('EURUSD')">EUR/USD</button>
@@ -88,6 +94,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <button class="tab" id="tabSilver" onclick="switchTo('SILVER')">Silver</button>
       <button class="tab" id="tabPlat" onclick="switchTo('PLAT')">Platinum</button>
       <button class="tab" id="tabPall" onclick="switchTo('PALL')">Palladium</button>
+    </div>
+    <div class="contract-pills" id="contractPills" style="display:none">
+      <button class="cpill on" id="cpM" onclick="switchContract('M')">Июн 26</button>
+      <button class="cpill"    id="cpU" onclick="switchContract('U')">Сен 26</button>
+      <button class="cpill"    id="cpZ" onclick="switchContract('Z')">Дек 26</button>
+    </div>
     </div>
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
@@ -102,30 +114,27 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="card-t" style="color:var(--green)">⚙ Настройки счёта</div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <span style="font-size:16px;font-weight:800;color:var(--tl)">₽</span>
-        <input id="ovwRub" type="number" step="100000" value="1000000" oninput="ovwSyncFromRub()" onchange="ovwSyncFromRub()" style="width:140px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:10px;font-size:18px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwRub" type="text" inputmode="numeric" value="1 375 000" oninput="syncCap('ovwRub');fmtOnInput(this);ovwSyncFromRub()" onchange="ovwSyncFromRub()" style="width:140px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:10px;font-size:18px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:16px;font-weight:800;color:var(--tm)">=</span>
         <span style="font-size:16px;font-weight:800;color:var(--tl)">$</span>
-        <input id="ovwUsd" type="number" step="100" value="13000" oninput="ovwSyncFromUsd()" onchange="ovwSyncFromUsd()" style="width:120px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:10px;font-size:18px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwUsd" type="text" inputmode="numeric" value="5 000" oninput="syncCap('ovwUsd');fmtOnInput(this);ovwSyncFromUsd()" onchange="ovwSyncFromUsd()" style="width:120px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:10px;font-size:18px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm);white-space:nowrap">по <b id="ovwRate" style="color:var(--tw)">77.00</b></span>
       </div>
       <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-        <span style="font-size:14px;font-weight:700;color:var(--tl)">Дней</span>
-        <input id="ovwDays" type="number" step="1" value="65" oninput="calcOvw()" onchange="calcOvw()" style="width:60px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
-        <span style="width:12px"></span>
         <span style="font-size:14px;font-weight:700;color:var(--tl)">Плечо</span>
-        <input id="ovwProp" type="number" step="0.5" value="5" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwProp" type="number" step="0.5" value="5" oninput="syncCap('ovwProp');calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm)">×</span>
         <span style="width:12px"></span>
         <span style="font-size:14px;font-weight:700;color:var(--tl)">Морж</span>
-        <input id="ovwRisk" type="number" step="5" value="50" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwRisk" type="number" step="5" value="50" oninput="syncCap('ovwRisk');calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm)">%</span>
         <span style="width:12px"></span>
         <span style="font-size:14px;font-weight:700;color:var(--tl)">Стоп-аут</span>
-        <input id="ovwStop" type="number" step="5" value="50" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwStop" type="number" step="5" value="50" oninput="syncCap('ovwStop');calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm)">%</span>
         <span style="width:12px"></span>
         <span style="font-size:14px;font-weight:700;color:var(--tl)">РЕПО</span>
-        <input id="ovwRepo" type="number" step="1" value="21" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
+        <input id="ovwRepo" type="number" step="1" value="21" oninput="syncCap('ovwRepo');calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm)">%</span>
         <span style="width:12px"></span>
         <span style="font-size:14px;font-weight:700;color:var(--tl)">Пейаут</span>
@@ -137,11 +146,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <div class="card" style="overflow-x:auto">
       <div class="card-t" style="color:var(--cyan)">📊 Все инструменты — оптимальный капитал при <span style="text-transform:none">σ</span> ≥ 1.2</div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:8px;line-height:1.5;">
+        <span style="color:var(--green);font-weight:800">✓ NET</span> — все колонки «Лучший/Худший NET», «ROI», «Год.» уже <b>за вычетом свопов, РЕПО, комиссий и FX-спреда</b>. Наведи курсор на NET-ячейку → покажет расклад затрат.
+        <br><span style="color:var(--tm)">«Спред» — gross-раздвижка фьючерс vs спот, для справки.</span>
+      </div>
       <table class="sc-table" id="ovwTable"><thead><tr>
-        <th>Инструмент</th><th>Спред</th><th>Напр.</th><th>Лоты FX</th><th>Контр. МХ</th>
+        <th>Инструмент</th><th style="color:var(--tm);font-weight:500">Спред<br><span style="font-size:9px;font-weight:400">gross</span></th><th>Напр.</th><th>Лоты FX</th><th>Контр. МХ</th>
         <th>Капитал FX</th><th>Капитал МХ</th><th>σ</th>
-        <th>Лучший NET</th><th>ROI</th><th>Год.</th>
-        <th>Худший NET</th><th>ROI</th><th>Год.</th>
+        <th style="color:var(--green)">Лучший NET</th><th style="color:var(--green)">ROI</th><th style="color:var(--green)">Год.</th>
+        <th style="color:var(--yellow)">Худший NET</th><th style="color:var(--yellow)">ROI</th><th style="color:var(--yellow)">Год.</th>
       </tr></thead><tbody id="ovwBody"></tbody></table>
     </div>
   </div>
@@ -152,8 +165,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div>
         <div class="card">
           <div class="card-t" style="color:var(--orange)">📊 Цены трёх ног</div>
-          <div class="row"><label>Si-6.26 (₽/1000$)</label><input id="trSi" type="number" step="1" value="75970" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
-          <div class="row"><label>CNY-6.26 (₽/юань)</label><input id="trCr" type="number" step="0.001" value="11.222" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
+          <div class="row"><label>Si-<span id="trLblSi">6.26</span> (₽/1000$)</label><input id="trSi" type="number" step="1" value="75970" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
+          <div class="row"><label>CNY-<span id="trLblCr">6.26</span> (₽/юань)</label><input id="trCr" type="number" step="0.001" value="11.222" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
           <div class="row"><label>USD/CNH (Forex)</label><input id="trFx" type="number" step="0.001" value="6.81" oninput="calcTriple()" onchange="calcTriple()"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="trRub" type="number" step="0.01" value="77" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="trDays" type="number" step="1" value="65" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">дн</div></div>
@@ -164,20 +177,20 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         </div>
         <div class="card">
           <div class="card-t" style="color:var(--green)">💰 Капитал</div>
-          <div class="row"><label>Forex (свои)</label><input id="trFxCap" type="number" step="100" value="13000" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">$</div></div>
+          <div class="row"><label>Forex (свои)</label><input id="trFxCap" type="text" inputmode="numeric" value="5 000" oninput="syncCap('trFxCap');fmtOnInput(this);calcTriple()" onchange="calcTriple()"><div class="unit">$</div></div>
           <div class="row"><label>Плечо Forex</label><input id="trFxLev" type="number" step="1" value="100" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">:1</div></div>
-          <div class="row"><label>МОЕХ (свои)</label><input id="trMxOwn" type="number" step="100000" value="1000000" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
-          <div class="row"><label>Плечо пропа</label><input id="trPropLev" type="number" step="0.5" value="5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">×</div></div>
-          <div class="row"><label>Морж МОЕХ</label><input id="trMxRisk" type="number" step="5" value="50" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
-          <div class="row"><label>ГО Si</label><input id="trGoSi" type="number" step="100" value="12311" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
-          <div class="row"><label>ГО CNY</label><input id="trGoCr" type="number" step="100" value="1106" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
-          <div class="row"><label>Стоп-аут FX</label><input id="trStopout" type="number" step="5" value="50" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="trMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('trMxOwn');fmtOnInput(this);calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="trPropLev" type="number" step="0.5" value="5" oninput="syncCap('trPropLev');calcTriple()" onchange="calcTriple()"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="trMxRisk" type="number" step="5" value="50" oninput="syncCap('trMxRisk');calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
+          <div class="row"><label>ГО Si</label><input id="trGoSi" type="text" inputmode="numeric" value="12 311" oninput="fmtOnInput(this);calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО CNY</label><input id="trGoCr" type="text" inputmode="numeric" value="1 106" oninput="fmtOnInput(this);calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
+          <div class="row"><label>Стоп-аут FX</label><input id="trStopout" type="number" step="5" value="50" oninput="syncCap('trStopout');calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <div class="card-t" style="color:var(--red)">💸 Издержки</div>
           <div class="row"><label>Своп CNH short</label><input id="trSwapS" type="number" step="0.001" value="-0.717" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">пипс</div></div>
           <div class="row"><label>Своп CNH long</label><input id="trSwapL" type="number" step="0.001" value="0.245" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">пипс</div></div>
           <div class="hint"><span id="trSwapLive" style="color:var(--yellow);font-weight:700"></span> <span style="color:var(--tm)">· сверь с терминалом, у брокеров разные</span></div>
-          <div class="row"><label>РЕПО (год.)</label><input id="trRepo" type="number" step="1" value="21" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="trRepo" type="number" step="1" value="21" oninput="syncCap('trRepo');calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
           <div class="row"><label>Пейаут</label><input id="trPayout" type="number" step="1" value="5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
           <div class="row"><label>Комиссия FX/лот</label><input id="trComm" type="number" step="1" value="5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">$</div></div>
         </div>
@@ -258,8 +271,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div>
         <div class="card">
           <div class="card-t" style="color:#E5C100">📊 Цены трёх ног (евровый)</div>
-          <div class="row"><label>Eu-6.26 (₽/1000€)</label><input id="teEu" type="number" step="1" value="88982" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
-          <div class="row"><label>CNY-6.26 (₽/юань)</label><input id="teCr" type="number" step="0.001" value="11.212" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
+          <div class="row"><label>Eu-<span id="teLblEu">6.26</span> (₽/1000€)</label><input id="teEu" type="number" step="1" value="88982" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
+          <div class="row"><label>CNY-<span id="teLblCr">6.26</span> (₽/юань)</label><input id="teCr" type="number" step="0.001" value="11.212" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
           <div class="row"><label>EUR/CNH (Forex)</label><input id="teFx" type="number" step="0.001" value="8.0325" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="teRub" type="number" step="0.01" value="77" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="teDays" type="number" step="1" value="65" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">дн</div></div>
@@ -270,20 +283,20 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         </div>
         <div class="card">
           <div class="card-t" style="color:var(--green)">💰 Капитал</div>
-          <div class="row"><label>Forex (свои)</label><input id="teFxCap" type="number" step="100" value="13000" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">$</div></div>
+          <div class="row"><label>Forex (свои)</label><input id="teFxCap" type="text" inputmode="numeric" value="5 000" oninput="syncCap('teFxCap');fmtOnInput(this);calcTripleEu()" onchange="calcTripleEu()"><div class="unit">$</div></div>
           <div class="row"><label>Плечо Forex</label><input id="teFxLev" type="number" step="1" value="100" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">:1</div></div>
-          <div class="row"><label>МОЕХ (свои)</label><input id="teMxOwn" type="number" step="100000" value="1000000" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
-          <div class="row"><label>Плечо пропа</label><input id="tePropLev" type="number" step="0.5" value="5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">×</div></div>
-          <div class="row"><label>Морж МОЕХ</label><input id="teMxRisk" type="number" step="5" value="50" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
-          <div class="row"><label>ГО Eu</label><input id="teGoEu" type="number" step="100" value="14118" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
-          <div class="row"><label>ГО CNY</label><input id="teGoCr" type="number" step="100" value="1072" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
-          <div class="row"><label>Стоп-аут FX</label><input id="teStopout" type="number" step="5" value="50" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="teMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('teMxOwn');fmtOnInput(this);calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="tePropLev" type="number" step="0.5" value="5" oninput="syncCap('tePropLev');calcTripleEu()" onchange="calcTripleEu()"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="teMxRisk" type="number" step="5" value="50" oninput="syncCap('teMxRisk');calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
+          <div class="row"><label>ГО Eu</label><input id="teGoEu" type="text" inputmode="numeric" value="14 118" oninput="fmtOnInput(this);calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО CNY</label><input id="teGoCr" type="text" inputmode="numeric" value="1 072" oninput="fmtOnInput(this);calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
+          <div class="row"><label>Стоп-аут FX</label><input id="teStopout" type="number" step="5" value="50" oninput="syncCap('teStopout');calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <div class="card-t" style="color:var(--red)">💸 Издержки</div>
           <div class="row"><label>Своп EURCNH short</label><input id="teSwapS" type="number" step="0.001" value="-0.507" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">пипс</div></div>
           <div class="row"><label>Своп EURCNH long</label><input id="teSwapL" type="number" step="0.001" value="0.007" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">пипс</div></div>
           <div class="hint"><span id="teSwapLive" style="color:var(--yellow);font-weight:700"></span> <span style="color:var(--tm)">· сверь с терминалом, у брокеров разные</span></div>
-          <div class="row"><label>РЕПО (год.)</label><input id="teRepo" type="number" step="1" value="21" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="teRepo" type="number" step="1" value="21" oninput="syncCap('teRepo');calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
           <div class="row"><label>Пейаут</label><input id="tePayout" type="number" step="1" value="5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
           <div class="row"><label>Комиссия FX/лот</label><input id="teComm" type="number" step="1" value="5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">$</div></div>
         </div>
@@ -375,15 +388,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       </div>
       <div class="card">
         <div class="card-t" style="color:var(--green)">💰 Капитал и плечо</div>
-        <div class="row"><label>Forex (свои)</label><input id="inFxCap" oninput="calc()" onchange="calc()" type="number" step="100" value="13000"><div class="unit">$</div></div>
+        <div class="row"><label>Forex (свои)</label><input id="inFxCap" oninput="syncCap('inFxCap');fmtOnInput(this);calc()" onchange="calc()" type="text" inputmode="numeric" value="5 000"><div class="unit">$</div></div>
         <div class="row"><label>Плечо Forex</label><input id="inFxLev" oninput="calc()" onchange="calc()" type="number" step="1" value="100"><div class="unit">:1</div></div>
-        <div class="row"><label>МОЕХ (свои)</label><input id="inMxOwn" oninput="calc()" onchange="calc()" type="number" step="100000" value="1000000"><div class="unit">₽</div></div>
-        <div class="row"><label>Плечо пропа</label><input id="inPropLev" oninput="calc()" onchange="calc()" type="number" step="0.5" value="5"><div class="unit">×</div></div>
-        <div class="row"><label>Морж МОЕХ (% от своих)</label><input id="inMxRisk" oninput="calc()" onchange="calc()" type="number" step="5" value="50"><div class="unit">%</div></div>
+        <div class="row"><label>МОЕХ (свои)</label><input id="inMxOwn" oninput="syncCap('inMxOwn');fmtOnInput(this);calc()" onchange="calc()" type="text" inputmode="numeric" value="1 000 000"><div class="unit">₽</div></div>
+        <div class="row"><label>Плечо пропа</label><input id="inPropLev" oninput="syncCap('inPropLev');calc()" onchange="calc()" type="number" step="0.5" value="5"><div class="unit">×</div></div>
+        <div class="row"><label>Морж МОЕХ (% от своих)</label><input id="inMxRisk" oninput="syncCap('inMxRisk');calc()" onchange="calc()" type="number" step="5" value="50"><div class="unit">%</div></div>
         <div class="hint">Просадка от своего капитала, при которой проп закроет позицию</div>
-        <div class="row"><label>ГО на контракт</label><input id="inGO" oninput="calc()" onchange="calc()" type="number" step="100" value="8367"><div class="unit">₽</div></div>
+        <div class="row"><label>ГО на контракт</label><input id="inGO" oninput="fmtOnInput(this);calc()" onchange="calc()" type="text" inputmode="numeric" value="8 367"><div class="unit">₽</div></div>
         <div class="hint">Гарантийное обеспечение МОЕХ (авто-заполняется при смене инструмента)</div>
-        <div class="row"><label>Стоп-аут Forex</label><input id="inStopout" oninput="calc()" onchange="calc()" type="number" step="1" value="50"><div class="unit">%</div></div>
+        <div class="row"><label>Стоп-аут Forex</label><input id="inStopout" oninput="syncCap('inStopout');calc()" onchange="calc()" type="number" step="1" value="50"><div class="unit">%</div></div>
         <div class="sep"></div>
         <div class="card-t" style="color:var(--red)">💸 Издержки</div>
         <div class="row"><label>Своп (пипс/ночь)</label><input id="inSwap" oninput="calc()" onchange="calc()" type="number" step="0.001" value="0.104"><div class="unit">пипс</div></div>
@@ -391,7 +404,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="hint">Свопы меняются брокером, сверяй с терминалом</div>
         <div class="row"><label>Спред FX (bid/ask)</label><input id="inFxSpread" oninput="calc()" onchange="calc()" type="number" step="0.1" value="0"><div class="unit">$/oz</div></div>
         <div class="hint">Разница bid−ask у брокера. Для EUR/USD и Gold ~0, для Platinum ~7$</div>
-        <div class="row"><label>Ставка РЕПО (год.)</label><input id="inRepo" oninput="calc()" onchange="calc()" type="number" step="0.5" value="21"><div class="unit">%</div></div>
+        <div class="row"><label>Ставка РЕПО (год.)</label><input id="inRepo" oninput="syncCap('inRepo');calc()" onchange="calc()" type="number" step="0.5" value="21"><div class="unit">%</div></div>
         <div class="hint">Платится на заёмный капитал (ПСка − свои)</div>
         <div class="row"><label>Пейаут пропу</label><input id="inPayout" oninput="calc()" onchange="calc()" type="number" step="1" value="5"><div class="unit">%</div></div>
         <div class="hint">% от прибыли на МОЕХ, если она положительная</div>
@@ -511,27 +524,132 @@ const $=id=>document.getElementById(id);
 const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.abs(n).toFixed(d);const[i,dc]=a.split('.');return s+i.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(dc?'.'+dc:'');};
 
 let mode='EURUSD';
+let currentContract='M'; // M=Июн, U=Сен, Z=Дек
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25};
+const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',TRIPLE:'M',TRIPLE_EU:'M'};
+const CONTRACT_LABELS={M:'Июн 26',U:'Сен 26',Z:'Дек 26'};
+const CONTRACT_SHORT ={M:'6.26',  U:'9.26', Z:'12.26'};
 const MODES={
-  EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,go:8367,comm:5,cSize:100000,fxLev:100,dir:'back',
-    lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,exp:'2026-06-18',spot:1.17304,fut:1.16741,fxSpread:0,
-    moexTicker:'EDM6',fxSymbol:'EUR/USD'},
-  UCNY:{label:'USD/CNH',pipSz:.001,pipVal:100,stepSz:.001,stepPr:11.24,lpc:100,go:7738,comm:5,cSize:100000,fxLev:100,dir:'back',pipValForeign:true,
-    lotStep:.5,lotMin:.5,lotMax:5,swap:-.717,repo:21,iv:5,exp:'2026-06-18',spot:6.8305,fut:6.818,fxSpread:0,
-    moexTicker:'UCM6',fxSymbol:'USD/CNH'},
-  GOLD:{label:'Gold',pipSz:.01,pipVal:1,stepSz:.1,stepPr:7.70,lpc:100,go:50000,comm:5,cSize:100,fxLev:100,dir:'cont',
-    lotStep:.1,lotMin:.1,lotMax:2,swap:-6.841,repo:21,iv:15,exp:'2026-06-19',spot:4748.47,fut:4793.70,fxSpread:0,
-    moexTicker:'GDM6',fxSymbol:'XAU/USD'},
-  SILVER:{label:'Silver',pipSz:.001,pipVal:5,stepSz:.01,stepPr:7.70,lpc:500,go:10000,comm:5,cSize:5000,fxLev:100,dir:'cont',
-    lotStep:.05,lotMin:.01,lotMax:2,swap:-9.415,repo:21,iv:25,exp:'2026-06-19',spot:74.85,fut:76.39,fxSpread:0,
-    moexTicker:'SVM6',fxSymbol:'XAG/USD'},
-  PLAT:{label:'Platinum',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,go:29000,comm:5,cSize:100,fxLev:10,dir:'cont',
-    lotStep:.1,lotMin:.05,lotMax:2,swap:-3.847,repo:21,iv:20,exp:'2026-06-19',spot:2025.45,fut:2049.70,fxSpread:7.09,
-    moexTicker:'PTM6',fxSymbol:'XPT/USD'},
-  PALL:{label:'Palladium',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,go:19000,comm:5,cSize:100,fxLev:10,dir:'cont',
-    lotStep:.1,lotMin:.05,lotMax:2,swap:-4.117,repo:21,iv:25,exp:'2026-06-19',spot:1525.99,fut:1545.22,fxSpread:6.27,
-    moexTicker:'PDM6',fxSymbol:'XPD/USD'}
+  EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
+    lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
+    contracts:{
+      M:{moexTicker:'EDM6',exp:'2026-06-18',fut:1.1702,go:5835},
+      U:{moexTicker:'EDU6',exp:'2026-09-17',fut:1.1670,go:6320},
+      Z:{moexTicker:'EDZ6',exp:'2026-12-17',fut:1.1649,go:6920}
+    }},
+  UCNY:{label:'USD/CNH',pipSz:.001,pipVal:100,stepSz:.001,stepPr:11.24,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',pipValForeign:true,
+    lotStep:.5,lotMin:.5,lotMax:5,swap:-.717,repo:21,iv:5,spot:6.8305,fxSpread:0,fxSymbol:'USD/CNH',
+    contracts:{
+      M:{moexTicker:'UCM6',exp:'2026-06-18',fut:6.808,go:7561},
+      U:{moexTicker:'UCU6',exp:'2026-09-17',fut:6.809,go:7988},
+      Z:{moexTicker:'UCZ6',exp:'2026-12-17',fut:6.831,go:8526}
+    }},
+  GOLD:{label:'Gold',pipSz:.01,pipVal:1,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:100,dir:'cont',
+    lotStep:.1,lotMin:.1,lotMax:2,swap:-6.841,repo:21,iv:15,spot:4795.93,fxSpread:0,fxSymbol:'XAU/USD',
+    contracts:{
+      M:{moexTicker:'GDM6',exp:'2026-06-19',fut:4833.5,go:34517},
+      U:{moexTicker:'GDU6',exp:'2026-09-18',fut:4880.5,go:35092},
+      Z:{moexTicker:'GDZ6',exp:'2026-12-18',fut:4951.0,go:37794}
+    }},
+  SILVER:{label:'Silver',pipSz:.001,pipVal:5,stepSz:.01,stepPr:7.70,lpc:500,comm:5,cSize:5000,fxLev:100,dir:'cont',
+    lotStep:.05,lotMin:.01,lotMax:2,swap:-9.415,repo:21,iv:25,spot:79.52,fxSpread:0,fxSymbol:'XAG/USD',
+    contracts:{
+      M:{moexTicker:'SVM6',exp:'2026-06-19',fut:80.71,go:13958},
+      U:{moexTicker:'SVU6',exp:'2026-09-18',fut:82.78,go:15243},
+      Z:{moexTicker:'SVZ6',exp:'2026-12-18',fut:85.71,go:15316}
+    }},
+  PLAT:{label:'Platinum',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
+    lotStep:.1,lotMin:.05,lotMax:2,swap:-3.847,repo:21,iv:20,spot:2083.98,fxSpread:7.09,fxSymbol:'XPT/USD',
+    contracts:{
+      M:{moexTicker:'PTM6',exp:'2026-06-19',fut:2105.8,go:32256},
+      U:{moexTicker:'PTU6',exp:'2026-09-18',fut:2175.3,go:35722},
+      Z:{moexTicker:'PTZ6',exp:'2026-12-18',fut:2228.0,go:36682}
+    }},
+  PALL:{label:'Palladium',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
+    lotStep:.1,lotMin:.05,lotMax:2,swap:-4.117,repo:21,iv:25,spot:1548.71,fxSpread:6.27,fxSymbol:'XPD/USD',
+    contracts:{
+      M:{moexTicker:'PDM6',exp:'2026-06-19',fut:1554.00,go:28288},
+      U:{moexTicker:'PDU6',exp:'2026-09-18',fut:1618.74,go:29968},
+      Z:{moexTicker:'PDZ6',exp:'2026-12-18',fut:1683.94,go:31004}
+    }}
 };
+
+// Merge instrument base + specific contract into flat object (legacy callsites read p.fut, p.exp, p.go, p.moexTicker)
+function getP(m,c){
+  const base=MODES[m||mode];
+  if(!base||!base.contracts)return base;
+  const ct=base.contracts[c||currentContract]||base.contracts.M;
+  return Object.assign({},base,ct);
+}
+
+// Triple-arb contract data (Si/Cr/USDCNH and Eu/Cr/EURCNH)
+const TRIPLE_DATA={
+  TRIPLE:{
+    contracts:{
+      M:{siTk:'SiM6',crTk:'CRM6',exp:'2026-06-18',si:76310,  cr:11.210,siGo:12267,crGo:1087},
+      U:{siTk:'SiU6',crTk:'CRU6',exp:'2026-09-17',si:77555,  cr:11.405,siGo:12394,crGo:1163},
+      Z:{siTk:'SiZ6',crTk:'CRZ6',exp:'2026-12-17',si:79428,  cr:11.585,siGo:12930,crGo:1224}
+    }
+  },
+  TRIPLE_EU:{
+    contracts:{
+      M:{euTk:'EuM6',crTk:'CRM6',exp:'2026-06-18',eu:89203,  cr:11.210,euGo:14452,crGo:1087},
+      U:{euTk:'EuU6',crTk:'CRU6',exp:'2026-09-17',eu:90598,  cr:11.405,euGo:14778,crGo:1163},
+      Z:{euTk:'EuZ6',crTk:'CRZ6',exp:'2026-12-17',eu:92950,  cr:11.585,euGo:15413,crGo:1224}
+    }
+  }
+};
+
+
+// === Formatted input helpers ===
+function fmtInt(n){
+  const x=Math.round(+n||0);
+  return String(x).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+}
+function fmtOnInput(el){
+  if(!el||el.type==='number')return;
+  const pos=el.selectionStart==null?el.value.length:el.selectionStart;
+  const before=el.value.length;
+  const hasMinus=el.value.trim().startsWith('-');
+  const raw=el.value.replace(/\D/g,'');
+  el.value=raw?(hasMinus?'-':'')+fmtInt(raw):'';
+  const diff=el.value.length-before;
+  try{el.setSelectionRange(pos+diff,pos+diff);}catch(_){}
+}
+function nv(id){const el=$(id);if(!el)return 0;return +String(el.value).replace(/\s/g,'')||0;}
+function setNum(id,n){const el=$(id);if(!el)return;el.value=fmtInt(n);}
+
+// === Shared capital across ALL tabs ===
+// NOTE: ovwRub/ovwUsd intentionally NOT in sync groups — those are "total capital"
+// in Overview (explore hypothetical totals), while inFxCap/inMxOwn are actual per-side
+// capital that IS shared across instrument+triple tabs.
+const SHARED_CAP_GROUPS={
+  fxCap:  ['inFxCap','trFxCap','teFxCap'],
+  mxOwn:  ['inMxOwn','trMxOwn','teMxOwn'],
+  propLev:['inPropLev','trPropLev','tePropLev','ovwProp'],
+  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','ovwRisk'],
+  stopout:['inStopout','trStopout','teStopout','ovwStop'],
+  repoAnn:['inRepo','trRepo','teRepo','ovwRepo']
+};
+const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','inMxOwn','trMxOwn','teMxOwn','inGO','ovwRub','ovwUsd','trGoSi','trGoCr','teGoEu','teGoCr']);
+function syncCap(srcId){
+  let key=null;
+  for(const k in SHARED_CAP_GROUPS){if(SHARED_CAP_GROUPS[k].includes(srcId)){key=k;break;}}
+  if(!key)return;
+  const val=CAP_FORMATTED.has(srcId)?nv(srcId):+$(srcId).value;
+  for(const tid of SHARED_CAP_GROUPS[key]){
+    if(tid===srcId)continue;
+    const tel=$(tid);if(!tel)continue;
+    if(CAP_FORMATTED.has(tid))tel.value=fmtInt(val);
+    else tel.value=val;
+  }
+  // After sync, re-render any dependent calc on the currently-visible tab
+  if(mode==='OVW')calcOvw();
+  else if(mode==='TRIPLE')calcTriple();
+  else if(mode==='TRIPLE_EU')calcTripleEu();
+  else if(mode!=='OVW')calc&&calc();
+}
+
 
 function daysToExp(expStr){
   const now=new Date();now.setHours(0,0,0,0);
@@ -540,7 +658,9 @@ function daysToExp(expStr){
 }
 
 function switchTo(m){
-  if(mode!=='OVW')savedLots[mode]=+$('inLots').value;
+  // Save state for old mode before switching (belt-and-suspenders)
+  if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
+  else if(mode==='TRIPLE'||mode==='TRIPLE_EU')savedContract[mode]=currentContract;
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabGold','tabSilver','tabPlat','tabPall'];
   allTabs.forEach(t=>{$(t).className='tab';$(t).style.background='';});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',OVW:'var(--green)'};
@@ -548,6 +668,7 @@ function switchTo(m){
   if(m==='OVW'){
     mode='OVW';
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
+    $('contractPills').style.display='none';
     $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
@@ -557,44 +678,133 @@ function switchTo(m){
   }
   if(m==='TRIPLE'){
     mode='TRIPLE';
+    currentContract=savedContract.TRIPLE||'M';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
+    $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';
     $('tripleContent').style.display='';
+    const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
+    if(td){
+      $('trSi').value=td.si;$('trCr').value=td.cr;
+      $('trDays').value=daysToExp(td.exp);
+      setNum('trGoSi',td.siGo);setNum('trGoCr',td.crGo);
+      $('trLblSi').textContent=CONTRACT_SHORT[currentContract];
+      $('trLblCr').textContent=CONTRACT_SHORT[currentContract];
+    }
+    const expDispT=td?td.exp.split('-').reverse().join('.'):'';
     $('hdrTitle').textContent='Тройной арбитраж Si/CNY/USDCNH';
-    $('hdrSub').textContent='Si×CNY синтетика vs Forex USDCNH';
+    $('hdrSub').textContent='Si×CNY синтетика vs Forex USDCNH | Эксп. '+expDispT;
+    updateContractPills('var(--orange)');
     calcTriple();
     return;
   }
   if(m==='TRIPLE_EU'){
     mode='TRIPLE_EU';
+    currentContract=savedContract.TRIPLE_EU||'M';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
+    $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';
     $('tripleEuContent').style.display='';
+    const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
+    if(te){
+      $('teEu').value=te.eu;$('teCr').value=te.cr;
+      $('teDays').value=daysToExp(te.exp);
+      setNum('teGoEu',te.euGo);setNum('teGoCr',te.crGo);
+      $('teLblEu').textContent=CONTRACT_SHORT[currentContract];
+      $('teLblCr').textContent=CONTRACT_SHORT[currentContract];
+    }
+    const expDispTE=te?te.exp.split('-').reverse().join('.'):'';
     $('hdrTitle').textContent='Евровый тройничок Eu/CNY/EURCNH';
-    $('hdrSub').textContent='Eu×CNY синтетика vs Forex EURCNH';
+    $('hdrSub').textContent='Eu×CNY синтетика vs Forex EURCNH | Эксп. '+expDispTE;
+    updateContractPills('#E5C100');
     calcTripleEu();
     return;
   }
 
-  mode=m;const p=MODES[m];
+  mode=m;
+  currentContract=savedContract[m]||'M';
+  const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
   $('mainContent').style.display='';
+  $('contractPills').style.display='';
   const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall'};
   $(tabMap[m]).className='tab on';$(tabMap[m]).style.background=colMap[m];
   $('inSpot').value=p.spot;$('inFut').value=p.fut;$('inDays').value=daysToExp(p.exp);$('inIV').value=p.iv;
   $('inSwap').value=p.swap;$('inFxSpread').value=p.fxSpread;$('inFxLev').value=p.fxLev;
-  $('inGO').value=p.go;
+  setNum('inGO',p.go);
   $('inExpSpread').value='';
   const ac=colMap[m];
   const expDisp=p.exp.split('-').reverse().join('.');
   $('hdrTitle').textContent='Калькулятор арбитража '+p.label;
   $('hdrSub').textContent=(p.dir==='back'?'SHORT Forex × LONG MOEX':'LONG Forex × SHORT MOEX')+' | Эксп. '+expDisp;
   document.querySelectorAll('[id=accentLabel],[id=scTitle],[id=rebTitle]').forEach(e=>e.style.color=ac);
+  updateContractPills();
   autoLotMode=true;
   adaptSlider();
   calc();
+}
+
+function switchContract(c){
+  if(mode==='OVW')return;
+  savedContract[mode]=c;
+  currentContract=c;
+
+  if(mode==='TRIPLE'){
+    const td=TRIPLE_DATA.TRIPLE.contracts[c];
+    if(td){
+      $('trSi').value=td.si;$('trCr').value=td.cr;
+      $('trDays').value=daysToExp(td.exp);
+      setNum('trGoSi',td.siGo);setNum('trGoCr',td.crGo);
+      $('trLblSi').textContent=CONTRACT_SHORT[c];
+      $('trLblCr').textContent=CONTRACT_SHORT[c];
+      $('trExpSpread').value='';
+      $('hdrSub').textContent='Si×CNY синтетика vs Forex USDCNH | Эксп. '+td.exp.split('-').reverse().join('.');
+    }
+    updateContractPills('var(--orange)');
+    calcTriple();
+    return;
+  }
+  if(mode==='TRIPLE_EU'){
+    const te=TRIPLE_DATA.TRIPLE_EU.contracts[c];
+    if(te){
+      $('teEu').value=te.eu;$('teCr').value=te.cr;
+      $('teDays').value=daysToExp(te.exp);
+      setNum('teGoEu',te.euGo);setNum('teGoCr',te.crGo);
+      $('teLblEu').textContent=CONTRACT_SHORT[c];
+      $('teLblCr').textContent=CONTRACT_SHORT[c];
+      $('teExpSpread').value='';
+      $('hdrSub').textContent='Eu×CNY синтетика vs Forex EURCNH | Эксп. '+te.exp.split('-').reverse().join('.');
+    }
+    updateContractPills('#E5C100');
+    calcTripleEu();
+    return;
+  }
+
+  // Regular instrument tab
+  const p=getP();
+  $('inFut').value=p.fut;
+  $('inDays').value=daysToExp(p.exp);
+  $('inIV').value=p.iv;
+  setNum('inGO',p.go);
+  $('inExpSpread').value='';
+  const expDisp=p.exp.split('-').reverse().join('.');
+  $('hdrSub').textContent=(p.dir==='back'?'SHORT Forex × LONG MOEX':'LONG Forex × SHORT MOEX')+' | Эксп. '+expDisp;
+  updateContractPills();
+  autoLotMode=true;
+  adaptSlider();
+  calc();
+}
+
+function updateContractPills(overrideColor){
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
+  const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
+  ['M','U','Z'].forEach(k=>{
+    const btn=$('cp'+k);if(!btn)return;
+    if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
+    else{btn.className='cpill';btn.style.background='';}
+  });
 }
 
 let autoLotMode=true;
@@ -602,7 +812,7 @@ let autoLotMode=true;
 function sigmaForLots(sl){
   const p=MODES[mode];
   const spot=+$('inSpot').value,fut=+$('inFut').value,rub=+$('inRub').value;
-  const fxCap=+$('inFxCap').value,mxOwn=+$('inMxOwn').value;
+  const fxCap=nv('inFxCap'),mxOwn=nv('inMxOwn');
   const stopout=+$('inStopout').value/100;
   const days=+$('inDays').value,iv=+$('inIV').value;
   const mxRisk=+$('inMxRisk').value/100;
@@ -627,14 +837,14 @@ function sigmaForLots(sl){
 
 function adaptSlider(){
   const p=MODES[mode];
-  const fxCap=+$('inFxCap').value;
-  const mxOwn=+$('inMxOwn').value;
+  const fxCap=nv('inFxCap');
+  const mxOwn=nv('inMxOwn');
   const spot=+$('inSpot').value;
   const propLev=+$('inPropLev').value;
   const pska=mxOwn*propLev;
   const margPerLot=p.pipValForeign?p.cSize/(+$('inFxLev').value):p.cSize*spot/(+$('inFxLev').value);
   const maxFx=fxCap/margPerLot;
-  const maxMx=pska/(+$('inGO').value)/p.lpc;
+  const maxMx=pska/(nv('inGO'))/p.lpc;
   let mx=Math.min(maxFx,maxMx);
   mx=Math.max(mx,0.1);
   mx=Math.min(mx,5000);
@@ -680,13 +890,13 @@ function adaptSlider(){
 function calc(){
   const p=MODES[mode];
   const spot=+$('inSpot').value,fut=+$('inFut').value,rub=+$('inRub').value;
-  const fxCap=+$('inFxCap').value,mxOwn=+$('inMxOwn').value;
+  const fxCap=nv('inFxCap'),mxOwn=nv('inMxOwn');
   const stopout=+$('inStopout').value/100;
   const days=+$('inDays').value,iv=+$('inIV').value;
   const swapPips=+$('inSwap').value,repoAnn=+$('inRepo').value/100;
   const propLev=+$('inPropLev').value;
   const pska=mxOwn*propLev;
-  const go=+$('inGO').value;
+  const go=nv('inGO');
 
   // Dynamic pipVal: for UCNY pip value is in CNH, convert to USD
   const pipVal=p.pipValForeign?p.pipVal/spot:p.pipVal;
@@ -1047,26 +1257,25 @@ function calc(){
 // === OVERVIEW ===
 function ovwSyncFromRub(){
   const rub=+$('inRub').value||77;
-  $('ovwUsd').value=Math.round(+$('ovwRub').value/rub);
+  setNum('ovwUsd',Math.round(nv('ovwRub')/rub));
   $('ovwRate').textContent=rub.toFixed(2);
   calcOvw();
 }
 function ovwSyncFromUsd(){
   const rub=+$('inRub').value||77;
-  $('ovwRub').value=Math.round(+$('ovwUsd').value*rub);
+  setNum('ovwRub',Math.round(nv('ovwUsd')*rub));
   $('ovwRate').textContent=rub.toFixed(2);
   calcOvw();
 }
 
 function calcOvw(){
-  const totalRub=+$('ovwRub').value;
+  const totalRub=nv('ovwRub');
   const rub=+$('inRub').value||77;
   const propLev=+$('ovwProp').value;
   const mxRisk=+$('ovwRisk').value/100;
   const stopout=+$('ovwStop').value/100;
   const repoAnn=+$('ovwRepo').value/100;
   const payoutPct=+$('ovwPay').value/100;
-  const ovwDays=+$('ovwDays').value||65;
   $('ovwRate').textContent=rub.toFixed(2);
   const totalUsd=totalRub/rub;
 
@@ -1074,8 +1283,10 @@ function calcOvw(){
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
   const ovwRows=[];
 
-  for(const[key,p] of Object.entries(MODES)){
-    const days=ovwDays;
+  for(const[key,base] of Object.entries(MODES)){
+    for(const[ckey,ct] of Object.entries(base.contracts)){
+    const p=Object.assign({},base,ct);
+    const days=daysToExp(p.exp);
     const spot=p.spot,fut=p.fut;
     const pipVal=p.pipValForeign?p.pipVal/spot:p.pipVal;
     const stepPr=p.pipValForeign?rub/spot:p.stepPr;
@@ -1089,6 +1300,7 @@ function calcOvw(){
     // Find optimal lots + capital split
     // For each lot count, find equal-buffer split, check σ≥1.2 and capital≤total
     let bestLots=0,bestFx=0,bestMx=0,bestSig=0,bestNet=0,bestNetW=0,bestRoi=0;
+    let bestTT='',bestTTW='';
 
     // Dynamic max: from capital constraints
     const margPerLot=p.pipValForeign?p.cSize/p.fxLev:p.cSize*spot/p.fxLev;
@@ -1163,11 +1375,31 @@ function calcOvw(){
 
       bestLots=sl;bestFx=Math.round(fxCap);bestMx=Math.round(mxOwn);
       bestSig=sig;bestNet=netBest;bestNetW=netWorst;bestRoi=roi;
+      // Tooltips — breakdown of gross→net
+      const borK=Math.round(bor/1000);
+      bestTT=`Gross: $${fm(Math.round(grossBestUsd))}`
+        +`\n${swCost>=0?'+':'−'} Свопы: $${fm(Math.round(Math.abs(swCost)))}${swCost>=0?' (carry)':''}`
+        +`\n− РЕПО: $${fm(Math.round(repoT))}${bor>0?' (заём '+borK+'К₽ на '+days+'д)':' (своих хватает)'}`
+        +`\n− Комиссии: $${fm(Math.round(cm))}`
+        +(fxSC>0?`\n− FX-спред: $${fm(Math.round(fxSC))}`:'')
+        +`\n═══════════════`
+        +`\n= NET: $${fm(Math.round(netBest))}`;
+      bestTTW=`Сценарий: цена ушла на 80% до стоп-аута`
+        +`\nГросс (раздвижка): $${fm(Math.round(grossBestUsd))}`
+        +`\n− Просадка Forex: $${fm(Math.round(Math.abs(fxLossW)))}`
+        +`\n+ Прибыль МОЕХ: $${fm(Math.round(mxProfitW))}`
+        +(payW>0?`\n− Пейаут пропу (${Math.round(payoutPct*100)}%): $${fm(Math.round(payW))}`:'')
+        +`\n${swCost>=0?'+':'−'} Свопы: $${fm(Math.round(Math.abs(swCost)))}`
+        +`\n− РЕПО: $${fm(Math.round(repoT))}`
+        +`\n− Комиссии: $${fm(Math.round(cm))}`
+        +(fxSC>0?`\n− FX-спред: $${fm(Math.round(fxSC))}`:'')
+        +`\n═══════════════`
+        +`\n= NET (худший): $${fm(Math.round(netWorst))}`;
     }
 
     // Build row
     const totCap=bestFx+bestMx/rub;
-    const dys=ovwDays;
+    const dys=days;
     const annB=dys>0?bestRoi/dys*365:0;
     const roiW=totCap>0?bestNetW/totCap*100:0;
     const annW=dys>0?roiW/dys*365:0;
@@ -1177,12 +1409,14 @@ function calcOvw(){
     const dirTxt=p.dir==='back'?'бэкв.':'конт.';
     const dirC=p.dir==='back'?'var(--green)':'var(--yellow)';
     const lotsStr=bestLots>0?(Math.round(bestLots*100)/100).toFixed(2):'—';
+    const ctLabel=CONTRACT_LABELS[ckey]||ckey;
 
     const tr=document.createElement('tr');
     tr.style.cursor='pointer';
-    tr.onclick=()=>switchTo(key);
+    const _key=key,_ckey=ckey;
+    tr.onclick=()=>{savedContract[_key]=_ckey;switchTo(_key);};
     tr.innerHTML=`
-      <td class="hl" style="color:${colMap[key]};font-size:15px;font-weight:900">${p.label}</td>
+      <td class="hl" style="color:${colMap[key]};font-size:14px;font-weight:900">${p.label} <span style="font-size:11px;color:var(--tm);font-weight:700">${ctLabel}</span> <span style="font-size:10px;color:var(--tm);font-weight:500">· ${dys}д</span></td>
       <td class="hl">${Math.abs(spPct).toFixed(2)}%</td>
       <td style="color:${dirC}">${dirTxt}</td>
       <td>${lotsStr}</td>
@@ -1190,44 +1424,47 @@ function calcOvw(){
       <td>$${fm(bestFx)}</td>
       <td>${fm(Math.round(bestMx/1000))}К</td>
       <td class="hl" style="color:${sigC}">${bestSig>0?bestSig.toFixed(2)+'σ':'—'}</td>
-      <td class="hl" style="color:${netC}">${bestLots>0?'$'+fm(Math.round(bestNet)):'—'}</td>
-      <td style="color:${netC}">${bestLots>0?bestRoi.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netC}">${bestLots>0?'~'+annB.toFixed(0)+'%':'—'}</td>
-      <td class="hl" style="color:${netWC}">${bestLots>0?'$'+fm(Math.round(bestNetW)):'—'}</td>
-      <td style="color:${netWC}">${bestLots>0?roiW.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netWC}">${bestLots>0?'~'+annW.toFixed(0)+'%':'—'}</td>`;
+      <td class="hl" style="color:${netC}" title="${bestTT}">${bestLots>0?'$'+fm(Math.round(bestNet)):'—'}</td>
+      <td style="color:${netC}" title="${bestTT}">${bestLots>0?bestRoi.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netC}" title="${bestTT}">${bestLots>0?'~'+annB.toFixed(0)+'%':'—'}</td>
+      <td class="hl" style="color:${netWC}" title="${bestTTW}">${bestLots>0?'$'+fm(Math.round(bestNetW)):'—'}</td>
+      <td style="color:${netWC}" title="${bestTTW}">${bestLots>0?roiW.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netWC}" title="${bestTTW}">${bestLots>0?'~'+annW.toFixed(0)+'%':'—'}</td>`;
     ovwRows.push({net:bestNet,tr});
+    }
   }
 
-  // Triple arb row
-  {
-    const si=+$('trSi').value||75970, cr=+$('trCr').value||11.222, fx=+$('trFx').value||6.81;
+  // Triple arb rows — iterate contracts M/U/Z
+  const trSwapLDef=+$('trSwapL').value||.245, trSwapSDef=+$('trSwapS').value||-.717;
+  const trFxLevT=+$('trFxLev').value||100, trIVT=+$('trIV').value||5;
+  const fxCNH=MODES.UCNY.spot||+$('trFx').value||6.81;
+  for(const[ckey,td] of Object.entries(TRIPLE_DATA.TRIPLE.contracts)){
+    const days=daysToExp(td.exp);
+    const si=td.si, cr=td.cr, fx=fxCNH;
     const synthetic=si/1000/cr;
     const triSpread=(synthetic-fx)/fx*100;
     const absSpread=Math.abs(triSpread);
     const isNeg=triSpread<0;
-    const swapPips=isNeg?(+$('trSwapS').value||-.717):(+$('trSwapL').value||.245);
-    const goSi=+$('trGoSi').value||12311, goCr=+$('trGoCr').value||1106;
+    const swapPips=isNeg?trSwapSDef:trSwapLDef;
+    const goSi=td.siGo, goCr=td.crGo;
     const crPerSi=Math.round(fx);
-    const goPerSi=goSi+crPerSi*goCr;
     const pska=totalRub*propLev;
     const goPerSiUnit=goSi+crPerSi*goCr;
-    const maxSiC=Math.min(Math.floor(pska/goPerSiUnit),Math.floor(totalUsd*100)); // GO or FX limit
+    const maxSiC=Math.min(Math.floor(pska/goPerSiUnit),Math.floor(totalUsd*100));
     let triStep;
     if(maxSiC<=20)triStep=1;else if(maxSiC<=100)triStep=5;else if(maxSiC<=500)triStep=10;
     else if(maxSiC<=2000)triStep=50;else triStep=100;
 
     let bSiC=0,bFxC=0,bMxC=0,bSig=0,bNet=0,bNetW=0,bRoi=0;
+    let bTT='',bTTW='';
     for(let siC=triStep;siC<=maxSiC;siC+=triStep){
       const notional=siC*1000;
       const fxLots=siC/100;
       const crC=Math.round(fx*siC);
-      const fxMarg=notional/(+$('trFxLev').value||100);
+      const fxMarg=notional/trFxLevT;
       const seSt=stopout*fxMarg;
       const mxGoT=siC*goSi+crC*goCr;
       if(mxGoT>pska)break;
-      // Equal buffer: (fxCap-se)/notional = mxOwn*mxRisk/(notional*rub)
-      // → fxCap = (totalUsd*mxRisk + seSt) / (1 + mxRisk)
       const fxCapT=(totalUsd*mxRisk+seSt)/(1+mxRisk);
       const mxOwnT=(totalUsd-fxCapT)*rub;
       if(fxCapT<seSt+100||mxOwnT<10000)continue;
@@ -1236,26 +1473,35 @@ function calcOvw(){
       const mxBufRub=mxOwnT*mxRisk;
       const mxBufPct=mxBufRub/(notional*rub/100);
       const minP=Math.min(fxBufPct,mxBufPct);
-      const ivT=+$('trIV').value||5;
-      const sigPT=ivT/100*Math.sqrt(ovwDays/365);
+      const sigPT=trIVT/100*Math.sqrt(days/365);
       const sigT=sigPT>0?minP/100/sigPT:0;
       if(sigT<1.2)break;
       const gross=absSpread/100*notional;
       const fxPipVal=100/fx;
-      const swT=swapPips*fxPipVal*fxLots*ovwDays;
+      const swT=swapPips*fxPipVal*fxLots*days;
       const borT=Math.max(0,mxGoT-mxOwnT);
-      const repoTT=borT*repoAnn/365*ovwDays/rub;
+      const repoTT=borT*repoAnn/365*days/rub;
       const cmT=Math.max(1,Math.round(fxLots))*5;
       const net=gross+swT-repoTT-cmT;
       const payWT=gross*payoutPct;
       const netW=net-payWT;
       const totC=fxCapT+mxOwnT/rub;
       bSiC=siC;bFxC=Math.round(fxCapT);bMxC=Math.round(mxOwnT);bSig=sigT;bNet=net;bNetW=netW;bRoi=net/totC*100;
+      const borKT=Math.round(borT/1000);
+      bTT=`Gross (раздвижка): $${fm(Math.round(gross))}`
+        +`\n${swT>=0?'+':'−'} Свопы: $${fm(Math.round(Math.abs(swT)))}`
+        +`\n− РЕПО: $${fm(Math.round(repoTT))}${borT>0?' (заём '+borKT+'К₽ на '+days+'д)':' (своих хватает)'}`
+        +`\n− Комиссии: $${fm(Math.round(cmT))}`
+        +`\n═══════════════`
+        +`\n= NET: $${fm(Math.round(net))}`;
+      bTTW=bTT+`\n\n− Пейаут пропу (${Math.round(payoutPct*100)}%): $${fm(Math.round(payWT))}`
+        +`\n═══════════════`
+        +`\n= NET (худший): $${fm(Math.round(netW))}`;
     }
     const totC=bFxC+bMxC/rub;
-    const annBT=ovwDays>0?bRoi/ovwDays*365:0;
+    const annBT=days>0?bRoi/days*365:0;
     const roiWT=totC>0?bNetW/totC*100:0;
-    const annWT=ovwDays>0?roiWT/ovwDays*365:0;
+    const annWT=days>0?roiWT/days*365:0;
     const sigCT=bSig>=2?'var(--green)':bSig>=1.2?'var(--yellow)':'var(--red)';
     const netCT=bNet>=0?'var(--green)':'var(--red)';
     const netWCT=bNetW>=0?'var(--green)':'var(--red)';
@@ -1263,11 +1509,13 @@ function calcOvw(){
     const dirCT=isNeg?'var(--green)':'var(--yellow)';
     const bFxLots=(bSiC/100).toFixed(2);
     const bCrC=Math.round(fx*bSiC);
+    const ctLabelT=CONTRACT_LABELS[ckey]||ckey;
     const trT=document.createElement('tr');
     trT.style.cursor='pointer';
-    trT.onclick=()=>switchTo('TRIPLE');
+    const _ckT=ckey;
+    trT.onclick=()=>{savedContract.TRIPLE=_ckT;switchTo('TRIPLE');};
     trT.innerHTML=`
-      <td class="hl" style="color:var(--orange);font-size:15px;font-weight:900">Si/Cr/USDCNH</td>
+      <td class="hl" style="color:var(--orange);font-size:14px;font-weight:900">Si/Cr/USDCNH <span style="font-size:11px;color:var(--tm);font-weight:700">${ctLabelT}</span> <span style="font-size:10px;color:var(--tm);font-weight:500">· ${days}д</span></td>
       <td class="hl">${absSpread.toFixed(2)}%</td>
       <td style="color:${dirCT}">${dirTxtT}</td>
       <td>${bSiC>0?bFxLots:'—'}</td>
@@ -1275,24 +1523,29 @@ function calcOvw(){
       <td>$${fm(bFxC)}</td>
       <td>${fm(Math.round(bMxC/1000))}К</td>
       <td class="hl" style="color:${sigCT}">${bSig>0?bSig.toFixed(2)+'σ':'—'}</td>
-      <td class="hl" style="color:${netCT}">${bSiC>0?'$'+fm(Math.round(bNet)):'—'}</td>
-      <td style="color:${netCT}">${bSiC>0?bRoi.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netCT}">${bSiC>0?'~'+annBT.toFixed(0)+'%':'—'}</td>
-      <td class="hl" style="color:${netWCT}">${bSiC>0?'$'+fm(Math.round(bNetW)):'—'}</td>
-      <td style="color:${netWCT}">${bSiC>0?roiWT.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netWCT}">${bSiC>0?'~'+annWT.toFixed(0)+'%':'—'}</td>`;
+      <td class="hl" style="color:${netCT}" title="${bTT}">${bSiC>0?'$'+fm(Math.round(bNet)):'—'}</td>
+      <td style="color:${netCT}" title="${bTT}">${bSiC>0?bRoi.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netCT}" title="${bTT}">${bSiC>0?'~'+annBT.toFixed(0)+'%':'—'}</td>
+      <td class="hl" style="color:${netWCT}" title="${bTTW}">${bSiC>0?'$'+fm(Math.round(bNetW)):'—'}</td>
+      <td style="color:${netWCT}" title="${bTTW}">${bSiC>0?roiWT.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netWCT}" title="${bTTW}">${bSiC>0?'~'+annWT.toFixed(0)+'%':'—'}</td>`;
     ovwRows.push({net:bNet,tr:trT});
   }
 
   // EU Triple arb row
-  {
-    const euP=+$('teEu').value||88982, crP=+$('teCr').value||11.212, fxP=+$('teFx').value||8.0325;
+  // EU Triple arb rows — iterate contracts M/U/Z
+  const teSwapLDef=+$('teSwapL').value||0.007, teSwapSDef=+$('teSwapS').value||-0.507;
+  const teFxLevE=+$('teFxLev').value||100, teIVE=+$('teIV').value||5;
+  const fxEURCNH=(MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('teFx').value||8.0325);
+  for(const[ckey,te] of Object.entries(TRIPLE_DATA.TRIPLE_EU.contracts)){
+    const days=daysToExp(te.exp);
+    const euP=te.eu, crP=te.cr, fxP=fxEURCNH;
     const synth=euP/1000/crP;
     const triSp=(synth-fxP)/fxP*100;
     const absSp=Math.abs(triSp);
     const isN=triSp<0;
-    const swPips=isN?(+$('teSwapS').value||-0.507):(+$('teSwapL').value||0.007);
-    const goEu=+$('teGoEu').value||14118, goCrE=+$('teGoCr').value||1072;
+    const swPips=isN?teSwapSDef:teSwapLDef;
+    const goEu=te.euGo, goCrE=te.crGo;
     const crPerEu=Math.round(fxP);
     const goPerEu=goEu+crPerEu*goCrE;
     const pskaE=totalRub*propLev;
@@ -1303,12 +1556,13 @@ function calcOvw(){
     else if(maxEuC<=2000)teStep=50;else teStep=100;
 
     let bEuC=0,bFxE=0,bMxE=0,bSigE=0,bNetE=0,bNetWE=0,bRoiE=0;
+    let bTTE='',bTTWE='';
     for(let ec=teStep;ec<=maxEuC;ec+=teStep){
       const notRub=ec*euP;
       const notUsd=notRub/rub;
       const fxLotsE=ec/100;
       const crCE=Math.round(fxP*ec);
-      const fxMargE=notUsd/(+$('teFxLev').value||100);
+      const fxMargE=notUsd/teFxLevE;
       const seE=stopout*fxMargE;
       const mxGoE=ec*goEu+crCE*goCrE;
       if(mxGoE>pskaE)break;
@@ -1319,26 +1573,35 @@ function calcOvw(){
       const fxBufE=(fxCapE-seE)/notUsd*100;
       const mxBufE=mxOwnE*mxRisk/(notRub/100);
       const minPE=Math.min(fxBufE,mxBufE);
-      const ivE=+$('teIV').value||5;
-      const sigPE=ivE/100*Math.sqrt(ovwDays/365);
+      const sigPE=teIVE/100*Math.sqrt(days/365);
       const sigE=sigPE>0?minPE/100/sigPE:0;
       if(sigE<1.2)break;
       const grossE=absSp/100*notUsd;
       const fxPipValE=100*crP/rub;
-      const swTE=swPips*fxPipValE*fxLotsE*ovwDays;
+      const swTE=swPips*fxPipValE*fxLotsE*days;
       const borE=Math.max(0,mxGoE-mxOwnE);
-      const repoE=borE*repoAnn/365*ovwDays/rub;
+      const repoE=borE*repoAnn/365*days/rub;
       const cmE=Math.max(1,Math.round(fxLotsE))*5;
       const netE=grossE+swTE-repoE-cmE;
       const payWE=grossE*payoutPct;
       const netWE=netE-payWE;
       const totCE=fxCapE+mxOwnE/rub;
       bEuC=ec;bFxE=Math.round(fxCapE);bMxE=Math.round(mxOwnE);bSigE=sigE;bNetE=netE;bNetWE=netWE;bRoiE=netE/totCE*100;
+      const borKE=Math.round(borE/1000);
+      bTTE=`Gross (раздвижка): $${fm(Math.round(grossE))}`
+        +`\n${swTE>=0?'+':'−'} Свопы: $${fm(Math.round(Math.abs(swTE)))}`
+        +`\n− РЕПО: $${fm(Math.round(repoE))}${borE>0?' (заём '+borKE+'К₽ на '+days+'д)':' (своих хватает)'}`
+        +`\n− Комиссии: $${fm(Math.round(cmE))}`
+        +`\n═══════════════`
+        +`\n= NET: $${fm(Math.round(netE))}`;
+      bTTWE=bTTE+`\n\n− Пейаут пропу (${Math.round(payoutPct*100)}%): $${fm(Math.round(payWE))}`
+        +`\n═══════════════`
+        +`\n= NET (худший): $${fm(Math.round(netWE))}`;
     }
     const totCE=bFxE+bMxE/rub;
-    const annBE=ovwDays>0?bRoiE/ovwDays*365:0;
+    const annBE=days>0?bRoiE/days*365:0;
     const roiWE=totCE>0?bNetWE/totCE*100:0;
-    const annWE=ovwDays>0?roiWE/ovwDays*365:0;
+    const annWE=days>0?roiWE/days*365:0;
     const sigCE=bSigE>=2?'var(--green)':bSigE>=1.2?'var(--yellow)':'var(--red)';
     const netCE=bNetE>=0?'var(--green)':'var(--red)';
     const netWCE=bNetWE>=0?'var(--green)':'var(--red)';
@@ -1346,11 +1609,13 @@ function calcOvw(){
     const dirCE=isN?'var(--green)':'var(--yellow)';
     const bFxLotsE=(bEuC/100).toFixed(2);
     const bCrCE=Math.round(fxP*bEuC);
+    const ctLabelE=CONTRACT_LABELS[ckey]||ckey;
     const trTE=document.createElement('tr');
     trTE.style.cursor='pointer';
-    trTE.onclick=()=>switchTo('TRIPLE_EU');
+    const _ckE=ckey;
+    trTE.onclick=()=>{savedContract.TRIPLE_EU=_ckE;switchTo('TRIPLE_EU');};
     trTE.innerHTML=`
-      <td class="hl" style="color:#E5C100;font-size:15px;font-weight:900">Eu/Cr/EURCNH</td>
+      <td class="hl" style="color:#E5C100;font-size:14px;font-weight:900">Eu/Cr/EURCNH <span style="font-size:11px;color:var(--tm);font-weight:700">${ctLabelE}</span> <span style="font-size:10px;color:var(--tm);font-weight:500">· ${days}д</span></td>
       <td class="hl">${absSp.toFixed(2)}%</td>
       <td style="color:${dirCE}">${dirTE}</td>
       <td>${bEuC>0?bFxLotsE:'—'}</td>
@@ -1358,12 +1623,12 @@ function calcOvw(){
       <td>$${fm(bFxE)}</td>
       <td>${fm(Math.round(bMxE/1000))}К</td>
       <td class="hl" style="color:${sigCE}">${bSigE>0?bSigE.toFixed(2)+'σ':'—'}</td>
-      <td class="hl" style="color:${netCE}">${bEuC>0?'$'+fm(Math.round(bNetE)):'—'}</td>
-      <td style="color:${netCE}">${bEuC>0?bRoiE.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netCE}">${bEuC>0?'~'+annBE.toFixed(0)+'%':'—'}</td>
-      <td class="hl" style="color:${netWCE}">${bEuC>0?'$'+fm(Math.round(bNetWE)):'—'}</td>
-      <td style="color:${netWCE}">${bEuC>0?roiWE.toFixed(1)+'%':'—'}</td>
-      <td style="color:${netWCE}">${bEuC>0?'~'+annWE.toFixed(0)+'%':'—'}</td>`;
+      <td class="hl" style="color:${netCE}" title="${bTTE}">${bEuC>0?'$'+fm(Math.round(bNetE)):'—'}</td>
+      <td style="color:${netCE}" title="${bTTE}">${bEuC>0?bRoiE.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netCE}" title="${bTTE}">${bEuC>0?'~'+annBE.toFixed(0)+'%':'—'}</td>
+      <td class="hl" style="color:${netWCE}" title="${bTTWE}">${bEuC>0?'$'+fm(Math.round(bNetWE)):'—'}</td>
+      <td style="color:${netWCE}" title="${bTTWE}">${bEuC>0?roiWE.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netWCE}" title="${bTTWE}">${bEuC>0?'~'+annWE.toFixed(0)+'%':'—'}</td>`;
     ovwRows.push({net:bNetE,tr:trTE});
   }
 
@@ -1384,10 +1649,10 @@ function adjTripleLots(dir){
 function calcTriple(){
   const si=+$('trSi').value, cr=+$('trCr').value, fx=+$('trFx').value, rub=+$('trRub').value;
   const days=+$('trDays').value, iv=+$('trIV').value;
-  const fxCap=+$('trFxCap').value, mxOwn=+$('trMxOwn').value;
+  const fxCap=nv('trFxCap'), mxOwn=nv('trMxOwn');
   const fxLev=+$('trFxLev').value, propLev=+$('trPropLev').value;
   const stopout=+$('trStopout').value/100, mxRisk=+$('trMxRisk').value/100;
-  const goSi=+$('trGoSi').value, goCr=+$('trGoCr').value;
+  const goSi=nv('trGoSi'), goCr=nv('trGoCr');
   const swapS=+$('trSwapS').value, swapL=+$('trSwapL').value;
   const repoAnn=+$('trRepo').value/100, payoutPct=+$('trPayout').value/100;
   const comm=+$('trComm').value;
@@ -1599,10 +1864,10 @@ function adjTripleEuLots(dir){
 function calcTripleEu(){
   const eu=+$('teEu').value, cr=+$('teCr').value, fx=+$('teFx').value, rub=+$('teRub').value;
   const days=+$('teDays').value, iv=+$('teIV').value;
-  const fxCap=+$('teFxCap').value, mxOwn=+$('teMxOwn').value;
+  const fxCap=nv('teFxCap'), mxOwn=nv('teMxOwn');
   const fxLev=+$('teFxLev').value, propLev=+$('tePropLev').value;
   const stopout=+$('teStopout').value/100, mxRisk=+$('teMxRisk').value/100;
-  const goEu=+$('teGoEu').value, goCr=+$('teGoCr').value;
+  const goEu=nv('teGoEu'), goCr=nv('teGoCr');
   const swapS=+$('teSwapS').value, swapL=+$('teSwapL').value;
   const repoAnn=+$('teRepo').value/100, payoutPct=+$('tePayout').value/100;
   const comm=+$('teComm').value;
@@ -1834,7 +2099,11 @@ async function fetchPrices(){
 
   // MOEX ISS (free, no key)
   try{
-    const tickers=Object.values(MODES).map(m=>m.moexTicker).join(',')+',SiM6,CRM6,EuM6';
+    // Build ticker list: all instruments × all contracts + triple-arb all contracts
+    const tickerSet=new Set();
+    for(const p of Object.values(MODES))for(const c of Object.values(p.contracts))tickerSet.add(c.moexTicker);
+    ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
+    const tickers=[...tickerSet].join(',');
     const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+tickers);
     const d=await r.json();
     const mc=d.marketdata.columns,mr=d.marketdata.data;
@@ -1853,42 +2122,59 @@ async function fetchPrices(){
       if(sp)mx[id].stepPrice=sp;
       if(ms)mx[id].minStep=ms;
     }
-    // Apply to all modes
+    // Apply to all contracts of all modes
     for(const[k,v] of Object.entries(MODES)){
-      const m=mx[v.moexTicker];
-      if(!m)continue;
-      v.fut=m.price;
-      if(m.go)v.go=Math.round(m.go);
-      if(m.stepPrice)v.stepPr=m.stepPrice;
+      for(const[ck,ct] of Object.entries(v.contracts)){
+        const m=mx[ct.moexTicker];
+        if(!m)continue;
+        ct.fut=m.price;
+        if(m.go)ct.go=Math.round(m.go);
+      }
+      // stepPr shared at instrument level — take from front month
+      const mf=mx[v.contracts.M&&v.contracts.M.moexTicker];
+      if(mf&&mf.stepPrice)v.stepPr=mf.stepPrice;
     }
-    // Update current tab UI
+    // Update current instrument tab UI
     if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'){
-      const p=MODES[mode];
+      const p=getP();
       const m=mx[p.moexTicker];
       if(m){
         $('inFut').value=m.price;
-        if(m.go)$('inGO').value=Math.round(m.go);
+        if(m.go)setNum('inGO',Math.round(m.go));
       }
     }
+    // Apply to all TRIPLE_DATA contracts (Si/CR/Eu)
+    for(const[ck,ct] of Object.entries(TRIPLE_DATA.TRIPLE.contracts)){
+      const mSi=mx[ct.siTk], mCr=mx[ct.crTk];
+      if(mSi){ct.si=mSi.price;if(mSi.go)ct.siGo=Math.round(mSi.go);}
+      if(mCr){ct.cr=mCr.price;if(mCr.go)ct.crGo=Math.round(mCr.go);}
+    }
+    for(const[ck,ct] of Object.entries(TRIPLE_DATA.TRIPLE_EU.contracts)){
+      const mEu=mx[ct.euTk], mCr=mx[ct.crTk];
+      if(mEu){ct.eu=mEu.price;if(mEu.go)ct.euGo=Math.round(mEu.go);}
+      if(mCr){ct.cr=mCr.price;if(mCr.go)ct.crGo=Math.round(mCr.go);}
+    }
+    // USD/RUB spot derived from front-month Si (for repo calcs everywhere)
     if(mx['SiM6']){
       const spotRub=mx['SiM6'].price/1000*0.99;
       $('inRub').value=spotRub.toFixed(2);
-      $('trSi').value=mx['SiM6'].price;$('trRub').value=spotRub.toFixed(2);
-      if(mx['SiM6'].go)$('trGoSi').value=Math.round(mx['SiM6'].go);
+      $('trRub').value=spotRub.toFixed(2);
+      $('teRub').value=spotRub.toFixed(2);
     }
-    if(mx['CRM6']){
-      $('trCr').value=mx['CRM6'].price;$('teCr').value=mx['CRM6'].price;
-      if(mx['CRM6'].go){$('trGoCr').value=Math.round(mx['CRM6'].go);$('teGoCr').value=Math.round(mx['CRM6'].go);}
+    // Update open triple tab's inputs for its current contract
+    if(mode==='TRIPLE'){
+      const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
+      if(td){$('trSi').value=td.si;$('trCr').value=td.cr;setNum('trGoSi',td.siGo);setNum('trGoCr',td.crGo);}
     }
-    if(mx['EuM6']){
-      $('teEu').value=mx['EuM6'].price;
-      if(mx['EuM6'].go)$('teGoEu').value=Math.round(mx['EuM6'].go);
+    if(mode==='TRIPLE_EU'){
+      const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
+      if(te){$('teEu').value=te.eu;$('teCr').value=te.cr;setNum('teGoEu',te.euGo);setNum('teGoCr',te.crGo);}
     }
     mxOk=Object.keys(mx).length;
-    // Build details
+    // Build details — show front-month per instrument to keep message short
     for(const[k,v] of Object.entries(MODES)){
-      const m=mx[v.moexTicker];
-      if(m)details.push(v.moexTicker+':'+m.price);
+      const m=mx[v.contracts.M&&v.contracts.M.moexTicker];
+      if(m)details.push(v.contracts.M.moexTicker+':'+m.price);
     }
     if(mx['SiM6'])details.push('SiM6:'+mx['SiM6'].price);
     if(mx['CRM6'])details.push('CRM6:'+mx['CRM6'].price);
@@ -1931,7 +2217,7 @@ async function fetchPrices(){
   console.log('Fetch details:',details.join(' | '));
   // Sync rate everywhere
   const rub=+$('inRub').value||77;
-  $('ovwUsd').value=Math.round(+$('ovwRub').value/rub);
+  setNum('ovwUsd',Math.round(nv('ovwRub')/rub));
   $('ovwRate').textContent=rub.toFixed(2);
   $('trRub').value=rub.toFixed(2);
   $('teRub').value=rub.toFixed(2);
@@ -1946,8 +2232,7 @@ async function fetchPrices(){
 mode='OVW';
 $('hdrTitle').textContent='Обзор всех инструментов';
 $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
-$('inDays').value=daysToExp(MODES.EURUSD.exp);
-$('ovwDays').value=daysToExp(MODES.EURUSD.exp);
+$('inDays').value=daysToExp(MODES.EURUSD.contracts.M.exp);
 calcOvw();
 // Auto-fetch on load
 fetchPrices();
