@@ -120,7 +120,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.2.b</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.2.c</p>
     </div>
   </div>
 
@@ -529,7 +529,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 
   </div><!-- /mainContent -->
-  <div class="footer">Грамотный Трейдинг v0.0.2.b | Апрель 2026 | Все расчёты — оценка при текущих параметрах</div>
+  <div class="footer">Грамотный Трейдинг v0.0.2.c | Апрель 2026 | Все расчёты — оценка при текущих параметрах</div>
 </div>
 
 <script>
@@ -2389,27 +2389,30 @@ async function fetchPrices(){
   }
 
 
-  // Crypto via Cloudflare worker (proxies Bitget, 15s edge cache)
+  // Crypto: прямой запрос в Bitget из браузера ученика (Bitget блокирует Cloudflare IP,
+  // поэтому не через воркер). Публичный endpoint, ключи не нужны.
   let cryptoOk=0;
-  try{
-    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/crypto?symbols=BTCUSDT,ETHUSDT');
-    if(r.status===429)throw new Error('лимит (подожди минуту)');
-    const d=await r.json();
-    const map={BTCUSDT:'BTC',ETHUSDT:'ETH'};
-    for(const row of (d.data||[])){
-      const m=map[row.symbol];if(!m)continue;
-      if(row.error){details.push(row.symbol+':⚠'+String(row.error).slice(0,20));continue;}
-      const px=isFinite(row.indexPrice)?row.indexPrice:row.lastPr;
-      const fr=row.fundingRate;
-      if(isFinite(px)){MODES[m].spot=px;cryptoOk++;}
-      if(isFinite(fr)){MODES[m].fundingRate=fr;}
-      if(mode===m){
-        if(isFinite(px))$('inSpot').value=px;
-        if(isFinite(fr))$('inSwap').value=(fr*100).toFixed(4);
+  for(const m of ['BTC','ETH']){
+    const sym=MODES[m].cryptoSymbol;
+    try{
+      const r=await fetch('https://api.bitget.com/api/v2/mix/market/ticker?symbol='+sym+'&productType=usdt-futures');
+      const d=await r.json();
+      if(d&&d.data&&d.data[0]){
+        const t=d.data[0];
+        const px=parseFloat(t.indexPrice||t.lastPr);
+        const fr=parseFloat(t.fundingRate);
+        if(isFinite(px)){MODES[m].spot=px;cryptoOk++;}
+        if(isFinite(fr)){MODES[m].fundingRate=fr;}
+        if(mode===m){
+          if(isFinite(px))$('inSpot').value=px;
+          if(isFinite(fr))$('inSwap').value=(fr*100).toFixed(4);
+        }
+        details.push(sym+':'+(isFinite(px)?px.toFixed(2):'?')+' FR='+(isFinite(fr)?(fr*100).toFixed(4)+'%/8h':'?'));
+      } else {
+        details.push(sym+':⚠no data');
       }
-      details.push(row.symbol+':'+(isFinite(px)?px.toFixed(2):'?')+' FR='+(isFinite(fr)?(fr*100).toFixed(4)+'%/8h':'?'));
-    }
-  }catch(e){details.push('Crypto: '+e.message);}
+    }catch(e){details.push(sym+':⚠'+String(e.message||e).slice(0,30));}
+  }
   const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   if(mxOk&&fxOk)setFetchUI('✅ '+t+' | МОЕХ:'+mxOk+' FX:'+fxOk+' BG:'+cryptoOk+'/2','var(--green)',false);
   else if(mxOk&&fxOk===0)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2. ⚠ FX: 0 ('+t+')','var(--orange)',false);
