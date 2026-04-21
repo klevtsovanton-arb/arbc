@@ -120,7 +120,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.2.a</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.2.b</p>
     </div>
   </div>
 
@@ -397,8 +397,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="sep"></div>
         <button onclick="fetchPrices()" id="btnFetch" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
         <div id="fetchStatus" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
-        <div class="row" style="margin-top:4px;display:none"><label style="font-size:11px">TwelveData API key</label><input id="inApiKey" type="password" value="223e800e84a14bb19ff9fc738f3d0e4e" style="width:180px;font-size:11px;text-align:left" onchange="localStorage.setItem('td_key',this.value)"><div class="unit" style="width:10px"></div></div>
-        <div class="hint" style="display:none">Бесплатно: EUR/USD, USD/CNH, Gold. Для Silver/Platinum/Palladium — план Grow ($79/мес) на <a href="https://twelvedata.com/pricing" target="_blank" style="color:var(--cyan)">twelvedata.com</a></div>
+
       </div>
       <div class="card">
         <div class="card-t" style="color:var(--green)">💰 Капитал и плечо</div>
@@ -530,7 +529,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 
   </div><!-- /mainContent -->
-  <div class="footer">Грамотный Трейдинг v0.0.2.a | Апрель 2026 | Все расчёты — оценка при текущих параметрах</div>
+  <div class="footer">Грамотный Трейдинг v0.0.2.b | Апрель 2026 | Все расчёты — оценка при текущих параметрах</div>
 </div>
 
 <script>
@@ -2268,7 +2267,6 @@ $('inLots').addEventListener('touchend',function(){this._touch=false;calc();});
 $('inDays').value=daysToExp(MODES[mode].exp);
 
 // === LIVE PRICES ===
-try{const k=localStorage.getItem('td_key');if(k)$('inApiKey').value=k;}catch(e){}
 
 function setFetchUI(msg,color,disabled){
   ['btnFetch','btnFetchOvw','btnFetchTriple','btnFetchTripleEu'].forEach(id=>{const b=$(id);if(b){b.disabled=disabled;b.style.opacity=disabled?'.5':'1';}});
@@ -2364,26 +2362,25 @@ async function fetchPrices(){
     setFetchUI('✅ МОЕХ ('+mxOk+'). Forex...','var(--green)',true);
   }catch(e){setFetchUI('❌ МОЕХ: '+e.message,'var(--red)',true);}
 
-  // TwelveData (all symbols)
-  const apiKey=$('inApiKey').value.trim();
-  if(apiKey){
-    try{
-      const syms=Object.values(MODES).filter(m=>!m.isCrypto).map(m=>m.fxSymbol).join(',');
-      const r=await fetch('https://api.twelvedata.com/price?symbol='+encodeURIComponent(syms)+'&apikey='+apiKey);
-      const d=await r.json();
-      if(d.code&&d.status==='error')throw new Error(d.message);
-      for(const[sym,val] of Object.entries(d)){
-        if(val&&val.price){
-          const pr=parseFloat(val.price);
-          for(const v of Object.values(MODES)){if(v.fxSymbol===sym&&!v.isCrypto)v.spot=pr;}
-          if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&MODES[mode]&&!MODES[mode].isCrypto&&MODES[mode].fxSymbol===sym)$('inSpot').value=pr;
-          if(sym==='USD/CNH')$('trFx').value=pr;
-          fxOk++;
-        }
-        if(val&&val.code)details.push(sym+':⚠'+val.message?.slice(0,20));
+  // FX via Cloudflare worker (TD key server-side, 15s edge cache)
+  try{
+    const syms=Object.values(MODES).filter(m=>!m.isCrypto).map(m=>m.fxSymbol).join(',');
+    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/fx?symbols='+encodeURIComponent(syms));
+    if(r.status===429)throw new Error('лимит (подожди минуту)');
+    const d=await r.json();
+    if(d.code&&d.status==='error')throw new Error(d.message);
+    if(d.error)throw new Error(d.error);
+    for(const[sym,val] of Object.entries(d)){
+      if(val&&val.price){
+        const pr=parseFloat(val.price);
+        for(const v of Object.values(MODES)){if(v.fxSymbol===sym&&!v.isCrypto)v.spot=pr;}
+        if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&MODES[mode]&&!MODES[mode].isCrypto&&MODES[mode].fxSymbol===sym)$('inSpot').value=pr;
+        if(sym==='USD/CNH')$('trFx').value=pr;
+        fxOk++;
       }
-    }catch(e){setFetchUI((mxOk?'✅ МОЕХ. ':'')+'❌ FX: '+e.message,'var(--orange)',true);}
-  }
+      if(val&&val.code)details.push(sym+':⚠'+val.message?.slice(0,20));
+    }
+  }catch(e){setFetchUI((mxOk?'✅ МОЕХ. ':'')+'❌ FX: '+e.message,'var(--orange)',true);}
 
   // Calculate EUR/CNH = EUR/USD × USD/CNH (not available directly on TwelveData)
   if(MODES.EURUSD.spot&&MODES.UCNY.spot){
@@ -2392,32 +2389,31 @@ async function fetchPrices(){
   }
 
 
-  // === Bitget perps (BTC/ETH): price + funding, no key, CORS-open ===
+  // Crypto via Cloudflare worker (proxies Bitget, 15s edge cache)
   let cryptoOk=0;
   try{
-    for(const m of ['BTC','ETH']){
-      const sym=MODES[m].cryptoSymbol;
-      const r=await fetch('https://api.bitget.com/api/v2/mix/market/ticker?symbol='+sym+'&productType=usdt-futures');
-      const d=await r.json();
-      if(d&&d.data&&d.data[0]){
-        const t=d.data[0];
-        const px=parseFloat(t.indexPrice||t.lastPr);
-        const fr=parseFloat(t.fundingRate);
-        if(isFinite(px)){MODES[m].spot=px;cryptoOk++;}
-        if(isFinite(fr)){MODES[m].fundingRate=fr;}
-        if(mode===m){
-          if(isFinite(px))$('inSpot').value=px;
-          if(isFinite(fr))$('inSwap').value=(fr*100).toFixed(4);
-        }
-        details.push(sym+':'+(isFinite(px)?px.toFixed(2):'?')+' FR='+(isFinite(fr)?(fr*100).toFixed(4)+'%/8h':'?'));
+    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/crypto?symbols=BTCUSDT,ETHUSDT');
+    if(r.status===429)throw new Error('лимит (подожди минуту)');
+    const d=await r.json();
+    const map={BTCUSDT:'BTC',ETHUSDT:'ETH'};
+    for(const row of (d.data||[])){
+      const m=map[row.symbol];if(!m)continue;
+      if(row.error){details.push(row.symbol+':⚠'+String(row.error).slice(0,20));continue;}
+      const px=isFinite(row.indexPrice)?row.indexPrice:row.lastPr;
+      const fr=row.fundingRate;
+      if(isFinite(px)){MODES[m].spot=px;cryptoOk++;}
+      if(isFinite(fr)){MODES[m].fundingRate=fr;}
+      if(mode===m){
+        if(isFinite(px))$('inSpot').value=px;
+        if(isFinite(fr))$('inSwap').value=(fr*100).toFixed(4);
       }
+      details.push(row.symbol+':'+(isFinite(px)?px.toFixed(2):'?')+' FR='+(isFinite(fr)?(fr*100).toFixed(4)+'%/8h':'?'));
     }
-  }catch(e){details.push('Bitget: '+e.message);}
+  }catch(e){details.push('Crypto: '+e.message);}
   const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   if(mxOk&&fxOk)setFetchUI('✅ '+t+' | МОЕХ:'+mxOk+' FX:'+fxOk+' BG:'+cryptoOk+'/2','var(--green)',false);
-  else if(mxOk&&fxOk===0&&apiKey)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2. ⚠ FX: 0 ('+t+')','var(--orange)',false);
-  else if(mxOk&&!apiKey)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2 ('+t+')','var(--green)',false);
-  else setFetchUI('Готово ('+t+')','var(--tm)',false);
+  else if(mxOk&&fxOk===0)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2. ⚠ FX: 0 ('+t+')','var(--orange)',false);
+    else setFetchUI('Готово ('+t+')','var(--tm)',false);
   console.log('Fetch details:',details.join(' | '));
   // Sync rate everywhere
   const rub=+$('inRub').value||77;
