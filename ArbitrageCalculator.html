@@ -161,7 +161,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.a</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.b</p>
     </div>
   </div>
 
@@ -1396,7 +1396,7 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabCryTri','tabBrent','tabGas','tabCopper','tabPortfolio'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
@@ -1469,6 +1469,8 @@ function switchTo(m){
     $(cfg.contentId).style.display='';
     $('hdrTitle').textContent=cfg.title;
     $('hdrSub').textContent=cfg.legend+' · горизонт удержания настраивается';
+    // v0.0.5.b: pull live prices/GO/SWAPRATE into UI fields
+    applyPerpTabUI(m);
     calcPerp(m);
     return;
   }
@@ -3366,6 +3368,25 @@ function calcTripleU(){
 }
 
 // === v0.0.5 === PERPETUAL TRIPLES (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
+// v0.0.5.b: global helper — syncs current PERP_STATE (prices, GO, SWAPRATE averages) into the tab's UI fields
+function applyPerpTabUI(key){
+  const cfg=PERP_CONFIG[key];if(!cfg)return;
+  const p=cfg.prefix;
+  const s1=PERP_STATE[cfg.leg1.ticker], s2=PERP_STATE[cfg.leg2.ticker];
+  if(s1){
+    if(s1.price)$(p+'L1').value=s1.price;
+    if(s1.go)setNum(p+'GoL1',s1.go);
+    if(s1.swapAvg!=null)$(p+'SwapL1').value=(+s1.swapAvg).toFixed(4);
+    if(s1.swapInfo)$(p+'SwapL1Info').textContent=s1.swapInfo;
+  }
+  if(s2){
+    if(s2.price)$(p+'L2').value=s2.price;
+    if(s2.go)setNum(p+'GoL2',s2.go);
+    if(s2.swapAvg!=null)$(p+'SwapL2').value=(+s2.swapAvg).toFixed(4);
+    if(s2.swapInfo)$(p+'SwapL2Info').textContent=s2.swapInfo;
+  }
+}
+
 function adjPerpLots(key,dir){
   const cfg=PERP_CONFIG[key];if(!cfg)return;
   const sl=$(cfg.prefix+'Lots');
@@ -3753,17 +3774,8 @@ async function fetchPrices(){
         }
       }
     }
-    // Apply to visible perp tab's inputs
-    function applyPerpTabUI(key){
-      const cfg=PERP_CONFIG[key];if(!cfg)return;
-      const p=cfg.prefix;
-      const s1=PERP_STATE[cfg.leg1.ticker], s2=PERP_STATE[cfg.leg2.ticker];
-      if(s1){$(p+'L1').value=s1.price; setNum(p+'GoL1',s1.go);}
-      if(s2){$(p+'L2').value=s2.price; setNum(p+'GoL2',s2.go);}
-    }
-    if(mode==='PERP_UCNH')applyPerpTabUI('PERP_UCNH');
-    if(mode==='PERP_ECNH')applyPerpTabUI('PERP_ECNH');
-    if(mode==='PERP_EU')  applyPerpTabUI('PERP_EU');
+    // v0.0.5.b: apply to the currently-visible perp tab (global applyPerpTabUI syncs prices+GO+swaps)
+    if(mode==='PERP_UCNH'||mode==='PERP_ECNH'||mode==='PERP_EU')applyPerpTabUI(mode);
     mxOk=Object.keys(mx).length;
     // Build details — show front-month per instrument to keep message short
     for(const[k,v] of Object.entries(MODES)){
@@ -3824,17 +3836,8 @@ async function fetchPrices(){
         PERP_STATE[tk].swapInfo='⚠ '+v.error;
       }
     }
-    // If a perpetual tab is open — prefill its swap fields with the fresh averages
-    function applyPerpSwaps(key){
-      const cfg=PERP_CONFIG[key];if(!cfg)return;
-      const p=cfg.prefix;
-      const s1=PERP_STATE[cfg.leg1.ticker], s2=PERP_STATE[cfg.leg2.ticker];
-      if(s1&&s1.swapAvg!=null)$(p+'SwapL1').value=s1.swapAvg.toFixed(4);
-      if(s2&&s2.swapAvg!=null)$(p+'SwapL2').value=s2.swapAvg.toFixed(4);
-      if(s1)$(p+'SwapL1Info').textContent=s1.swapInfo||'';
-      if(s2)$(p+'SwapL2Info').textContent=s2.swapInfo||'';
-    }
-    applyPerpSwaps('PERP_UCNH');applyPerpSwaps('PERP_ECNH');applyPerpSwaps('PERP_EU');
+    // v0.0.5.b: refresh all three perp tabs regardless of which is active (so switching later shows fresh SWAPRATE)
+    applyPerpTabUI('PERP_UCNH');applyPerpTabUI('PERP_ECNH');applyPerpTabUI('PERP_EU');
     details.push('SWAPRATE:'+perpOk+'/3');
   }catch(e){details.push('SWAPRATE:⚠'+String(e.message||e).slice(0,30));}
 
