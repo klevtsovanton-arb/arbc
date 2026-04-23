@@ -140,7 +140,6 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPall"      data-cat="METAL"  onclick="switchTo('PALL')">Palladium</button>
       <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
       <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
-      <button class="tab" id="tabCryTri"    data-cat="CRYPTO" onclick="showStub('CRY_TRI')" style="font-size:11px">₿ BTC/ETH/ETHBTC</button>
       <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="showStub('BRENT')" style="font-size:12px">🛢 Brent</button>
       <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
       <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
@@ -161,7 +160,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.d</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.e</p>
     </div>
   </div>
 
@@ -1051,7 +1050,7 @@ const CATEGORY_MAP={
   CUR_TRI:   ['tabTriple','tabTripleEu','tabTripleU'],
   PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx'],
   METAL:     ['tabGold','tabSilver','tabPlat','tabPall'],
-  CRYPTO:    ['tabBTC','tabETH','tabCryTri'],
+  CRYPTO:    ['tabBTC','tabETH'],
   COMM:      ['tabBrent','tabGas','tabCopper'],
   PORTFOLIO: ['tabPortfolio']
 };
@@ -1065,9 +1064,6 @@ const STUB_CONTENT={
   PERP_GLD_FX:{icon:'♾️',title:'Золото-вечник vs форексный XAU/USD',
     plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> XAU/USD на форексе<br>То же золото, но теперь против форекса — ловим раздвижку биржа⇄OTC.',
     ver:'Движок — <b>v0.0.7</b>.'},
-  CRY_TRI:{icon:'₿',title:'Крипто-тройничок — BTCUSDT × ETHUSDT vs ETHBTC',
-    plan:'<b>Формула синтетики:</b> <code>ETHUSDT / BTCUSDT = ETH/BTC</code><br><b>Против:</b> Bitget-перпетуал <code>ETHBTC</code><br><b>Особенности:</b> три ноги, три fundingRate (каждые 8 часов), ликвидация на бирже ≈ моржа при &lt;95% своих.',
-    ver:'Движок — <b>v0.0.6</b>.'},
   BRENT:{icon:'🛢',title:'Brent — сырая нефть',
     plan:'<b>Ноги:</b> фьюч BR на МОЕХ (в $/баррель) vs форексный UKOIL / CL.<br><b>Особенности:</b> баррели вместо унций/пипсов, ежемесячная экспирация, контанго/бэквордация сильно зависят от запасов.',
     ver:'Движок — <b>v0.0.5</b>.'},
@@ -1118,7 +1114,7 @@ function showStub(key){
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
-  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_MX:'tabPerpGldMx',PERP_GLD_FX:'tabPerpGldFx',CRY_TRI:'tabCryTri',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_MX:'tabPerpGldMx',PERP_GLD_FX:'tabPerpGldFx',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
   document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
   const activeTab=stubTabMap[key];
   if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
@@ -1396,7 +1392,7 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabCryTri','tabBrent','tabGas','tabCopper','tabPortfolio'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabGas','tabCopper','tabPortfolio'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
