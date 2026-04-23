@@ -161,7 +161,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.b</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.c</p>
     </div>
   </div>
 
@@ -3542,10 +3542,25 @@ function calcPerp(key){
   $(p+'AnnB').textContent='~'+annB.toFixed(0)+'%';
   $(p+'Cap').textContent='$'+fm(totCap,0);
 
-  // Live hints for funding fields
+  // v0.0.5.c: rich funding hint — raw average + per-contract/day + actual P&L impact for current size
   const st1=PERP_STATE[cfg.leg1.ticker], st2=PERP_STATE[cfg.leg2.ticker];
-  if(st1&&st1.swapInfo)$(p+'SwapL1Info').textContent=st1.swapInfo;
-  if(st2&&st2.swapInfo)$(p+'SwapL2Info').textContent=st2.swapInfo;
+  function fundHint(st, swapVal, legLotVol, contracts, legDir, ticker){
+    const rawInfo = st && st.swapInfo ? st.swapInfo : 'нет истории';
+    const perContractDay = swapVal * legLotVol; // ₽/контракт/день
+    const totalRub = -legDir * swapVal * legLotVol * contracts * days; // our P&L in ₽
+    const totalUsd = totalRub / rub;
+    const perDayUsd = totalUsd / Math.max(1, days);
+    const sign = totalRub >= 0 ? '+' : '−';
+    const sideLbl = legDir > 0 ? 'long' : 'short';
+    const col = totalRub >= 0 ? 'var(--green)' : 'var(--red)';
+    return rawInfo
+      + '<br>→ 1 контр = <b>' + perContractDay.toFixed(2) + ' ₽/день</b>'
+      + ' · твои ' + contracts + ' контр × ' + days + ' дн ['+sideLbl+']: '
+      + '<b style="color:' + col + '">' + sign + fm(Math.abs(Math.round(totalRub))) + ' ₽ '
+      + '(' + sign + '$' + fm(Math.abs(totalUsd), 0) + ')</b>';
+  }
+  $(p+'SwapL1Info').innerHTML = fundHint(st1, swL1, LOT1, n1,  dir1, cfg.leg1.ticker);
+  $(p+'SwapL2Info').innerHTML = fundHint(st2, swL2, LOT2, n2,  dir2, cfg.leg2.ticker);
 
   // Capital usage + costs panel
   const freeFx=fxCap-fxMarg;
@@ -3662,8 +3677,9 @@ $('inDays').value=daysToExp(MODES[mode].exp);
 // === LIVE PRICES ===
 
 function setFetchUI(msg,color,disabled){
-  ['btnFetch','btnFetchOvw','btnFetchTriple','btnFetchTripleEu'].forEach(id=>{const b=$(id);if(b){b.disabled=disabled;b.style.opacity=disabled?'.5':'1';}});
-  ['fetchStatus','fetchStatusOvw','fetchStatusTriple','fetchStatusTripleEu'].forEach(id=>{const s=$(id);if(s){s.textContent=msg;s.style.color=color;}});
+  // v0.0.5.c: include TRIPLE_USD and all three perpetual tabs in the status feedback
+  ['btnFetch','btnFetchOvw','btnFetchTriple','btnFetchTripleEu','btnFetchTripleU','btnFetchPu','btnFetchPe','btnFetchPr'].forEach(id=>{const b=$(id);if(b){b.disabled=disabled;b.style.opacity=disabled?'.5':'1';}});
+  ['fetchStatus','fetchStatusOvw','fetchStatusTriple','fetchStatusTripleEu','fetchStatusTripleU','fetchStatusPu','fetchStatusPe','fetchStatusPr'].forEach(id=>{const s=$(id);if(s){s.textContent=msg;s.style.color=color;}});
 }
 
 async function fetchPrices(){
@@ -3823,7 +3839,8 @@ async function fetchPrices(){
   // v0.0.5: fetch 30-day average SWAPRATE for perpetual legs via worker /moex-history
   let perpOk=0;
   try{
-    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/moex-history?t=USDRUBF,CNYRUBF,EURRUBF&days=30');
+    // v0.0.5.c: window shrunk to 10 days (was 30) — reflects recent funding regime better
+    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/moex-history?t=USDRUBF,CNYRUBF,EURRUBF&days=10');
     const d=await r.json();
     for(const tk of ['USDRUBF','CNYRUBF','EURRUBF']){
       const v=d[tk];
