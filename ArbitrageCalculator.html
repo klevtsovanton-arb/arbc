@@ -87,25 +87,64 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .capspin{display:inline-flex;flex-direction:column;gap:1px;margin-left:4px;vertical-align:middle}
 .capspin button{border:1px solid var(--border);background:var(--inp);color:var(--tl);width:18px;height:12px;font-size:9px;line-height:1;padding:0;cursor:pointer;font-family:inherit;border-radius:2px}
 .capspin button:hover{background:#0E3460;color:var(--cyan)}
+.cat-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.cat-tab{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid var(--border);color:var(--tm);background:transparent;transition:all .15s;font-family:inherit;text-transform:uppercase;letter-spacing:.3px}
+.cat-tab:hover{border-color:var(--cyan);color:var(--tl)}
+.cat-tab.on{color:#000;border-color:transparent}
+.tab.hidden-by-cat{display:none !important}
+.stub-panel{background:var(--card);border:1.5px dashed var(--border);border-radius:12px;padding:40px 24px;text-align:center;margin:20px 0}
+.stub-panel .stub-icon{font-size:48px;margin-bottom:12px}
+.stub-panel .stub-title{font-size:20px;font-weight:900;color:var(--tw);margin-bottom:8px}
+.stub-panel .stub-sub{font-size:14px;color:var(--tl);margin-bottom:16px}
+.stub-panel .stub-plan{display:inline-block;text-align:left;background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--tl);line-height:1.7;max-width:640px}
+.stub-panel .stub-plan b{color:var(--tw)}
+.stub-panel .stub-plan code{background:var(--bg);padding:1px 6px;border-radius:3px;color:var(--cyan);font-size:12px;font-family:'Consolas',monospace}
+.stub-panel .stub-ver{font-size:11px;color:var(--tm);margin-top:14px}
+.ovw-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;background:var(--inp);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:12px}
+.ovw-filter .lbl{color:var(--tm);font-weight:700;margin-right:4px}
+.ovw-filter label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:3px 8px;border-radius:5px;transition:background .15s}
+.ovw-filter label:hover{background:rgba(0,180,216,.08)}
+.ovw-filter input[type=checkbox]{cursor:pointer;accent-color:var(--cyan);width:14px;height:14px}
+tr.ovw-row-hidden{display:none !important}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hdr">
     <div class="hdr-left">
+    <div class="cat-tabs" id="catTabs">
+      <button class="cat-tab on" data-cat="ALL"       onclick="filterByCategory('ALL')"      >🔍 Все</button>
+      <button class="cat-tab"    data-cat="CUR"       onclick="filterByCategory('CUR')"      >💱 Валюты</button>
+      <button class="cat-tab"    data-cat="CUR_TRI"   onclick="filterByCategory('CUR_TRI')"  >🔗 Вал.тройнички</button>
+      <button class="cat-tab"    data-cat="PERP_TRI"  onclick="filterByCategory('PERP_TRI')" >♾️ Вечники</button>
+      <button class="cat-tab"    data-cat="METAL"     onclick="filterByCategory('METAL')"    >🥇 Металлы</button>
+      <button class="cat-tab"    data-cat="CRYPTO"    onclick="filterByCategory('CRYPTO')"   >₿ Крипта</button>
+      <button class="cat-tab"    data-cat="COMM"      onclick="filterByCategory('COMM')"     >🛢 Товары</button>
+      <button class="cat-tab"    data-cat="PORTFOLIO" onclick="filterByCategory('PORTFOLIO')">💼 Мои позиции</button>
+    </div>
     <div class="tabs">
-      <button class="tab on" id="tabOvw" onclick="switchTo('OVW')" style="font-size:13px;background:var(--green)">📊 Обзор</button>
-      <button class="tab" id="tabEU" onclick="switchTo('EURUSD')">EUR/USD</button>
-      <button class="tab" id="tabUCNY" onclick="switchTo('UCNY')">USD/CNH</button>
-      <button class="tab" id="tabTriple" onclick="switchTo('TRIPLE')" style="font-size:12px">Si/Cr/USDCNH</button>
-      <button class="tab" id="tabTripleEu" onclick="switchTo('TRIPLE_EU')" style="font-size:12px">Eu/Cr/EURCNH</button>
-      <button class="tab" id="tabTripleU" onclick="switchTo('TRIPLE_USD')" style="font-size:12px">Eu/Si/EURUSD</button>
-      <button class="tab" id="tabGold" onclick="switchTo('GOLD')">Gold</button>
-      <button class="tab" id="tabSilver" onclick="switchTo('SILVER')">Silver</button>
-      <button class="tab" id="tabPlat" onclick="switchTo('PLAT')">Platinum</button>
-      <button class="tab" id="tabPall" onclick="switchTo('PALL')">Palladium</button>
-      <button class="tab" id="tabBTC" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
-      <button class="tab" id="tabETH" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
+      <button class="tab on" id="tabOvw"    data-cat="OVW"    onclick="switchTo('OVW')" style="font-size:13px;background:var(--green)">📊 Обзор</button>
+      <button class="tab" id="tabEU"        data-cat="CUR"    onclick="switchTo('EURUSD')">EUR/USD</button>
+      <button class="tab" id="tabUCNY"      data-cat="CUR"    onclick="switchTo('UCNY')">USD/CNH</button>
+      <button class="tab" id="tabTriple"    data-cat="CUR_TRI" onclick="switchTo('TRIPLE')" style="font-size:12px">Si/Cr/USDCNH</button>
+      <button class="tab" id="tabTripleEu"  data-cat="CUR_TRI" onclick="switchTo('TRIPLE_EU')" style="font-size:12px">Eu/Cr/EURCNH</button>
+      <button class="tab" id="tabTripleU"   data-cat="CUR_TRI" onclick="switchTo('TRIPLE_USD')" style="font-size:12px">Eu/Si/EURUSD</button>
+      <button class="tab" id="tabPerpUCNH"  data-cat="PERP_TRI" onclick="showStub('PERP_UCNH')" style="font-size:11px">♾️ USDRUBF÷CNYRUBF/UCNH</button>
+      <button class="tab" id="tabPerpECNH"  data-cat="PERP_TRI" onclick="showStub('PERP_ECNH')" style="font-size:11px">♾️ EURRUBF÷CNYRUBF/ECNH</button>
+      <button class="tab" id="tabPerpEU"    data-cat="PERP_TRI" onclick="showStub('PERP_EU')"   style="font-size:11px">♾️ EURRUBF÷USDRUBF/EU</button>
+      <button class="tab" id="tabPerpGldMx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_MX')" style="font-size:11px">♾️ GLDRUBF/Si vs GD</button>
+      <button class="tab" id="tabPerpGldFx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_FX')" style="font-size:11px">♾️ GLDRUBF/Si vs XAU</button>
+      <button class="tab" id="tabGold"      data-cat="METAL"  onclick="switchTo('GOLD')">Gold</button>
+      <button class="tab" id="tabSilver"    data-cat="METAL"  onclick="switchTo('SILVER')">Silver</button>
+      <button class="tab" id="tabPlat"      data-cat="METAL"  onclick="switchTo('PLAT')">Platinum</button>
+      <button class="tab" id="tabPall"      data-cat="METAL"  onclick="switchTo('PALL')">Palladium</button>
+      <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
+      <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
+      <button class="tab" id="tabCryTri"    data-cat="CRYPTO" onclick="showStub('CRY_TRI')" style="font-size:11px">₿ BTC/ETH/ETHBTC</button>
+      <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="showStub('BRENT')" style="font-size:12px">🛢 Brent</button>
+      <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
+      <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
+      <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="showStub('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
     <div class="contract-pills" id="contractPills" style="display:none">
       <button class="cpill on" id="cpM" onclick="switchContract('M')">Июн 26</button>
@@ -122,7 +161,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.3.a</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.4.c</p>
     </div>
   </div>
 
@@ -162,6 +201,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <div class="card" style="overflow-x:auto">
       <div class="card-t" style="color:var(--cyan)">📊 Все инструменты — оптимальный капитал при <span style="text-transform:none">σ</span> ≥ 1.2</div>
+      <div class="ovw-filter" id="ovwCatFilter">
+        <span class="lbl">Категории:</span>
+        <label><input type="checkbox" data-cat="currency"        checked onchange="applyOvwFilter()"> 💱 Валюты</label>
+        <label><input type="checkbox" data-cat="currency_triple" checked onchange="applyOvwFilter()"> 🔗 Вал.тройнички</label>
+        <label><input type="checkbox" data-cat="metal"           checked onchange="applyOvwFilter()"> 🥇 Металлы</label>
+        <label><input type="checkbox" data-cat="crypto"          checked onchange="applyOvwFilter()"> ₿ Крипта</label>
+      </div>
       <div style="font-size:11px;color:var(--tm);margin-bottom:8px;line-height:1.5;">
         <span style="color:var(--green);font-weight:800">✓ NET</span> — все колонки «Лучший/Худший NET», «ROI», «Год.» уже <b>за вычетом свопов, РЕПО, комиссий и FX-спреда</b>. Наведи курсор на NET-ячейку → покажет расклад затрат.
         <br><span style="color:var(--tm)">«Спред» — gross-раздвижка фьючерс vs спот, для справки.</span>
@@ -489,6 +535,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
   </div>
 
+  <!-- Plug panel for sections under development -->
+  <div id="stubContent" style="display:none">
+    <div class="stub-panel">
+      <div class="stub-icon" id="stubIcon">⏳</div>
+      <div class="stub-title" id="stubTitle">Раздел в разработке</div>
+      <div class="stub-sub" id="stubSub">Каркас готов, движок расчётов появится в следующих версиях.</div>
+      <div class="stub-plan" id="stubPlan"></div>
+      <div class="stub-ver" id="stubVer"></div>
+    </div>
+  </div>
+
   <div id="mainContent" style="display:none">
   <div class="grid">
     <!-- COL 1: Inputs -->
@@ -646,6 +703,124 @@ let mode='EURUSD';
 let currentContract='M'; // M=Июн, U=Сен, Z=Дек
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25};
 const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
+
+// === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
+const ASSET_TYPES={
+  EURUSD:'currency', UCNY:'currency',
+  GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
+  BTC:'crypto', ETH:'crypto',
+  TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple'
+};
+// Category → list of tab IDs. ALL = no filter.
+const CATEGORY_MAP={
+  ALL:       null,
+  OVW:       ['tabOvw'],
+  CUR:       ['tabEU','tabUCNY'],
+  CUR_TRI:   ['tabTriple','tabTripleEu','tabTripleU'],
+  PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx'],
+  METAL:     ['tabGold','tabSilver','tabPlat','tabPall'],
+  CRYPTO:    ['tabBTC','tabETH','tabCryTri'],
+  COMM:      ['tabBrent','tabGas','tabCopper'],
+  PORTFOLIO: ['tabPortfolio']
+};
+const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR_TRI:'var(--orange)',PERP_TRI:'#9333EA',METAL:'var(--gold)',CRYPTO:'#F7931A',COMM:'#D97706',PORTFOLIO:'#EC4899'};
+
+// Stub content for sections under development
+const STUB_CONTENT={
+  PERP_UCNH:{icon:'♾️',title:'Тройничок вечников — USDRUBF ÷ CNYRUBF vs USD/CNH',
+    plan:'<b>Формула синтетики:</b> <code>USDRUBF / CNYRUBF = USD/CNH</code><br><b>Против:</b> форексный USD/CNH<br><b>Особенности:</b> нет экспирации, фандинг раз в сутки (спецификация — <code>moex.com/a8493</code>), расчёт дневной стоимости удержания из прайсинга контрактов.<br><b>Новые параметры:</b> ставка фандинга каждой ноги, время клиринга, отсутствие экспирации (вместо неё — «горизонт удержания»).',
+    ver:'Движок появится в <b>v0.0.7</b> после добавления маршрута <code>/moex-perp</code> на воркере.'},
+  PERP_ECNH:{icon:'♾️',title:'Тройничок вечников — EURRUBF ÷ CNYRUBF vs EUR/CNH',
+    plan:'<b>Формула синтетики:</b> <code>EURRUBF / CNYRUBF = EUR/CNH</code><br><b>Против:</b> форексный EUR/CNH<br>Аналог евровального тройничка, но из вечников без экспирации.',
+    ver:'Движок — <b>v0.0.7</b>.'},
+  PERP_EU:{icon:'♾️',title:'Тройничок вечников — EURRUBF ÷ USDRUBF vs EUR/USD',
+    plan:'<b>Формула синтетики:</b> <code>EURRUBF / USDRUBF = EUR/USD</code><br><b>Против:</b> форексный EUR/USD<br>Третий сторонний путь собрать EUR/USD на МОЕХ — через вечники без экспирации (альтернатива фьючам Eu/Si).',
+    ver:'Движок — <b>v0.0.7</b>.'},
+  PERP_GLD_MX:{icon:'♾️',title:'Золото-вечник vs фьючерс МОЕХ — GLDRUBF vs GD',
+    plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> фьючерс Gold (GD) на МОЕХ<br>Арбитраж между вечником золота и его же фьючерсом — через доллар-Si как переход от ₽/грамм к $/унция.',
+    ver:'Движок — <b>v0.0.7</b>.'},
+  PERP_GLD_FX:{icon:'♾️',title:'Золото-вечник vs форексный XAU/USD',
+    plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> XAU/USD на форексе<br>То же золото, но теперь против форекса — ловим раздвижку биржа⇄OTC.',
+    ver:'Движок — <b>v0.0.7</b>.'},
+  CRY_TRI:{icon:'₿',title:'Крипто-тройничок — BTCUSDT × ETHUSDT vs ETHBTC',
+    plan:'<b>Формула синтетики:</b> <code>ETHUSDT / BTCUSDT = ETH/BTC</code><br><b>Против:</b> Bitget-перпетуал <code>ETHBTC</code><br><b>Особенности:</b> три ноги, три fundingRate (каждые 8 часов), ликвидация на бирже ≈ моржа при &lt;95% своих.',
+    ver:'Движок — <b>v0.0.6</b>.'},
+  BRENT:{icon:'🛢',title:'Brent — сырая нефть',
+    plan:'<b>Ноги:</b> фьюч BR на МОЕХ (в $/баррель) vs форексный UKOIL / CL.<br><b>Особенности:</b> баррели вместо унций/пипсов, ежемесячная экспирация, контанго/бэквордация сильно зависят от запасов.',
+    ver:'Движок — <b>v0.0.5</b>.'},
+  GAS:{icon:'🔥',title:'Natural Gas — природный газ',
+    plan:'<b>Ноги:</b> фьюч NG на МОЕХ vs форексный NGAS.<br><b>Особенности:</b> бешеная волатильность, сезонность, контракты MMBtu.',
+    ver:'Движок — <b>v0.0.5</b>.'},
+  COPPER:{icon:'🟠',title:'Copper — медь',
+    plan:'<b>Ноги:</b> фьюч CU на МОЕХ vs форексный Copper / HG (CME).<br><b>Особенности:</b> тонны/фунты, индустриальный спрос, коррелирует с металлами.',
+    ver:'Движок — <b>v0.0.5</b>.'},
+  PORTFOLIO:{icon:'💼',title:'Мои позиции — портфель и реальный P&L',
+    plan:'<b>Что будет:</b><br>• Таблица открытых позиций: инструмент, направление, лоты, цена входа, дата входа<br>• Риалтайм-обсчёт NET P&L (гросс − накопленные свопы − РЕПО − комиссии)<br>• Сценарии схождения по каждой позиции с учётом <b>уже накопленных</b> издержек<br>• Матрица корреляций ног → уточнённая σ портфеля (не по одной позиции, а по всему счёту)<br>• Ребаланс на уровне портфеля',
+    ver:'Каркас — <b>v0.0.5</b>, движок NET — <b>v0.0.8</b>, корреляции — <b>v0.0.9</b>.'}
+};
+
+let currentCategory='ALL';
+function filterByCategory(cat){
+  currentCategory=cat;
+  // highlight chosen cat-tab
+  document.querySelectorAll('.cat-tab').forEach(b=>{
+    if(b.dataset.cat===cat){b.classList.add('on');b.style.background=CATEGORY_COLOR[cat]||'var(--cyan)';}
+    else{b.classList.remove('on');b.style.background='';}
+  });
+  // filter instrument tabs
+  const allow=CATEGORY_MAP[cat];
+  document.querySelectorAll('.tabs .tab').forEach(t=>{
+    if(cat==='ALL')t.classList.remove('hidden-by-cat');
+    else{
+      // OVW is always visible
+      if(t.id==='tabOvw'||(allow&&allow.includes(t.id)))t.classList.remove('hidden-by-cat');
+      else t.classList.add('hidden-by-cat');
+    }
+  });
+  // apply filter to overview table if we're on overview
+  if(mode==='OVW')applyOvwFilter();
+}
+
+function showStub(key){
+  const s=STUB_CONTENT[key];if(!s)return;
+  // hide all modes
+  $('ovwContent').style.display='none';
+  $('mainContent').style.display='none';
+  $('tripleContent').style.display='none';
+  $('tripleEuContent').style.display='none';
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+  $('contractPills').style.display='none';
+  {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+  // clear active state on instrument tabs
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
+  allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
+  // activate stub tab
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_MX:'tabPerpGldMx',PERP_GLD_FX:'tabPerpGldFx',CRY_TRI:'tabCryTri',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
+  document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
+  const activeTab=stubTabMap[key];
+  if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
+  // render
+  $('stubIcon').textContent=s.icon;
+  $('stubTitle').textContent=s.title;
+  $('stubPlan').innerHTML=s.plan;
+  $('stubVer').innerHTML=s.ver;
+  $('stubContent').style.display='';
+  mode='STUB_'+key;
+  $('hdrTitle').textContent=s.title;
+  $('hdrSub').textContent='⏳ В разработке';
+}
+
+// Filter rows in overview table by category checkboxes
+function applyOvwFilter(){
+  const boxes=document.querySelectorAll('#ovwCatFilter input[type=checkbox]');
+  const active=new Set();
+  boxes.forEach(b=>{if(b.checked)active.add(b.dataset.cat);});
+  document.querySelectorAll('#ovwBody tr').forEach(tr=>{
+    const c=tr.dataset.cat;
+    if(!c||active.has(c))tr.classList.remove('ovw-row-hidden');
+    else tr.classList.add('ovw-row-hidden');
+  });
+}
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95};
 const CONTRACT_LABELS={J:'Апр 26',K:'Май 26',M:'Июн 26',N:'Июл 26',U:'Сен 26',Z:'Дек 26'};
 const CONTRACT_SHORT ={J:'4.26',K:'5.26',M:'6.26',N:'7.26',U:'9.26',Z:'12.26'};
@@ -854,14 +1029,15 @@ function switchTo(m){
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
-  allTabs.forEach(t=>{$(t).className='tab';$(t).style.background='';});
+  // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
+  allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
 
   if(m==='OVW'){
     mode='OVW';
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
-    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';
+    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
     $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
@@ -873,7 +1049,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE||'M';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     $('tripleContent').style.display='';
     const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
     if(td){
@@ -895,7 +1071,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE_EU||'M';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     $('tripleEuContent').style.display='';
     const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
     if(te){
@@ -917,7 +1093,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE_USD||'M';
     $('tabTripleU').className='tab on';$('tabTripleU').style.background='#3B82F6';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     $('tripleUContent').style.display='';
     const tu=TRIPLE_DATA.TRIPLE_USD.contracts[currentContract];
     if(tu){
@@ -941,7 +1117,7 @@ function switchTo(m){
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
   $('mainContent').style.display='';
   // Show correct pill row: crypto has 4 contracts (J/K/M/N), others have 3 (M/U/Z)
   if(p.isCrypto){
@@ -1598,6 +1774,8 @@ function renderOvwSort(){
     activeInd.textContent = ovwSortDir==='desc' ? '▼' : '▲';
     activeInd.parentElement.classList.add('active');
   }
+  // v0.0.4: re-apply category filter after re-render/re-sort
+  if(typeof applyOvwFilter==='function')applyOvwFilter();
 }
 
 function calcOvw(){
@@ -1748,6 +1926,7 @@ function calcOvw(){
 
     const tr=document.createElement('tr');
     tr.style.cursor='pointer';
+    tr.dataset.cat=ASSET_TYPES[key]||'currency';
     const _key=key,_ckey=ckey;
     tr.onclick=()=>{savedContract[_key]=_ckey;switchTo(_key);};
     tr.innerHTML=`
@@ -1847,6 +2026,7 @@ function calcOvw(){
     const ctLabelT=CONTRACT_LABELS[ckey]||ckey;
     const trT=document.createElement('tr');
     trT.style.cursor='pointer';
+    trT.dataset.cat='currency_triple';
     const _ckT=ckey;
     trT.onclick=()=>{savedContract.TRIPLE=_ckT;switchTo('TRIPLE');};
     trT.innerHTML=`
@@ -1947,6 +2127,7 @@ function calcOvw(){
     const ctLabelE=CONTRACT_LABELS[ckey]||ckey;
     const trTE=document.createElement('tr');
     trTE.style.cursor='pointer';
+    trTE.dataset.cat='currency_triple';
     const _ckE=ckey;
     trTE.onclick=()=>{savedContract.TRIPLE_EU=_ckE;switchTo('TRIPLE_EU');};
     trTE.innerHTML=`
@@ -2045,6 +2226,7 @@ function calcOvw(){
     const ctLabelU=CONTRACT_LABELS[ckey]||ckey;
     const trTU=document.createElement('tr');
     trTU.style.cursor='pointer';
+    trTU.dataset.cat='currency_triple';
     const _ckU=ckey;
     trTU.onclick=()=>{savedContract.TRIPLE_USD=_ckU;switchTo('TRIPLE_USD');};
     trTU.innerHTML=`
@@ -2238,9 +2420,9 @@ function calcTriple(){
     const nSc=nSig>=1?'var(--green)':nSig>=.5?'var(--yellow)':'var(--red)';
     const transferTxt=diff>0
       ?'Перевести <b style="color:var(--yellow)">$'+fm(Math.round(amt))+'</b> с Forex → ₽ на МОЕХ'
-      :'Вывести <b style="color:var(--yellow)">'+fm(amtRub)+'₽</b> с МОЕХ → $'+fm(Math.round(amt))+' на '+(isCrypto?'Bitget':'Forex');
+      :'Вывести <b style="color:var(--yellow)">'+fm(amtRub)+'₽</b> с МОЕХ → $'+fm(Math.round(amt))+' на Forex';
     $('trRebContent').innerHTML=`<p>${transferTxt}</p>
-      <p>${isCrypto?'Bitget':'Forex'}: $${fm(nFx)} | МОЕХ: ${fm(Math.round(nMx/1000))}К₽</p>
+      <p>Forex: $${fm(nFx)} | МОЕХ: ${fm(Math.round(nMx/1000))}К₽</p>
       <p>Оба буфера: <b style="color:var(--green)">${Math.min(nFxBuf,nMxBuf).toFixed(1)}%</b> = <b style="color:${nSc}">${nSig.toFixed(2)}σ</b></p>`;
   } else {
     $('trRebContent').innerHTML='<p style="color:var(--tm)">Ребаланс не требуется — буферы сбалансированы</p>';
@@ -2265,7 +2447,7 @@ function calcTriple(){
     return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">'
       +'<div style="font-size:13px;font-weight:800;margin-bottom:6px">'+emoji+' '+title+'</div>'
       +'<div style="font-size:10px;color:var(--tm);margin-bottom:6px">'+desc+'</div>'
-      +'<div style="font-size:12px;color:var(--tl)">'+(isCrypto?'Bitget':'Forex')+': <b style="color:'+cF+'">'+(fxPnl>=0?'+':'')+'$'+fm(Math.round(fxPnl))+'</b></div>'
+      +'<div style="font-size:12px;color:var(--tl)">Forex: <b style="color:'+cF+'">'+(fxPnl>=0?'+':'')+'$'+fm(Math.round(fxPnl))+'</b></div>'
       +'<div style="font-size:12px;color:var(--tl)">МОЕХ: <b style="color:'+cM+'">'+(mxPnl>=0?'+':'')+fm(Math.round(mxRub))+'₽</b></div>'
       +'<div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">'
       +'<div style="font-size:11px;color:var(--tl)">Свопы: <b style="color:'+(swT>=0?'var(--green)':'var(--red)')+'">'+(swT>=0?'+':'')+'$'+fm(Math.round(swT))+'</b></div>'
@@ -2905,6 +3087,8 @@ mode='OVW';
 $('hdrTitle').textContent='Обзор всех инструментов';
 $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
 $('inDays').value=daysToExp(MODES.EURUSD.contracts.M.exp);
+// v0.0.4: initialize category navigation to "ALL"
+filterByCategory('ALL');
 calcOvw();
 // Auto-fetch on load
 fetchPrices();
