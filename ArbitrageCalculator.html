@@ -132,7 +132,7 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPerpUCNH"  data-cat="PERP_TRI" onclick="switchTo('PERP_UCNH')" style="font-size:11px">♾️ USDRUBF÷CNYRUBF/UCNH</button>
       <button class="tab" id="tabPerpECNH"  data-cat="PERP_TRI" onclick="switchTo('PERP_ECNH')" style="font-size:11px">♾️ EURRUBF÷CNYRUBF/ECNH</button>
       <button class="tab" id="tabPerpEU"    data-cat="PERP_TRI" onclick="switchTo('PERP_EU')"   style="font-size:11px">♾️ EURRUBF÷USDRUBF/EU</button>
-      <button class="tab" id="tabPerpGldMx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_MX')" style="font-size:11px">♾️ GLDRUBF/Si vs GD</button>
+      <button class="tab" id="tabPerpGldMx" data-cat="PERP_TRI" onclick="switchTo('PERP_GLD_MX')" style="font-size:11px">♾️ GLDRUBF/Si vs GD</button>
       <button class="tab" id="tabPerpGldFx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_FX')" style="font-size:11px">♾️ GLDRUBF/Si vs XAU</button>
       <button class="tab" id="tabGold"      data-cat="METAL"  onclick="switchTo('GOLD')">Gold</button>
       <button class="tab" id="tabSilver"    data-cat="METAL"  onclick="switchTo('SILVER')">Silver</button>
@@ -160,7 +160,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.6.b</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.a</p>
     </div>
   </div>
 
@@ -869,6 +869,106 @@ tr.ovw-row-hidden{display:none !important}
     </div>
   </div>
 
+  <!-- GOLD TRIPLE #1 (Klevtsov fair-spread model): GLDRUBF × 31.1 × 100000 / (Si × GD) -->
+  <div id="gldMxContent" style="display:none">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:var(--gold)">🥇 Цены трёх ног (МОЕХ)</div>
+          <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="9000" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>Si-<span id="gmLblSi">6.26</span> (₽/1000$)</label><input id="gmSi" type="number" step="1" value="76310" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>GD-<span id="gmLblGd">6.26</span> ($/унц.)</label><input id="gmGd" type="number" step="0.1" value="3900" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="77" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Дней до экспирации GD</label><input id="gmDaysToExp" type="number" step="1" value="57" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
+          <div class="row"><label>Дней в квартале</label><input id="gmQdays" type="number" step="1" value="92" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
+          <div class="row"><label>Ставка ЦБ</label><input id="gmCbr" type="number" step="0.5" value="16" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
+          <div class="row"><label>Дней удержания</label><input id="gmDays" type="number" step="1" value="5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
+          <div class="row"><label>IV спреда</label><input id="gmIV" type="number" step="0.5" value="7.5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <button onclick="fetchPrices()" id="btnFetchGm" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+          <div id="fetchStatusGm" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💰 Капитал МОЕХ (все 3 ноги на проп-счёте)</div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="gmMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('gmMxOwn');fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="gmPropLev" type="number" step="0.5" value="5" oninput="syncCap('gmPropLev');calcGldMx()" onchange="calcGldMx()"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="gmMxRisk" type="number" step="5" value="50" oninput="syncCap('gmMxRisk');calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
+          <div class="row"><label>ГО GLDRUBF</label><input id="gmGoGold" type="text" inputmode="numeric" value="900" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО Si</label><input id="gmGoSi" type="text" inputmode="numeric" value="12 267" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО GD</label><input id="gmGoGd" type="text" inputmode="numeric" value="30 000" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 Издержки</div>
+          <div class="row"><label>Фандинг GLDRUBF</label><input id="gmSwap" type="number" step="0.001" value="0.10" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/г/дн</div></div>
+          <div class="hint"><span id="gmSwapInfo" style="color:var(--yellow);font-weight:700">—</span> <span style="color:var(--tm)">· знак «+» = лонг платит (мы short → получаем)</span></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="gmRepo" type="number" step="1" value="21" oninput="syncCap('gmRepo');calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
+          <div class="row"><label>Пейаут</label><input id="gmPayout" type="number" step="1" value="5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
+          <div class="row"><label>Комиссия/контракт</label><input id="gmComm" type="number" step="1" value="5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="big">
+            <div style="font-size:11px;color:var(--tm);margin-bottom:4px">ЗЕЛЁНЫЙ = факт · ЖЁЛТЫЙ = fair · α = зелёный − жёлтый</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div><div class="sub" style="color:var(--green)">Текущий</div><div class="num" id="gmSpreadCur" style="color:var(--green);font-size:28px">98.19</div></div>
+              <div><div class="sub" style="color:#E5C100">Справедливый</div><div class="num" id="gmSpreadFair" style="color:#E5C100;font-size:28px">97.62</div></div>
+            </div>
+            <div class="num" id="gmAlpha" style="color:var(--green);font-size:36px">+0.57%</div>
+            <div class="sub" id="gmAlphaHint" style="font-size:12px;color:var(--tl);margin-top:4px">Отлёт вверх — <b>Short GLDRUBF + Long Si + Long GD</b></div>
+          </div>
+          <div class="hint" style="margin-top:8px;color:var(--tm)">Порог «бери»: α ≥ 0.4% · fair = 100 / (1 + CBR/4 × dneyExp/kvartDney)</div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--yellow)">📏 Размер позиции</div>
+          <div class="slider-val" id="gmLotsDisp">100 GLDRUBF + 13 Si + 3 GD</div>
+          <div class="slider-box"><div style="display:flex;align-items:center;gap:8px">
+            <button onclick="adjGldMxLots(-1)" class="lot-btn">−</button>
+            <input id="gmLots" type="range" min="1" max="10000" step="1" value="100" oninput="calcGldMx()" onchange="calcGldMx()" style="flex:1">
+            <button onclick="adjGldMxLots(1)" class="lot-btn">+</button>
+          </div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span id="gmSlMin">1</span><span id="gmSlMax">10000</span></div>
+          <div class="hint" style="margin-top:6px">1 GD = 31.1 GLDRUBF (по весу) · Si хеджит долларовую составляющую GD</div>
+        </div>
+        <div class="card">
+          <div class="gauge"><div class="gauge-bar"><div class="gauge-fill" id="gmGaugeF"></div></div>
+            <div class="gauge-marks"><span>0</span><span>1σ</span><span>2σ</span><span>3σ</span></div></div>
+          <div class="gauge-label"><span class="val" id="gmGVal">1.20σ</span><br><span class="txt" id="gmGTxt">УМЕРЕННО</span><br><span class="sub" id="gmGSub">Шанс моржа: ~32%</span></div>
+        </div>
+        <div class="card">
+          <div class="buf-grid" style="grid-template-columns:1fr">
+            <div><div class="lbl">МОЕХ буфер</div><div class="val" id="gmBMx" style="color:var(--red)">300 К₽</div><div class="pct" id="gmBMxP">3%</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💵 P&L при возврате к fair за горизонт</div>
+          <div class="pl-row"><span class="l">Gross (α × notional)</span><span class="v" id="gmPlGross" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Фандинг GLDRUBF (шорт получает)</span><span class="v" id="gmPlFund" style="color:var(--green)">+$50</span></div>
+          <div class="pl-row"><span class="l">РЕПО на заёмную часть</span><span class="v" id="gmPlRepo" style="color:var(--red)">-$90</span></div>
+          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="gmPlComm" style="color:var(--red)">-$5</span></div>
+          <div class="pl-row"><span class="l">Пейаут пропу (5% с NET)</span><span class="v" id="gmPlPay" style="color:var(--red)">-$28</span></div>
+          <div class="net-row"><span class="l">НЕТТО</span><span class="v" id="gmPlNet" style="color:var(--green)">+$527</span></div>
+        </div>
+        <div class="card">
+          <div class="roi-grid">
+            <div><div class="lbl">ROI</div><div class="val" id="gmRoi" style="color:var(--cyan)">4.1%</div></div>
+            <div><div class="lbl">Годовых</div><div class="val" id="gmAnn" style="color:var(--cyan)">~300%</div></div>
+            <div><div class="lbl">Капитал</div><div class="val" id="gmCap" style="color:var(--tl)">$13K</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-t" style="color:var(--yellow)">📊 Задействованный капитал</div>
+          <div id="gmCapUsage"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-t" style="color:var(--gold)">🎯 Четыре сценария</div>
+      <div id="gmScenConv" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px"></div>
+    </div>
+  </div>
+
   <!-- Plug panel for sections under development -->
   <div id="stubContent" style="display:none">
     <div class="stub-panel">
@@ -1044,7 +1144,8 @@ const ASSET_TYPES={
   GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
   BTC:'crypto', ETH:'crypto',
   TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple',
-  PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple'
+  PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple',
+  PERP_GLD_MX:'gold_triple'
 };
 // Category → list of tab IDs. ALL = no filter.
 const CATEGORY_MAP={
@@ -1062,9 +1163,6 @@ const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR
 
 // Stub content for sections under development
 const STUB_CONTENT={
-  PERP_GLD_MX:{icon:'♾️',title:'Золото-вечник vs фьючерс МОЕХ — GLDRUBF vs GD',
-    plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> фьючерс Gold (GD) на МОЕХ<br>Арбитраж между вечником золота и его же фьючерсом — через доллар-Si как переход от ₽/грамм к $/унция.',
-    ver:'Движок — <b>v0.0.7</b>.'},
   PERP_GLD_FX:{icon:'♾️',title:'Золото-вечник vs форексный XAU/USD',
     plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> XAU/USD на форексе<br>То же золото, но теперь против форекса — ловим раздвижку биржа⇄OTC.',
     ver:'Движок — <b>v0.0.7</b>.'},
@@ -1131,14 +1229,14 @@ function showStub(key){
   $('mainContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
   $('contractPills').style.display='none';
   {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
   // clear active state on instrument tabs
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
-  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_MX:'tabPerpGldMx',PERP_GLD_FX:'tabPerpGldFx',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_FX:'tabPerpGldFx',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
   document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
   const activeTab=stubTabMap[key];
   if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
@@ -1304,7 +1402,8 @@ const PERP_CONFIG={
 const PERP_STATE={
   USDRUBF:{price:77.00, go:7700, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   CNYRUBF:{price:11.21, go:1120, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
-  EURRUBF:{price:89.20, go:8920, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''}
+  EURRUBF:{price:89.20, go:8920, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
+  GLDRUBF:{price:9000,  go:900,  lotVol:1,    swapAvg:null, swapLast:null, swapInfo:''}
 };
 
 
@@ -1336,7 +1435,8 @@ const CAP_STEPS={
   tuFxCap:100, tuMxOwn:100000, tuGoEu:100, tuGoSi:100,
   puFxCap:100, puMxOwn:100000, puGoL1:100, puGoL2:100,
   peFxCap:100, peMxOwn:100000, peGoL1:100, peGoL2:100,
-  prFxCap:100, prMxOwn:100000, prGoL1:100, prGoL2:100
+  prFxCap:100, prMxOwn:100000, prGoL1:100, prGoL2:100,
+  gmMxOwn:100000, gmGoGold:10, gmGoSi:100, gmGoGd:10
 };
 function stepCap(id,dir){
   const step=CAP_STEPS[id]||1;
@@ -1352,6 +1452,7 @@ function stepCap(id,dir){
   if(id.startsWith('pu')){calcPerp&&calcPerp('PERP_UCNH');return;}
   if(id.startsWith('pe')){calcPerp&&calcPerp('PERP_ECNH');return;}
   if(id.startsWith('pr')){calcPerp&&calcPerp('PERP_EU');  return;}
+  if(id.startsWith('gm')){calcGldMx&&calcGldMx();return;}
   calc&&calc();
 }
 function injectCapSpins(){
@@ -1376,13 +1477,13 @@ if(document.readyState!=='loading') injectCapSpins();
 // capital that IS shared across instrument+triple tabs.
 const SHARED_CAP_GROUPS={
   fxCap:  ['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap'],
-  mxOwn:  ['inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn'],
-  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','puPropLev','pePropLev','prPropLev','ovwProp'],
-  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','puMxRisk','peMxRisk','prMxRisk','ovwRisk'],
+  mxOwn:  ['inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','gmMxOwn'],
+  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','puPropLev','pePropLev','prPropLev','gmPropLev','ovwProp'],
+  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','puMxRisk','peMxRisk','prMxRisk','gmMxRisk','ovwRisk'],
   // stopout intentionally NOT synced (crypto vs forex semantics differ)
-  repoAnn:['inRepo','trRepo','teRepo','tuRepo','puRepo','peRepo','prRepo','ovwRepo']
+  repoAnn:['inRepo','trRepo','teRepo','tuRepo','puRepo','peRepo','prRepo','gmRepo','ovwRepo']
 };
-const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap','inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','inGO','ovwRub','trGoSi','trGoCr','teGoEu','teGoCr','tuGoEu','tuGoSi','puGoL1','puGoL2','peGoL1','peGoL2','prGoL1','prGoL2']);
+const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap','inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','gmMxOwn','inGO','ovwRub','trGoSi','trGoCr','teGoEu','teGoCr','tuGoEu','tuGoSi','puGoL1','puGoL2','peGoL1','peGoL2','prGoL1','prGoL2','gmGoGold','gmGoSi','gmGoGd']);
 function syncCap(srcId){
   let key=null;
   for(const k in SHARED_CAP_GROUPS){if(SHARED_CAP_GROUPS[k].includes(srcId)){key=k;break;}}
@@ -1402,6 +1503,7 @@ function syncCap(srcId){
   else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
   else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
   else if(mode==='PERP_EU')calcPerp('PERP_EU');
+  else if(mode==='PERP_GLD_MX')calcGldMx();
   else if(mode!=='OVW')calc&&calc();
 }
 
@@ -1425,7 +1527,7 @@ function switchTo(m){
     mode='OVW';
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
-    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
+    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
     $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
@@ -1437,7 +1539,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE||'M';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
     $('tripleContent').style.display='';
     const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
     if(td){
@@ -1461,7 +1563,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE_EU||'M';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
     $('tripleEuContent').style.display='';
     const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
     if(te){
@@ -1480,6 +1582,31 @@ function switchTo(m){
     calcTripleEu();
     return;
   }
+  // v0.0.7: Gold triple — GLDRUBF × 31.1 × 100000 / (Si × GD) vs fair line
+  if(m==='PERP_GLD_MX'){
+    mode='PERP_GLD_MX';
+    $('tabPerpGldMx').classList.add('on');$('tabPerpGldMx').style.background='var(--gold)';
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    ['perpUcnhContent','perpEcnhContent','perpEuContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
+    $('gldMxContent').style.display='';
+    $('hdrTitle').textContent='Золотой тройничок GLDRUBF/Si vs GD';
+    $('hdrSub').textContent='Спред к fair-линии (ставка ЦБ/4) · шортим отлёты вверх, ловим alpha + фандинг';
+    // Pull live prices
+    const goldSt=PERP_STATE.GLDRUBF;
+    if(goldSt){
+      if(goldSt.price)$('gmGold').value=goldSt.price;
+      if(goldSt.go)setNum('gmGoGold',goldSt.go);
+      if(goldSt.swapAvg!=null)$('gmSwap').value=(+goldSt.swapAvg).toFixed(4);
+    }
+    // Si/GD from front-month (M)
+    const siFront=TRIPLE_DATA.TRIPLE.contracts.M;
+    if(siFront){$('gmSi').value=siFront.si; setNum('gmGoSi',siFront.siGo);}
+    const gdFront=MODES.GOLD&&MODES.GOLD.contracts&&MODES.GOLD.contracts.M;
+    if(gdFront){$('gmGd').value=gdFront.fut; setNum('gmGoGd',gdFront.go); $('gmDaysToExp').value=daysToExp(gdFront.exp); $('gmLblGd').textContent=CONTRACT_SHORT.M; $('gmLblSi').textContent=CONTRACT_SHORT.M;}
+    calcGldMx();
+    return;
+  }
   // v0.0.5: perpetual triples (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
   if(m==='PERP_UCNH'||m==='PERP_ECNH'||m==='PERP_EU'){
     const cfg=PERP_CONFIG[m];
@@ -1489,7 +1616,7 @@ function switchTo(m){
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     // hide other perp panels
-    ['perpUcnhContent','perpEcnhContent','perpEuContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
+    ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
     $(cfg.contentId).style.display='';
     $('hdrTitle').textContent=cfg.title;
     $('hdrSub').textContent=cfg.legend+' · горизонт удержания настраивается';
@@ -1531,7 +1658,7 @@ function switchTo(m){
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
   $('mainContent').style.display='';
   // Show correct pill row: crypto has 4 contracts (J/K/M/N), others have 3 (M/U/Z)
   if(p.isCrypto){
@@ -3687,6 +3814,205 @@ function calcPerp(key){
     +perpCard('Худший: просадка + пейаут','🔴',-moveUsd,gross+moveUsd,'FX просел на 80% буфера.');
 }
 
+// === v0.0.7 === GLDRUBF/Si vs GD (Klevtsov fair-spread model, all three legs on MOEX)
+// Spread formula: S = GLDRUB × 31.1 × 100000 / (Si × GD)  (normalized to ~100 at convergence)
+// Fair: F = 100 / (1 + (CBR/4) × daysToExp / quarterDays)
+// alpha = S_current − F. α > 0 = отлёт вверх → Short GLDRUBF + Long Si + Long GD (ждём возврат к F)
+function adjGldMxLots(dir){
+  const sl=$('gmLots');
+  let v=+sl.value+dir*(+sl.step);
+  v=Math.max(+sl.min,Math.min(+sl.max,v));
+  sl.value=v;
+  calcGldMx();
+}
+
+function calcGldMx(){
+  const GOLD=+$('gmGold').value, Si=+$('gmSi').value, GD=+$('gmGd').value, rub=+$('gmRub').value;
+  const daysToExp=Math.max(1,+$('gmDaysToExp').value||57);
+  const qdays=Math.max(1,+$('gmQdays').value||92);
+  const cbr=+$('gmCbr').value/100;
+  const days=Math.max(1,+$('gmDays').value||5);
+  const iv=+$('gmIV').value;
+  const mxOwn=nv('gmMxOwn'), propLev=+$('gmPropLev').value, mxRisk=+$('gmMxRisk').value/100;
+  const goGold=nv('gmGoGold'), goSi=nv('gmGoSi'), goGd=nv('gmGoGd');
+  const swap=+$('gmSwap').value; // SWAPRATE GLDRUBF ₽/грамм/день
+  const repoAnn=+$('gmRepo').value/100, payoutPct=+$('gmPayout').value/100;
+  const comm=+$('gmComm').value;
+
+  // Current spread and fair
+  const spread = GOLD * 31.1 * 100000 / (Si * GD);
+  const fair   = 100 / (1 + (cbr/4) * daysToExp / qdays);
+  const alpha  = spread - fair; // in points on the scale of 100 (= %)
+
+  $('gmSpreadCur').textContent = spread.toFixed(2);
+  $('gmSpreadFair').textContent = fair.toFixed(2);
+  $('gmAlpha').textContent = (alpha>=0?'+':'')+alpha.toFixed(3)+'%';
+
+  // Signal intensity — alpha >= 0.4% = signal "take it"
+  const alphaAbs = Math.abs(alpha);
+  let alphaColor, hintText;
+  if(alphaAbs >= 0.4){
+    alphaColor = alpha>0 ? 'var(--green)' : 'var(--orange)';
+    hintText = alpha>0
+      ? 'Отлёт вверх ≥0.4% — <b style="color:var(--green)">Short GLDRUBF + Long Si + Long GD</b>'
+      : 'Отлёт вниз ≥0.4% — <b style="color:var(--orange)">Long GLDRUBF + Short Si + Short GD</b> (редкая сторона)';
+  } else if(alphaAbs >= 0.1){
+    alphaColor = 'var(--yellow)';
+    hintText = 'α ниже порога 0.4% — наблюдаем';
+  } else {
+    alphaColor = 'var(--tm)';
+    hintText = 'Около справедливой — позы нет';
+  }
+  $('gmAlpha').style.color = alphaColor;
+  $('gmAlphaHint').innerHTML = hintText;
+  // Color current vs fair for visual feedback
+  $('gmSpreadCur').style.color = alpha>=0 ? 'var(--green)' : 'var(--orange)';
+
+  // Sizing — ползунок выбирает n1 (GLDRUBF в граммах). n3 и n2 считаются пропорционально.
+  // Max lots: сколько влезет в проп-капитал (mxOwn × propLev) с учётом ГО всех трёх ног
+  const pska = mxOwn * propLev;
+  const n3PerN1 = 1/31.1; // 1 GD per 31.1 GLDRUBF
+  const n2PerN1 = (GD / (1000 * 31.1)); // n2 = n3 × GD / 1000 = (n1/31.1) × GD / 1000
+  const goPerN1 = goGold + n2PerN1 * goSi + n3PerN1 * goGd;
+  const maxN1 = Math.floor(pska / goPerN1);
+  let mx = Math.max(1, Math.min(500000, maxN1));
+  let step;
+  if(mx<=100)step=1;else if(mx<=500)step=5;else if(mx<=2000)step=10;
+  else if(mx<=10000)step=50;else if(mx<=50000)step=100;else step=500;
+  mx = Math.round(mx/step)*step; if(mx<step)mx=step;
+  const sl = $('gmLots');
+  sl.min=step; sl.max=mx; sl.step=step;
+  let cur = +sl.value; cur = Math.round(cur/step)*step;
+  if(cur>mx)cur=mx; if(cur<+sl.min)cur=+sl.min;
+  sl.value = cur;
+  $('gmSlMin').textContent = step; $('gmSlMax').textContent = mx;
+
+  const n1 = +sl.value;
+  const n3 = Math.max(1, Math.round(n1 / 31.1));
+  const n2 = Math.max(1, Math.round(n3 * GD / 1000));
+  // Notional — "physical" USD notional of the gold leg (n3 GD контрактов × $/унция)
+  const notionalUsd = n3 * GD;
+  const notionalRub = notionalUsd * rub;
+
+  $('gmLotsDisp').textContent = fm(n1)+' GLDRUBF + '+fm(n2)+' Si + '+fm(n3)+' GD';
+
+  // Total GO and borrowing
+  const mxGoTotal = n1*goGold + n2*goSi + n3*goGd;
+  const bor = Math.max(0, mxGoTotal - mxOwn);
+  const repoT = bor * repoAnn / 365 * days / rub; // in $
+  const commTotal = (n1 + n2 + n3) * comm / rub;  // in $
+
+  // MOEX buffer and sigma
+  const mxSensPerPct = notionalRub / 100; // per 1% of spread movement
+  const mxBufRub = mxOwn * mxRisk;
+  const mxBufPct = mxSensPerPct>0 ? mxBufRub / mxSensPerPct : 0;
+  const sigP = iv/100 * Math.sqrt(days/365);
+  const sig = sigP>0 ? mxBufPct/100/sigP : 0;
+
+  $('gmBMx').textContent = fm(Math.round(mxBufRub/1000))+' К₽';
+  $('gmBMxP').textContent = mxBufPct.toFixed(1)+'%';
+  const sigPctG = Math.min(sig/3,1)*100;
+  const sc = sig>=2?'var(--green)':sig>=1?'var(--yellow)':sig>=.5?'var(--orange)':'var(--red)';
+  const sLbl = sig>=2?'КОМФОРТНО':sig>=1?'УМЕРЕННО':sig>=.5?'РИСКОВАННО':'ОПАСНО';
+  const bp = sig>=3?'<0.3':sig>=2?'<5':sig>=1?'~32':sig>=.5?'~62':'>68';
+  $('gmGaugeF').style.width = sigPctG+'%'; $('gmGaugeF').style.background = sc;
+  $('gmGVal').textContent = sig.toFixed(2)+'σ'; $('gmGVal').style.color = sc;
+  $('gmGTxt').textContent = sLbl; $('gmGTxt').style.color = sc;
+  $('gmGSub').textContent = 'Шанс моржа: ~'+bp+'%';
+
+  // P&L — gross from returning spread to fair
+  // When short spread (α>0): if spread goes DOWN by α, we gain (α/100) × notional_USD
+  // When long  spread (α<0): if spread goes UP by |α|, we gain (|α|/100) × notional_USD
+  const gross = alphaAbs/100 * notionalUsd;
+
+  // Funding on GLDRUBF — we short it (when α>0); positive SWAPRATE = long pays short = we receive
+  // Sign: dir = -1 (short) → we RECEIVE if swap>0
+  // fund_rub_per_day = swap × lotVol(1) × n1 (shorts receive +swap×n1 per day)
+  // If α<0 we'd be long GLDRUBF → pay; handled by sign of alpha direction
+  const dirGold = alpha>=0 ? -1 : +1; // -1 = short GLDRUBF
+  const fundRubPerDay = -dirGold * swap * 1 * n1; // positive if we receive
+  const fundTotalRub = fundRubPerDay * days;
+  const fundUsd = fundTotalRub / rub;
+
+  // Net
+  const netBefore = gross + fundUsd - repoT - commTotal;
+  const payW = netBefore > 0 ? netBefore * payoutPct : 0;
+  const net = netBefore - payW;
+
+  const totCap = mxOwn / rub; // весь капитал в $
+
+  $('gmPlGross').textContent = '+$'+fm(gross,0);
+  $('gmPlFund').textContent  = (fundUsd>=0?'+':'')+' $'+fm(fundUsd,0);
+  $('gmPlFund').style.color  = fundUsd>=0 ? 'var(--green)' : 'var(--red)';
+  $('gmPlRepo').textContent  = '-$'+fm(repoT,0);
+  $('gmPlComm').textContent  = '-$'+fm(commTotal,0);
+  $('gmPlPay').textContent   = '-$'+fm(payW,0);
+  $('gmPlNet').textContent   = (net>=0?'+':'')+' $'+fm(net,0);
+  $('gmPlNet').style.color   = net>=0 ? 'var(--green)' : 'var(--red)';
+  const roi = totCap>0 ? net/totCap*100 : 0;
+  const ann = days>0 ? roi/days*365 : 0;
+  $('gmRoi').textContent = roi.toFixed(1)+'%';
+  $('gmAnn').textContent = '~'+ann.toFixed(0)+'%';
+  $('gmCap').textContent = '$'+fm(totCap,0);
+
+  // Live swap hint from PERP_STATE
+  const st = PERP_STATE.GLDRUBF;
+  if(st && st.swapInfo){
+    $('gmSwapInfo').innerHTML =
+      st.swapInfo
+      + '<br>→ 1 контр (1 г) = <b>'+swap.toFixed(4)+' ₽/день</b>'
+      + ' · твои '+n1+' контр × '+days+' дн ['+(dirGold>0?'long':'short')+']: '
+      + '<b style="color:'+(fundTotalRub>=0?'var(--green)':'var(--red)')+'">'
+      + (fundTotalRub>=0?'+':'−')+fm(Math.abs(Math.round(fundTotalRub)))+' ₽ ('
+      + (fundTotalRub>=0?'+':'−')+'$'+fm(Math.abs(fundUsd),0)+')</b>';
+  }
+
+  // Capital usage
+  $('gmCapUsage').innerHTML =
+    '<div style="font-size:12px;color:var(--tl);line-height:1.7">'
+    + '<div>ГО GLDRUBF: <b style="color:var(--tw)">'+fm(Math.round(n1*goGold/1000))+' К₽</b> ('+fm(n1)+' контр.)</div>'
+    + '<div>ГО Si: <b style="color:var(--tw)">'+fm(Math.round(n2*goSi/1000))+' К₽</b> ('+fm(n2)+' контр.)</div>'
+    + '<div>ГО GD: <b style="color:var(--tw)">'+fm(Math.round(n3*goGd/1000))+' К₽</b> ('+fm(n3)+' контр.)</div>'
+    + '<div>ГО итого: <b style="color:var(--tw)">'+fm(Math.round(mxGoTotal/1000))+' К₽</b> · свои: '+fm(Math.round(mxOwn/1000))+' К₽</div>'
+    + '<div>Заём: <b style="color:'+(bor>0?'var(--orange)':'var(--green)')+'">'+(bor>0?fm(Math.round(bor/1000))+' К₽':'нет')+'</b></div>'
+    + '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">'
+    + 'Фандинг/день: <b style="color:'+(fundRubPerDay>=0?'var(--green)':'var(--red)')+'">'+(fundRubPerDay>=0?'+':'')+fm(Math.round(fundRubPerDay))+' ₽</b>'
+    + (bor>0?' · РЕПО/день: <b style="color:var(--red)">'+fm(Math.round(bor*repoAnn/365))+' ₽</b>':'')
+    + '</div></div>';
+
+  // 4 scenarios
+  function gmCard(title, emoji, spreadMove, desc){
+    // spreadMove — signed fraction of |alpha| realized (1 = full convergence, 0 = no move, -1 = went further)
+    // When α>0 (we're short), profit = -(-α × spreadMove) = α × spreadMove × notional
+    // When α<0 (we're long),  profit = (-α × spreadMove) × notional = |α| × spreadMove × notional
+    const realizedPct = alphaAbs * spreadMove; // in % points
+    const gr = realizedPct/100 * notionalUsd;
+    const before = gr + fundUsd - repoT - commTotal;
+    const pay = before > 0 ? before * payoutPct : 0;
+    const final = before - pay;
+    const roiP = totCap>0 ? final/totCap*100 : 0;
+    const annP = days>0 ? roiP/days*365 : 0;
+    const cN = final>=0?'var(--green)':'var(--red)';
+    const grC = gr>=0?'var(--green)':'var(--red)';
+    return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">'
+      + '<div style="font-size:13px;font-weight:800;margin-bottom:6px">'+emoji+' '+title+'</div>'
+      + '<div style="font-size:10px;color:var(--tm);margin-bottom:6px">'+desc+'</div>'
+      + '<div style="font-size:12px;color:var(--tl)">Gross: <b style="color:'+grC+'">'+(gr>=0?'+':'')+'$'+fm(Math.round(gr))+'</b></div>'
+      + '<div style="font-size:11px;color:var(--tl)">Фандинг: <b style="color:'+(fundUsd>=0?'var(--green)':'var(--red)')+'">'+(fundUsd>=0?'+':'')+'$'+fm(Math.round(fundUsd))+'</b></div>'
+      + '<div style="font-size:11px;color:var(--tl)">РЕПО: <b style="color:var(--red)">−$'+fm(Math.round(repoT))+'</b> · Комм: <b style="color:var(--red)">−$'+fm(Math.round(commTotal))+'</b></div>'
+      + (pay>0?'<div style="font-size:11px;color:var(--orange)">Пейаут: −$'+fm(Math.round(pay))+'</div>':'<div style="font-size:11px;color:var(--green)">Пейаут = 0</div>')
+      + '<div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">'
+      + '<div style="font-size:14px;font-weight:900;color:'+cN+'">'+(final>=0?'+':'')+'$'+fm(Math.round(final))+'</div>'
+      + '<div style="font-size:11px;color:var(--tm)">ROI: '+roiP.toFixed(1)+'% (~'+annP.toFixed(0)+'% год.)</div>'
+      + '</div></div>';
+  }
+  $('gmScenConv').innerHTML =
+      gmCard('Лучший: полный возврат к fair','🟢',1,'Спред сошёлся к жёлтой линии за '+days+' дн. Вся α захвачена.')
+    + gmCard('Средний: половина возврата','🟡',0.5,'Спред прошёл половину пути к fair. Половина α.')
+    + gmCard('Плохой: не вернулся','🟠',0,'Спред застрял. Живём только на carry (фандинг − РЕПО).')
+    + gmCard('Худший: ушёл дальше','🔴',-1,'Спред улетел ещё на |α| в обратную сторону. Двойной минус по раздвижке.');
+}
+
 document.querySelectorAll('input,select').forEach(el=>{
   if(el.id==='inLots') return; // slider handled separately
   const h=()=>{
@@ -3697,6 +4023,7 @@ document.querySelectorAll('input,select').forEach(el=>{
     else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
     else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
     else if(mode==='PERP_EU')calcPerp('PERP_EU');
+    else if(mode==='PERP_GLD_MX')calcGldMx();
     else{autoLotMode=true;calc();}
   };
   el.addEventListener('input',h);el.addEventListener('change',h);
@@ -3725,8 +4052,9 @@ $('inDays').value=daysToExp(MODES[mode].exp);
 
 function setFetchUI(msg,color,disabled){
   // v0.0.5.c: include TRIPLE_USD and all three perpetual tabs in the status feedback
-  ['btnFetch','btnFetchOvw','btnFetchTriple','btnFetchTripleEu','btnFetchTripleU','btnFetchPu','btnFetchPe','btnFetchPr'].forEach(id=>{const b=$(id);if(b){b.disabled=disabled;b.style.opacity=disabled?'.5':'1';}});
-  ['fetchStatus','fetchStatusOvw','fetchStatusTriple','fetchStatusTripleEu','fetchStatusTripleU','fetchStatusPu','fetchStatusPe','fetchStatusPr'].forEach(id=>{const s=$(id);if(s){s.textContent=msg;s.style.color=color;}});
+  // v0.0.7: + gold triple
+  ['btnFetch','btnFetchOvw','btnFetchTriple','btnFetchTripleEu','btnFetchTripleU','btnFetchPu','btnFetchPe','btnFetchPr','btnFetchGm'].forEach(id=>{const b=$(id);if(b){b.disabled=disabled;b.style.opacity=disabled?'.5':'1';}});
+  ['fetchStatus','fetchStatusOvw','fetchStatusTriple','fetchStatusTripleEu','fetchStatusTripleU','fetchStatusPu','fetchStatusPe','fetchStatusPr','fetchStatusGm'].forEach(id=>{const s=$(id);if(s){s.textContent=msg;s.style.color=color;}});
 }
 
 async function fetchPrices(){
@@ -3740,7 +4068,8 @@ async function fetchPrices(){
     for(const p of Object.values(MODES))for(const c of Object.values(p.contracts))tickerSet.add(c.moexTicker);
     ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
     // v0.0.5: perpetual tickers for PERP_DATA tab and overview row
-    ['USDRUBF','CNYRUBF','EURRUBF'].forEach(t=>tickerSet.add(t));
+    // v0.0.7: + GLDRUBF for gold triple
+    ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF'].forEach(t=>tickerSet.add(t));
     const tickers=[...tickerSet].join(',');
     const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+tickers);
     const d=await r.json();
@@ -3819,7 +4148,7 @@ async function fetchPrices(){
       if(tu){$('tuEu').value=tu.eu;$('tuSi').value=tu.si;setNum('tuGoEu',tu.euGo);setNum('tuGoSi',tu.siGo);}
     }
     // v0.0.5: apply perpetual prices to PERP_STATE and current perp tab if open
-    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF']){
+    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF']){
       const m=mx[tk];
       if(m){
         PERP_STATE[tk].price=m.price;
@@ -3887,9 +4216,10 @@ async function fetchPrices(){
   let perpOk=0;
   try{
     // v0.0.5.c: window shrunk to 10 days (was 30) — reflects recent funding regime better
-    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/moex-history?t=USDRUBF,CNYRUBF,EURRUBF&days=10');
+    // v0.0.7: + GLDRUBF
+    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/moex-history?t=USDRUBF,CNYRUBF,EURRUBF,GLDRUBF&days=10');
     const d=await r.json();
-    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF']){
+    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF']){
       const v=d[tk];
       if(v&&isFinite(v.avg)){
         PERP_STATE[tk].swapAvg=+v.avg;
@@ -3902,7 +4232,11 @@ async function fetchPrices(){
     }
     // v0.0.5.b: refresh all three perp tabs regardless of which is active (so switching later shows fresh SWAPRATE)
     applyPerpTabUI('PERP_UCNH');applyPerpTabUI('PERP_ECNH');applyPerpTabUI('PERP_EU');
-    details.push('SWAPRATE:'+perpOk+'/3');
+    // v0.0.7: also refresh gold tab's swap field from PERP_STATE.GLDRUBF
+    if(PERP_STATE.GLDRUBF && PERP_STATE.GLDRUBF.swapAvg!=null){
+      $('gmSwap').value = (+PERP_STATE.GLDRUBF.swapAvg).toFixed(4);
+    }
+    details.push('SWAPRATE:'+perpOk+'/4');
   }catch(e){details.push('SWAPRATE:⚠'+String(e.message||e).slice(0,30));}
 
   // Crypto: прямой запрос в Bitget из браузера ученика (Bitget блокирует Cloudflare IP,
@@ -3952,6 +4286,7 @@ async function fetchPrices(){
   else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
   else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
   else if(mode==='PERP_EU')calcPerp('PERP_EU');
+  else if(mode==='PERP_GLD_MX')calcGldMx();
   else calc();
 }
 
