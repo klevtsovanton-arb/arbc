@@ -133,7 +133,6 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPerpECNH"  data-cat="PERP_TRI" onclick="switchTo('PERP_ECNH')" style="font-size:11px">♾️ EURRUBF÷CNYRUBF/ECNH</button>
       <button class="tab" id="tabPerpEU"    data-cat="PERP_TRI" onclick="switchTo('PERP_EU')"   style="font-size:11px">♾️ EURRUBF÷USDRUBF/EU</button>
       <button class="tab" id="tabPerpGldMx" data-cat="PERP_TRI" onclick="switchTo('PERP_GLD_MX')" style="font-size:11px">♾️ GLDRUBF/Si vs GD</button>
-      <button class="tab" id="tabPerpGldFx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_FX')" style="font-size:11px">♾️ GLDRUBF/Si vs XAU</button>
       <button class="tab" id="tabGold"      data-cat="METAL"  onclick="switchTo('GOLD')">Gold</button>
       <button class="tab" id="tabSilver"    data-cat="METAL"  onclick="switchTo('SILVER')">Silver</button>
       <button class="tab" id="tabPlat"      data-cat="METAL"  onclick="switchTo('PLAT')">Platinum</button>
@@ -160,7 +159,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.a</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.c</p>
     </div>
   </div>
 
@@ -209,6 +208,7 @@ tr.ovw-row-hidden{display:none !important}
         <label><input type="checkbox" data-cat="currency"        checked onchange="applyOvwFilter()"> 💱 Валюты</label>
         <label><input type="checkbox" data-cat="currency_triple" checked onchange="applyOvwFilter()"> 🔗 Вал.тройнички</label>
         <label><input type="checkbox" data-cat="perp_triple"     checked onchange="applyOvwFilter()"> ♾️ Вечники</label>
+        <label><input type="checkbox" data-cat="gold_triple"     checked onchange="applyOvwFilter()"> 🥇 Золото-тройничок</label>
         <label><input type="checkbox" data-cat="metal"           checked onchange="applyOvwFilter()"> 🥇 Металлы</label>
         <label><input type="checkbox" data-cat="crypto"          checked onchange="applyOvwFilter()"> ₿ Крипта</label>
       </div>
@@ -942,19 +942,19 @@ tr.ovw-row-hidden{display:none !important}
       </div>
       <div>
         <div class="card">
-          <div class="card-t" style="color:var(--green)">💵 P&L при возврате к fair за горизонт</div>
-          <div class="pl-row"><span class="l">Gross (α × notional)</span><span class="v" id="gmPlGross" style="color:var(--green)">+$600</span></div>
-          <div class="pl-row"><span class="l">Фандинг GLDRUBF (шорт получает)</span><span class="v" id="gmPlFund" style="color:var(--green)">+$50</span></div>
-          <div class="pl-row"><span class="l">РЕПО на заёмную часть</span><span class="v" id="gmPlRepo" style="color:var(--red)">-$90</span></div>
-          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="gmPlComm" style="color:var(--red)">-$5</span></div>
-          <div class="pl-row"><span class="l">Пейаут пропу (5% с NET)</span><span class="v" id="gmPlPay" style="color:var(--red)">-$28</span></div>
-          <div class="net-row"><span class="l">НЕТТО</span><span class="v" id="gmPlNet" style="color:var(--green)">+$527</span></div>
+          <div class="card-t" style="color:var(--green)">💵 P&L при возврате к fair (всё в ₽)</div>
+          <div class="pl-row"><span class="l">Gross (α × нотионал)</span><span class="v" id="gmPlGross" style="color:var(--green)">+45 К₽</span></div>
+          <div class="pl-row"><span class="l">Фандинг GLDRUBF (шорт получает)</span><span class="v" id="gmPlFund" style="color:var(--green)">+5 К₽</span></div>
+          <div class="pl-row"><span class="l">РЕПО на заёмную часть</span><span class="v" id="gmPlRepo" style="color:var(--red)">−7 К₽</span></div>
+          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="gmPlComm" style="color:var(--red)">−400 ₽</span></div>
+          <div class="pl-row"><span class="l">Пейаут пропу (5% с NET)</span><span class="v" id="gmPlPay" style="color:var(--red)">−2 К₽</span></div>
+          <div class="net-row"><span class="l">НЕТТО</span><span class="v" id="gmPlNet" style="color:var(--green)">+40 К₽</span></div>
         </div>
         <div class="card">
           <div class="roi-grid">
-            <div><div class="lbl">ROI</div><div class="val" id="gmRoi" style="color:var(--cyan)">4.1%</div></div>
+            <div><div class="lbl">ROI</div><div class="val" id="gmRoi" style="color:var(--cyan)">4.10%</div></div>
             <div><div class="lbl">Годовых</div><div class="val" id="gmAnn" style="color:var(--cyan)">~300%</div></div>
-            <div><div class="lbl">Капитал</div><div class="val" id="gmCap" style="color:var(--tl)">$13K</div></div>
+            <div><div class="lbl">Капитал</div><div class="val" id="gmCap" style="color:var(--tl)">1.00 М₽</div></div>
           </div>
         </div>
         <div class="card" style="margin-top:10px">
@@ -1153,7 +1153,7 @@ const CATEGORY_MAP={
   OVW:       ['tabOvw'],
   CUR:       ['tabEU','tabUCNY'],
   CUR_TRI:   ['tabTriple','tabTripleEu','tabTripleU'],
-  PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx'],
+  PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx'],
   METAL:     ['tabGold','tabSilver','tabPlat','tabPall'],
   CRYPTO:    ['tabBTC','tabETH'],
   COMM:      ['tabBrent','tabGas','tabCopper'],
@@ -1163,9 +1163,6 @@ const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR
 
 // Stub content for sections under development
 const STUB_CONTENT={
-  PERP_GLD_FX:{icon:'♾️',title:'Золото-вечник vs форексный XAU/USD',
-    plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> XAU/USD на форексе<br>То же золото, но теперь против форекса — ловим раздвижку биржа⇄OTC.',
-    ver:'Движок — <b>v0.0.7</b>.'},
   BRENT:{icon:'🛢',title:'Brent — сырая нефть',
     plan:'<b>Ноги:</b> фьюч BR на МОЕХ (в $/баррель) vs форексный UKOIL / CL.<br><b>Особенности:</b> баррели вместо унций/пипсов, ежемесячная экспирация, контанго/бэквордация сильно зависят от запасов.',
     ver:'Движок — <b>v0.0.5</b>.'},
@@ -1236,7 +1233,7 @@ function showStub(key){
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
-  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',PERP_GLD_FX:'tabPerpGldFx',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
   document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
   const activeTab=stubTabMap[key];
   if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
@@ -1518,7 +1515,7 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabPerpGldFx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabGas','tabCopper','tabPortfolio'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabGas','tabCopper','tabPortfolio'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
@@ -1604,6 +1601,8 @@ function switchTo(m){
     if(siFront){$('gmSi').value=siFront.si; setNum('gmGoSi',siFront.siGo);}
     const gdFront=MODES.GOLD&&MODES.GOLD.contracts&&MODES.GOLD.contracts.M;
     if(gdFront){$('gmGd').value=gdFront.fut; setNum('gmGoGd',gdFront.go); $('gmDaysToExp').value=daysToExp(gdFront.exp); $('gmLblGd').textContent=CONTRACT_SHORT.M; $('gmLblSi').textContent=CONTRACT_SHORT.M;}
+    // v0.0.7: apply overview preset (capital + optimal lots) if available
+    applyOvwPresetToTab('PERP_GLD_MX','gm','gmLots');
     calcGldMx();
     return;
   }
@@ -2911,6 +2910,117 @@ function calcOvw(){
     ovwRows.push({netBest:bNet,roiBest:bRoi,annBest:annBP,netWorst:bNetW,roiWorst:roiWP,annWorst:annWP,sigma:bSig,tr:trPT});
   }
 
+  // v0.0.7: Gold triple (Klevtsov fair-spread model) — all on MOEX, no Forex leg
+  {
+    const goldSt=PERP_STATE.GLDRUBF;
+    const siFront=TRIPLE_DATA.TRIPLE.contracts.M;
+    const gdFront=MODES.GOLD&&MODES.GOLD.contracts&&MODES.GOLD.contracts.M;
+    if(goldSt&&siFront&&gdFront){
+      const GOLD=goldSt.price||9000, Si=siFront.si||76310, GD=gdFront.fut||3900;
+      const goGold=goldSt.go||900, goSi=siFront.siGo||12267, goGd=gdFront.go||30000;
+      const swap=goldSt.swapAvg!=null?goldSt.swapAvg:0.10;
+      const days=ovwDaysOverride!=null?ovwDaysOverride:Math.max(1,daysToExp(gdFront.exp)-35); // default horizon: small relative to expiry
+      const gmDaysToExp=daysToExp(gdFront.exp);
+      const gmCbr=+$('gmCbr')?.value||16; const cbr=gmCbr/100;
+      const gmQdays=+$('gmQdays')?.value||92;
+      const gmIV=+$('gmIV')?.value||7.5;
+
+      const spread=GOLD*31.1*100000/(Si*GD);
+      const fair=100/(1+(cbr/4)*gmDaysToExp/gmQdays);
+      const alpha=spread-fair;
+      const absAlpha=Math.abs(alpha);
+      const isShort=alpha>=0;
+
+      // Optimizer — sigma-based sizing
+      const pska=totalRub*propLev;
+      const n2PerN1=(GD/(1000*31.1));
+      const goPerN1=goGold+n2PerN1*goSi+(1/31.1)*goGd;
+      const maxN1=Math.floor(pska/goPerN1);
+      let pStep;
+      if(maxN1<=100)pStep=1;else if(maxN1<=500)pStep=5;else if(maxN1<=2000)pStep=10;
+      else if(maxN1<=10000)pStep=50;else if(maxN1<=50000)pStep=100;else pStep=500;
+
+      let bN1=0,bMx=0,bSig=0,bNetRub=0,bNetWRub=0,bRoi=0,bTT='',bTTW='';
+      for(let n1=pStep;n1<=maxN1;n1+=pStep){
+        const n3=Math.max(1,Math.round(n1/31.1));
+        const n2=Math.max(1,Math.round(n3*GD/1000));
+        const notionalRub=n3*GD*rub;
+        const mxGoT=n1*goGold+n2*goSi+n3*goGd;
+        if(mxGoT>pska)break;
+        // Dedicated MOEX capital = all totalRub (no Forex split for this tab)
+        if(mxGoT>totalRub*propLev)continue;
+        const mxBufRub=totalRub*mxRisk;
+        const mxBufPct=mxBufRub/(notionalRub/100);
+        const sigPT=gmIV/100*Math.sqrt(days/365);
+        const sigT=sigPT>0?mxBufPct/100/sigPT:0;
+        if(sigT<1.2)break;
+        const grossRub=absAlpha/100*notionalRub;
+        const dirGold=isShort?-1:+1;
+        const fundRub=-dirGold*swap*n1*days;
+        const bor=Math.max(0,mxGoT-totalRub);
+        const repoRub=bor*repoAnn/365*days;
+        const commRub=(n1+n2+n3)*5;
+        const netBeforeRub=grossRub+fundRub-repoRub-commRub;
+        const payRub=netBeforeRub>0?netBeforeRub*payoutPct:0;
+        const netRub=netBeforeRub-payRub;
+        // Worst = spread went further by |α| → gross becomes negative
+        const grossWRub=-absAlpha/100*notionalRub;
+        const netWBeforeRub=grossWRub+fundRub-repoRub-commRub;
+        const payWRub=netWBeforeRub>0?netWBeforeRub*payoutPct:0;
+        const netWRub=netWBeforeRub-payWRub;
+        bN1=n1;bMx=totalRub;bSig=sigT;bNetRub=netRub;bNetWRub=netWRub;
+        bRoi=netRub/totalRub*100;
+        const borK=Math.round(bor/1000);
+        bTT=`Gross (α=${absAlpha.toFixed(2)}%): ${fm(Math.round(grossRub))} ₽`
+          +`\n${fundRub>=0?'+':'−'} Фандинг: ${fm(Math.round(Math.abs(fundRub)))} ₽`
+          +`\n− РЕПО: ${fm(Math.round(repoRub))} ₽${bor>0?' (заём '+borK+' К₽ на '+days+'д)':' (своих хватает)'}`
+          +`\n− Комиссии: ${fm(Math.round(commRub))} ₽`
+          +(payRub>0?`\n− Пейаут (${Math.round(payoutPct*100)}%): ${fm(Math.round(payRub))} ₽`:'')
+          +`\n═══════════════`
+          +`\n= NET: ${fm(Math.round(netRub))} ₽`;
+        bTTW=`Gross (α ушёл дальше): −${fm(Math.round(Math.abs(grossWRub)))} ₽`
+          +`\n${fundRub>=0?'+':'−'} Фандинг: ${fm(Math.round(Math.abs(fundRub)))} ₽`
+          +`\n− РЕПО: ${fm(Math.round(repoRub))} ₽`
+          +`\n− Комиссии: ${fm(Math.round(commRub))} ₽`
+          +`\n═══════════════`
+          +`\n= NET (худший): ${fm(Math.round(netWRub))} ₽`;
+      }
+      const bNetUsd=bNetRub/rub, bNetWUsd=bNetWRub/rub;
+      const totCap=totalRub/rub;
+      const annB=days>0?bRoi/days*365:0;
+      const roiW=totalRub>0?bNetWRub/totalRub*100:0;
+      const annW=days>0?roiW/days*365:0;
+      const sigC=bSig>=2?'var(--green)':bSig>=1.2?'var(--yellow)':'var(--red)';
+      const netC=bNetRub>=0?'var(--green)':'var(--red)';
+      const netWC=bNetWRub>=0?'var(--green)':'var(--red)';
+      const dirT=isShort?'вверх':'вниз'; // направление отлёта
+      const dirCol=absAlpha>=0.4?(isShort?'var(--green)':'var(--orange)'):'var(--yellow)';
+      const n3b=Math.max(1,Math.round(bN1/31.1));
+      const n2b=Math.max(1,Math.round(n3b*GD/1000));
+      const trGM=document.createElement('tr');
+      trGM.style.cursor='pointer';
+      trGM.dataset.cat='gold_triple';
+      trGM.onclick=()=>{switchTo('PERP_GLD_MX');};
+      trGM.innerHTML=`
+        <td class="hl" style="color:var(--gold);font-size:14px;font-weight:900">🥇 GLDRUBF/Si vs GD <span style="font-size:10px;color:var(--tm);font-weight:500">· ${days}д · α=${alpha>=0?'+':''}${alpha.toFixed(2)}%</span></td>
+        <td class="hl">${absAlpha.toFixed(2)}%</td>
+        <td style="color:${dirCol}">отлёт ${dirT}</td>
+        <td>—</td>
+        <td>${bN1>0?fm(bN1)+' GLDRUBF + '+fm(n2b)+' Si + '+fm(n3b)+' GD':'—'}</td>
+        <td>—</td>
+        <td>${fm(Math.round(bMx/1000))}К</td>
+        <td class="hl" style="color:${sigC}">${bSig>0?bSig.toFixed(2)+'σ':'—'}</td>
+        <td class="hl" style="color:${netC}" title="${bTT}">${bN1>0?'$'+fm(Math.round(bNetUsd)):'—'}</td>
+        <td style="color:${netC}" title="${bTT}">${bN1>0?bRoi.toFixed(2)+'%':'—'}</td>
+        <td style="color:${netC}" title="${bTT}">${bN1>0?'~'+annB.toFixed(0)+'%':'—'}</td>
+        <td class="hl" style="color:${netWC}" title="${bTTW}">${bN1>0?'$'+fm(Math.round(bNetWUsd)):'—'}</td>
+        <td style="color:${netWC}" title="${bTTW}">${bN1>0?roiW.toFixed(2)+'%':'—'}</td>
+        <td style="color:${netWC}" title="${bTTW}">${bN1>0?'~'+annW.toFixed(0)+'%':'—'}</td>`;
+      if(bN1>0)OVW_PRESET['PERP_GLD_MX']={fxCap:0,mxOwn:bMx,lots:bN1};
+      ovwRows.push({netBest:bNetUsd,roiBest:bRoi,annBest:annB,netWorst:bNetWUsd,roiWorst:roiW,annWorst:annW,sigma:bSig,tr:trGM});
+    }
+  }
+
   // Sort by current sort key+dir and render
   window._ovwRows=ovwRows;
   renderOvwSort();
@@ -3896,14 +4006,14 @@ function calcGldMx(){
 
   $('gmLotsDisp').textContent = fm(n1)+' GLDRUBF + '+fm(n2)+' Si + '+fm(n3)+' GD';
 
-  // Total GO and borrowing
+  // Total GO and borrowing (all in rubles — everything on MOEX)
   const mxGoTotal = n1*goGold + n2*goSi + n3*goGd;
   const bor = Math.max(0, mxGoTotal - mxOwn);
-  const repoT = bor * repoAnn / 365 * days / rub; // in $
-  const commTotal = (n1 + n2 + n3) * comm / rub;  // in $
+  const repoRub = bor * repoAnn / 365 * days;           // ₽
+  const commRub = (n1 + n2 + n3) * comm;                // ₽
 
   // MOEX buffer and sigma
-  const mxSensPerPct = notionalRub / 100; // per 1% of spread movement
+  const mxSensPerPct = notionalRub / 100; // per 1% of spread movement, ₽
   const mxBufRub = mxOwn * mxRisk;
   const mxBufPct = mxSensPerPct>0 ? mxBufRub / mxSensPerPct : 0;
   const sigP = iv/100 * Math.sqrt(days/365);
@@ -3920,54 +4030,56 @@ function calcGldMx(){
   $('gmGTxt').textContent = sLbl; $('gmGTxt').style.color = sc;
   $('gmGSub').textContent = 'Шанс моржа: ~'+bp+'%';
 
-  // P&L — gross from returning spread to fair
-  // When short spread (α>0): if spread goes DOWN by α, we gain (α/100) × notional_USD
-  // When long  spread (α<0): if spread goes UP by |α|, we gain (|α|/100) × notional_USD
-  const gross = alphaAbs/100 * notionalUsd;
+  // P&L in RUBLES — all three legs on MOEX, no conversion needed
+  // gross_rub = α/100 × notionalRub (when spread returns to fair by α)
+  const grossRub = alphaAbs/100 * notionalRub;
 
-  // Funding on GLDRUBF — we short it (when α>0); positive SWAPRATE = long pays short = we receive
-  // Sign: dir = -1 (short) → we RECEIVE if swap>0
-  // fund_rub_per_day = swap × lotVol(1) × n1 (shorts receive +swap×n1 per day)
-  // If α<0 we'd be long GLDRUBF → pay; handled by sign of alpha direction
+  // Funding on GLDRUBF — positive SWAPRATE = long pays short = we receive (short)
   const dirGold = alpha>=0 ? -1 : +1; // -1 = short GLDRUBF
   const fundRubPerDay = -dirGold * swap * 1 * n1; // positive if we receive
-  const fundTotalRub = fundRubPerDay * days;
-  const fundUsd = fundTotalRub / rub;
+  const fundRub = fundRubPerDay * days;
 
   // Net
-  const netBefore = gross + fundUsd - repoT - commTotal;
-  const payW = netBefore > 0 ? netBefore * payoutPct : 0;
-  const net = netBefore - payW;
+  const netBeforeRub = grossRub + fundRub - repoRub - commRub;
+  const payRub = netBeforeRub > 0 ? netBeforeRub * payoutPct : 0;
+  const netRub = netBeforeRub - payRub;
 
-  const totCap = mxOwn / rub; // весь капитал в $
+  const totCapRub = mxOwn;
 
-  $('gmPlGross').textContent = '+$'+fm(gross,0);
-  $('gmPlFund').textContent  = (fundUsd>=0?'+':'')+' $'+fm(fundUsd,0);
-  $('gmPlFund').style.color  = fundUsd>=0 ? 'var(--green)' : 'var(--red)';
-  $('gmPlRepo').textContent  = '-$'+fm(repoT,0);
-  $('gmPlComm').textContent  = '-$'+fm(commTotal,0);
-  $('gmPlPay').textContent   = '-$'+fm(payW,0);
-  $('gmPlNet').textContent   = (net>=0?'+':'')+' $'+fm(net,0);
-  $('gmPlNet').style.color   = net>=0 ? 'var(--green)' : 'var(--red)';
-  const roi = totCap>0 ? net/totCap*100 : 0;
+  // Helper to format rubles compactly with appropriate scale
+  const fmtRub = (v)=>{
+    const abs=Math.abs(v);
+    if(abs>=1000000)return (v/1000000).toFixed(2)+' М₽';
+    if(abs>=10000)return fm(Math.round(v/1000))+' К₽';
+    return fm(Math.round(v))+' ₽';
+  };
+
+  $('gmPlGross').textContent = '+'+fmtRub(grossRub);
+  $('gmPlFund').textContent  = (fundRub>=0?'+':'−')+fmtRub(Math.abs(fundRub));
+  $('gmPlFund').style.color  = fundRub>=0 ? 'var(--green)' : 'var(--red)';
+  $('gmPlRepo').textContent  = '−'+fmtRub(repoRub);
+  $('gmPlComm').textContent  = '−'+fmtRub(commRub);
+  $('gmPlPay').textContent   = '−'+fmtRub(payRub);
+  $('gmPlNet').textContent   = (netRub>=0?'+':'−')+fmtRub(Math.abs(netRub));
+  $('gmPlNet').style.color   = netRub>=0 ? 'var(--green)' : 'var(--red)';
+  const roi = totCapRub>0 ? netRub/totCapRub*100 : 0;
   const ann = days>0 ? roi/days*365 : 0;
-  $('gmRoi').textContent = roi.toFixed(1)+'%';
+  $('gmRoi').textContent = roi.toFixed(2)+'%';
   $('gmAnn').textContent = '~'+ann.toFixed(0)+'%';
-  $('gmCap').textContent = '$'+fm(totCap,0);
+  $('gmCap').textContent = fmtRub(totCapRub);
 
-  // Live swap hint from PERP_STATE
+  // Live swap hint from PERP_STATE — all in rubles
   const st = PERP_STATE.GLDRUBF;
   if(st && st.swapInfo){
     $('gmSwapInfo').innerHTML =
       st.swapInfo
       + '<br>→ 1 контр (1 г) = <b>'+swap.toFixed(4)+' ₽/день</b>'
       + ' · твои '+n1+' контр × '+days+' дн ['+(dirGold>0?'long':'short')+']: '
-      + '<b style="color:'+(fundTotalRub>=0?'var(--green)':'var(--red)')+'">'
-      + (fundTotalRub>=0?'+':'−')+fm(Math.abs(Math.round(fundTotalRub)))+' ₽ ('
-      + (fundTotalRub>=0?'+':'−')+'$'+fm(Math.abs(fundUsd),0)+')</b>';
+      + '<b style="color:'+(fundRub>=0?'var(--green)':'var(--red)')+'">'
+      + (fundRub>=0?'+':'−')+fm(Math.abs(Math.round(fundRub)))+' ₽</b>';
   }
 
-  // Capital usage
+  // Capital usage — all rubles
   $('gmCapUsage').innerHTML =
     '<div style="font-size:12px;color:var(--tl);line-height:1.7">'
     + '<div>ГО GLDRUBF: <b style="color:var(--tw)">'+fm(Math.round(n1*goGold/1000))+' К₽</b> ('+fm(n1)+' контр.)</div>'
@@ -3978,32 +4090,31 @@ function calcGldMx(){
     + '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">'
     + 'Фандинг/день: <b style="color:'+(fundRubPerDay>=0?'var(--green)':'var(--red)')+'">'+(fundRubPerDay>=0?'+':'')+fm(Math.round(fundRubPerDay))+' ₽</b>'
     + (bor>0?' · РЕПО/день: <b style="color:var(--red)">'+fm(Math.round(bor*repoAnn/365))+' ₽</b>':'')
-    + '</div></div>';
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--tm);margin-top:4px">Нотионал позиции: <b style="color:var(--tl)">'+fmtRub(notionalRub)+'</b></div>'
+    + '</div>';
 
-  // 4 scenarios
+  // 4 scenarios — all in rubles
   function gmCard(title, emoji, spreadMove, desc){
-    // spreadMove — signed fraction of |alpha| realized (1 = full convergence, 0 = no move, -1 = went further)
-    // When α>0 (we're short), profit = -(-α × spreadMove) = α × spreadMove × notional
-    // When α<0 (we're long),  profit = (-α × spreadMove) × notional = |α| × spreadMove × notional
     const realizedPct = alphaAbs * spreadMove; // in % points
-    const gr = realizedPct/100 * notionalUsd;
-    const before = gr + fundUsd - repoT - commTotal;
+    const gr = realizedPct/100 * notionalRub;   // ₽
+    const before = gr + fundRub - repoRub - commRub;
     const pay = before > 0 ? before * payoutPct : 0;
     const final = before - pay;
-    const roiP = totCap>0 ? final/totCap*100 : 0;
+    const roiP = totCapRub>0 ? final/totCapRub*100 : 0;
     const annP = days>0 ? roiP/days*365 : 0;
     const cN = final>=0?'var(--green)':'var(--red)';
     const grC = gr>=0?'var(--green)':'var(--red)';
     return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">'
       + '<div style="font-size:13px;font-weight:800;margin-bottom:6px">'+emoji+' '+title+'</div>'
       + '<div style="font-size:10px;color:var(--tm);margin-bottom:6px">'+desc+'</div>'
-      + '<div style="font-size:12px;color:var(--tl)">Gross: <b style="color:'+grC+'">'+(gr>=0?'+':'')+'$'+fm(Math.round(gr))+'</b></div>'
-      + '<div style="font-size:11px;color:var(--tl)">Фандинг: <b style="color:'+(fundUsd>=0?'var(--green)':'var(--red)')+'">'+(fundUsd>=0?'+':'')+'$'+fm(Math.round(fundUsd))+'</b></div>'
-      + '<div style="font-size:11px;color:var(--tl)">РЕПО: <b style="color:var(--red)">−$'+fm(Math.round(repoT))+'</b> · Комм: <b style="color:var(--red)">−$'+fm(Math.round(commTotal))+'</b></div>'
-      + (pay>0?'<div style="font-size:11px;color:var(--orange)">Пейаут: −$'+fm(Math.round(pay))+'</div>':'<div style="font-size:11px;color:var(--green)">Пейаут = 0</div>')
+      + '<div style="font-size:12px;color:var(--tl)">Gross: <b style="color:'+grC+'">'+(gr>=0?'+':'−')+fmtRub(Math.abs(gr))+'</b></div>'
+      + '<div style="font-size:11px;color:var(--tl)">Фандинг: <b style="color:'+(fundRub>=0?'var(--green)':'var(--red)')+'">'+(fundRub>=0?'+':'−')+fmtRub(Math.abs(fundRub))+'</b></div>'
+      + '<div style="font-size:11px;color:var(--tl)">РЕПО: <b style="color:var(--red)">−'+fmtRub(repoRub)+'</b> · Комм: <b style="color:var(--red)">−'+fmtRub(commRub)+'</b></div>'
+      + (pay>0?'<div style="font-size:11px;color:var(--orange)">Пейаут: −'+fmtRub(pay)+'</div>':'<div style="font-size:11px;color:var(--green)">Пейаут = 0</div>')
       + '<div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">'
-      + '<div style="font-size:14px;font-weight:900;color:'+cN+'">'+(final>=0?'+':'')+'$'+fm(Math.round(final))+'</div>'
-      + '<div style="font-size:11px;color:var(--tm)">ROI: '+roiP.toFixed(1)+'% (~'+annP.toFixed(0)+'% год.)</div>'
+      + '<div style="font-size:14px;font-weight:900;color:'+cN+'">'+(final>=0?'+':'−')+fmtRub(Math.abs(final))+'</div>'
+      + '<div style="font-size:11px;color:var(--tm)">ROI: '+roiP.toFixed(2)+'% (~'+annP.toFixed(0)+'% год.)</div>'
       + '</div></div>';
   }
   $('gmScenConv').innerHTML =
