@@ -106,6 +106,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .ovw-filter label:hover{background:rgba(0,180,216,.08)}
 .ovw-filter input[type=checkbox]{cursor:pointer;accent-color:var(--cyan);width:14px;height:14px}
 tr.ovw-row-hidden{display:none !important}
+.pf-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.pf-table th{background:#0A2540;color:var(--tw);padding:8px 6px;text-align:center;font-size:11px;border:1px solid var(--border);font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.pf-table td{padding:6px 4px;text-align:center;border:1px solid var(--border);color:var(--tl);font-size:13px}
+.pf-table td input{width:100%;background:transparent;border:none;color:var(--tw);padding:2px 4px;font-size:12px;text-align:right;font-family:inherit;outline:none}
+.pf-table td input:focus{background:var(--inp);border-radius:3px}
+.pf-table td select{width:100%;background:var(--inp);border:1px solid var(--border);color:var(--tw);padding:2px 4px;font-size:12px;font-family:inherit;border-radius:3px}
+.pf-table td.hl{font-weight:800}
+.pf-table tr.pf-group-hdr td{background:rgba(139,92,246,.12);color:#EC4899;font-weight:800;font-size:11px;text-align:left;padding:8px 10px;text-transform:uppercase;letter-spacing:.5px}
+.pf-table tr.pf-total td{background:rgba(6,214,160,.08);font-weight:800;font-size:14px;border-top:2px solid var(--green)}
+.pf-add-btn{background:rgba(6,214,160,.15);border:1.5px dashed var(--green);color:var(--green);padding:8px 18px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s}
+.pf-add-btn:hover{background:var(--green);color:#000}
+.pf-del-btn{background:transparent;border:1px solid var(--red);color:var(--red);width:22px;height:22px;border-radius:4px;font-size:14px;line-height:1;cursor:pointer;font-family:inherit}
+.pf-del-btn:hover{background:var(--red);color:#000}
+.pf-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.pf-summary .pf-stat{background:var(--inp);border:1px solid var(--border);border-radius:8px;padding:12px}
+.pf-summary .pf-lbl{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.pf-summary .pf-val{font-size:20px;font-weight:900;color:var(--tw)}
+.pf-export{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pf-export button{background:transparent;border:1px solid var(--border);color:var(--tl);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.pf-export button:hover{border-color:var(--cyan);color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -142,7 +162,7 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="showStub('BRENT')" style="font-size:12px">🛢 Brent</button>
       <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
       <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
-      <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="showStub('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
+      <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
     <div class="contract-pills" id="contractPills" style="display:none">
       <button class="cpill on" id="cpM" onclick="switchContract('M')">Июн 26</button>
@@ -159,7 +179,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.f</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.8.b</p>
     </div>
   </div>
 
@@ -969,6 +989,79 @@ tr.ovw-row-hidden{display:none !important}
     </div>
   </div>
 
+  <!-- PORTFOLIO (v0.0.8): my positions with live PnL, persisted in localStorage -->
+  <div id="portfolioContent" style="display:none">
+    <div class="card">
+      <div class="card-t" style="color:#EC4899">💼 Мои позиции — мой реальный портфель</div>
+      <div style="font-size:12px;color:var(--tl);line-height:1.6">
+        Каркас для ведения реальных позиций. Ноги группируются по <b>стратегии</b> — чтобы видеть общий PnL по каждой связке (например «Баксо-юань», «Серебро-базис»). PnL по ноге = <code>(текущая − вход) × направление × лоты × ₽/пункт</code>.<br>
+        <span style="color:var(--tm)">Всё хранится в localStorage браузера — пропадёт только если очистишь cookies/данные сайта. Можно экспортировать в JSON на всякий случай.</span>
+      </div>
+    </div>
+    <div class="pf-summary">
+      <div class="pf-stat"><div class="pf-lbl">Позиций</div><div class="pf-val" id="pfCount">0</div></div>
+      <div class="pf-stat"><div class="pf-lbl">Ног всего</div><div class="pf-val" id="pfLegs">0</div></div>
+      <div class="pf-stat"><div class="pf-lbl">Суммарный PnL (₽)</div><div class="pf-val" id="pfPnlRub">0 ₽</div></div>
+      <div class="pf-stat"><div class="pf-lbl">Суммарный PnL ($)</div><div class="pf-val" id="pfPnlUsd">$0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:#EC4899">📊 Портфельная статистика (σ и VaR)</div>
+      <div class="pf-summary" style="grid-template-columns:repeat(5,1fr)">
+        <div class="pf-stat"><div class="pf-lbl">Нотионал портфеля</div><div class="pf-val" id="pfTotalNot" style="font-size:16px">0 ₽</div></div>
+        <div class="pf-stat"><div class="pf-lbl">σ месячная</div><div class="pf-val" id="pfSigmaM" style="font-size:16px">0%</div></div>
+        <div class="pf-stat"><div class="pf-lbl">σ 10-дневная</div><div class="pf-val" id="pfSigma10" style="font-size:16px">0%</div></div>
+        <div class="pf-stat"><div class="pf-lbl">VaR 1σ (10д)</div><div class="pf-val" id="pfVar1" style="font-size:16px">0 ₽</div></div>
+        <div class="pf-stat"><div class="pf-lbl">VaR 2σ (10д)</div><div class="pf-val" id="pfVar2" style="font-size:16px">0 ₽</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--tl);line-height:1.7;margin-top:8px" id="pfRiskSummary">
+        <span style="color:var(--tm)">Нет позиций — добавь ноги, укажи тип каждой стратегии, и увидишь σ-оценку риска портфеля с учётом корреляций между типами.</span>
+      </div>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:800;color:var(--tw)">Таблица ног</div>
+        <div style="display:flex;gap:8px">
+          <button class="pf-add-btn" onclick="pfAddLeg()">+ Добавить ногу</button>
+          <button class="pf-add-btn" style="border-color:var(--cyan);color:var(--cyan);background:rgba(0,180,216,.1)" onclick="pfNewStrategy()">+ Новая стратегия</button>
+        </div>
+      </div>
+      <table class="pf-table" id="pfTable">
+        <thead><tr>
+          <th style="width:24px">#</th>
+          <th style="min-width:140px">Стратегия</th>
+          <th style="min-width:110px">Инструмент</th>
+          <th>Площадка</th>
+          <th>Направление</th>
+          <th>Лоты</th>
+          <th>Цена входа</th>
+          <th>Тек. цена</th>
+          <th title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот. Для USDRUBF=1000, GLDRUBF=1, EUR/USD форекс=1000000 (1 пункт × 100K€ × rub/$) и т.п.">₽/пункт × лот</th>
+          <th>Дата входа</th>
+          <th>PnL ₽</th>
+          <th>PnL $</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="pfBody"></tbody>
+        <tfoot><tr class="pf-total"><td colspan="10" style="text-align:right">ИТОГО:</td><td id="pfFootRub" style="color:var(--green)">0 ₽</td><td id="pfFootUsd" style="color:var(--green)">$0</td><td></td></tr></tfoot>
+      </table>
+      <div class="pf-export">
+        <button onclick="pfExport()">💾 Экспорт JSON</button>
+        <button onclick="pfImport()">📥 Импорт JSON</button>
+        <button onclick="pfClear()" style="border-color:var(--red);color:var(--red)">🗑 Очистить всё</button>
+        <span style="font-size:11px;color:var(--tm);align-self:center;margin-left:auto">Автосохранение в localStorage при каждом изменении</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--yellow)">🚧 В разработке</div>
+      <div style="font-size:12px;color:var(--tl);line-height:1.7">
+        <b>v0.0.8</b> — автоподтяг текущих цен из ISS/TwelveData/Bitget при обновлении страницы<br>
+        <b>v0.0.9</b> — матрица корреляций ног + суммарная σ портфеля (с учётом всех открытых поз)<br>
+        <b>v0.0.10</b> — накопленные свопы/фандинг/РЕПО с даты входа → реальный NET<br>
+        <b>v0.0.11</b> — рекомендации по ребалансу на уровне портфеля
+      </div>
+    </div>
+  </div>
+
   <!-- Plug panel for sections under development -->
   <div id="stubContent" style="display:none">
     <div class="stub-panel">
@@ -1172,9 +1265,6 @@ const STUB_CONTENT={
   COPPER:{icon:'🟠',title:'Copper — медь',
     plan:'<b>Ноги:</b> фьюч CU на МОЕХ vs форексный Copper / HG (CME).<br><b>Особенности:</b> тонны/фунты, индустриальный спрос, коррелирует с металлами.',
     ver:'Движок — <b>v0.0.5</b>.'},
-  PORTFOLIO:{icon:'💼',title:'Мои позиции — портфель и реальный P&L',
-    plan:'<b>Что будет:</b><br>• Таблица открытых позиций: инструмент, направление, лоты, цена входа, дата входа<br>• Риалтайм-обсчёт NET P&L (гросс − накопленные свопы − РЕПО − комиссии)<br>• Сценарии схождения по каждой позиции с учётом <b>уже накопленных</b> издержек<br>• Матрица корреляций ног → уточнённая σ портфеля (не по одной позиции, а по всему счёту)<br>• Ребаланс на уровне портфеля',
-    ver:'Каркас — <b>v0.0.5</b>, движок NET — <b>v0.0.8</b>, корреляции — <b>v0.0.9</b>.'}
 };
 
 // v0.0.6: optimal capital/lots snapshot per instrument row from overview — applied when switchTo() opens that tab
@@ -1226,14 +1316,14 @@ function showStub(key){
   $('mainContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
   $('contractPills').style.display='none';
   {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
   // clear active state on instrument tabs
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
-  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper',PORTFOLIO:'tabPortfolio'};
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper'};
   document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
   const activeTab=stubTabMap[key];
   if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
@@ -1524,7 +1614,7 @@ function switchTo(m){
     mode='OVW';
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
-    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
+    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
     $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
@@ -1536,7 +1626,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE||'M';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
     $('tripleContent').style.display='';
     const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
     if(td){
@@ -1560,7 +1650,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE_EU||'M';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
     $('tripleEuContent').style.display='';
     const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
     if(te){
@@ -1579,13 +1669,26 @@ function switchTo(m){
     calcTripleEu();
     return;
   }
+  // v0.0.8: Portfolio tab
+  if(m==='PORTFOLIO'){
+    mode='PORTFOLIO';
+    $('tabPortfolio').classList.add('on');$('tabPortfolio').style.background='#EC4899';
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
+    $('portfolioContent').style.display='';
+    $('hdrTitle').textContent='Мои позиции · портфель';
+    $('hdrSub').textContent='Ручной ввод открытых ног · PnL в реалтайме · localStorage';
+    pfRender();
+    return;
+  }
   // v0.0.7: Gold triple — GLDRUBF × 31.1 × 100000 / (Si × GD) vs fair line
   if(m==='PERP_GLD_MX'){
     mode='PERP_GLD_MX';
     $('tabPerpGldMx').classList.add('on');$('tabPerpGldMx').style.background='var(--gold)';
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
-    ['perpUcnhContent','perpEcnhContent','perpEuContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
+    ['perpUcnhContent','perpEcnhContent','perpEuContent','portfolioContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
     $('gldMxContent').style.display='';
     $('hdrTitle').textContent='Золотой тройничок GLDRUBF/Si vs GD';
     $('hdrSub').textContent='Спред к fair-линии (ставка ЦБ/4) · шортим отлёты вверх, ловим alpha + фандинг';
@@ -1615,7 +1718,7 @@ function switchTo(m){
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     // hide other perp panels
-    ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
+    ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent','portfolioContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
     $(cfg.contentId).style.display='';
     $('hdrTitle').textContent=cfg.title;
     $('hdrSub').textContent=cfg.legend+' · горизонт удержания настраивается';
@@ -1657,7 +1760,7 @@ function switchTo(m){
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
   $('mainContent').style.display='';
   // Show correct pill row: crypto has 4 contracts (J/K/M/N), others have 3 (M/U/Z)
   if(p.isCrypto){
@@ -4156,6 +4259,367 @@ function calcGldMx(){
     + gmCard('Худший: ушёл дальше','🔴',-1,'Спред улетел ещё на |α| в обратную сторону. Минус реальная α сверху.');
 }
 
+// === v0.0.8 === PORTFOLIO — my positions, persisted in localStorage
+const PF_LS_KEY = 'arb_calc_portfolio_v1';
+const PF_STRAT_LS_KEY = 'arb_calc_pf_strategies_v1';
+// Strategy types — each has default σ (monthly %) and color
+const STRATEGY_TYPES = {
+  cur_triple:   {label:'🔗 Валютный тройничок',   sigmaDef: 7.5, color:'var(--orange)'},
+  perp_triple:  {label:'♾️ Тройничок вечников',   sigmaDef: 7.5, color:'#9333EA'},
+  gold_fair:    {label:'🥇 Золото fair-spread',   sigmaDef: 7.5, color:'var(--gold)'},
+  metal_basis:  {label:'⚪ Металл базис',         sigmaDef: 15,  color:'#C0C0C0'},
+  simple_basis: {label:'💱 Простой базис',        sigmaDef: 7.5, color:'var(--cyan)'},
+  crypto_basis: {label:'₿ Крипта базис',          sigmaDef: 25,  color:'#F7931A'},
+  other:        {label:'❓ Другое',                sigmaDef: 10,  color:'var(--tm)'}
+};
+// Expert correlation matrix between strategy types (symmetric). User can tweak in future versions.
+const PF_CORR = {
+  cur_triple:   {cur_triple:1.0, perp_triple:0.7, gold_fair:0.1, metal_basis:0.0, simple_basis:0.5, crypto_basis:0.0, other:0.0},
+  perp_triple:  {cur_triple:0.7, perp_triple:1.0, gold_fair:0.1, metal_basis:0.0, simple_basis:0.4, crypto_basis:0.0, other:0.0},
+  gold_fair:    {cur_triple:0.1, perp_triple:0.1, gold_fair:1.0, metal_basis:0.6, simple_basis:0.2, crypto_basis:0.0, other:0.0},
+  metal_basis:  {cur_triple:0.0, perp_triple:0.0, gold_fair:0.6, metal_basis:1.0, simple_basis:0.1, crypto_basis:0.0, other:0.0},
+  simple_basis: {cur_triple:0.5, perp_triple:0.4, gold_fair:0.2, metal_basis:0.1, simple_basis:1.0, crypto_basis:0.0, other:0.0},
+  crypto_basis: {cur_triple:0.0, perp_triple:0.0, gold_fair:0.0, metal_basis:0.0, simple_basis:0.0, crypto_basis:1.0, other:0.0},
+  other:        {cur_triple:0.0, perp_triple:0.0, gold_fair:0.0, metal_basis:0.0, simple_basis:0.0, crypto_basis:0.0, other:1.0}
+};
+let PF_STRATS = {};
+function pfLoadStrats(){try{const raw=localStorage.getItem(PF_STRAT_LS_KEY); return raw?JSON.parse(raw):{};}catch(e){return {};}}
+function pfSaveStrats(){try{localStorage.setItem(PF_STRAT_LS_KEY,JSON.stringify(PF_STRATS));}catch(e){console.error(e);}}
+PF_STRATS = pfLoadStrats();
+function pfGetStratMeta(name){
+  if(!PF_STRATS[name]){
+    PF_STRATS[name] = {type:'other', sigma: STRATEGY_TYPES.other.sigmaDef};
+  }
+  return PF_STRATS[name];
+}
+function pfUpdateStratMeta(name, field, value){
+  const m = pfGetStratMeta(name);
+  if(field==='type'){
+    const oldType = m.type;
+    m.type = value;
+    // If current sigma matches old default, bump to new default
+    if(STRATEGY_TYPES[oldType] && Math.abs(m.sigma - STRATEGY_TYPES[oldType].sigmaDef) < 0.001){
+      m.sigma = STRATEGY_TYPES[value].sigmaDef;
+    }
+  } else if(field==='sigma'){
+    m.sigma = +value || 0;
+  }
+  pfSaveStrats();
+  pfRender();
+}
+function pfRenameStrat(oldName, newName){
+  if(oldName===newName || !newName) return;
+  if(PF_STRATS[oldName]){
+    PF_STRATS[newName] = PF_STRATS[oldName];
+    delete PF_STRATS[oldName];
+    pfSaveStrats();
+  }
+}
+// Known MOEX/FX instruments with their default ₽/unit-price-per-lot multipliers.
+// User can override per row; this just prefills sensible defaults when a known ticker is picked.
+const PF_SPECS = {
+  // MOEX currency perpetuals (lot = 1000 of base currency, 1 ₽ price move = 1000 ₽/lot)
+  'USDRUBF': {venue:'MOEX', side:'short', mult:1000, hint:'1 лот = 1000 USD → 1 ₽ движения = 1000 ₽/лот'},
+  'EURRUBF': {venue:'MOEX', side:'long',  mult:1000, hint:'1 лот = 1000 EUR → 1 ₽ движения = 1000 ₽/лот'},
+  'CNYRUBF': {venue:'MOEX', side:'long',  mult:1000, hint:'1 лот = 1000 CNY → 1 ₽ движения = 1000 ₽/лот'},
+  'GLDRUBF': {venue:'MOEX', side:'short', mult:1,    hint:'1 лот = 1 грамм → 1 ₽ движения = 1 ₽/лот'},
+  // MOEX quarterly futures — use current USD/RUB to convert (user will adjust after fetch)
+  'Si':   {venue:'MOEX', mult:1,   hint:'Si: цена в ₽/1000$, шаг 1 ₽ ≈ 1 ₽/лот (stepPrice из ISS)'},
+  'Eu':   {venue:'MOEX', mult:1,   hint:'Eu: цена в ₽/1000€, шаг 1 ₽ ≈ 1 ₽/лот (stepPrice из ISS)'},
+  'CR':   {venue:'MOEX', mult:1000,hint:'CR (юань): цена в ₽/юань, 1 лот = 1000 юаней → 1 ₽ = 1000 ₽/лот'},
+  'ED':   {venue:'MOEX', mult:1000,hint:'ED (EUR/USD фьюч): 1 лот = 1000€, цена в $/€, 1 пункт цены = 1000$/лот → в ₽: mult×rub'},
+  'GD':   {venue:'MOEX', mult:1,   hint:'GD (золото МОЕХ): цена $/унц., контракт 1 унц., 1$ движения ≈ rub ₽/лот'},
+  'SV':   {venue:'MOEX', mult:1,   hint:'SV (серебро МОЕХ): уточни stepPrice'},
+  // Forex — standard lot 100K of base currency, 1 pip = 0.0001, pipValue = $10 for XXXUSD pairs
+  'EUR/USD': {venue:'Forex', mult:100000, hint:'Forex EUR/USD: 1 лот 100K€, 1.0 движение = $100 000/лот → в ₽: mult×rub'},
+  'USD/CNH': {venue:'Forex', mult:100000, hint:'Forex USD/CNH: 1 лот 100K$ → 1.0 CNH движения = 100 000 CNH/лот → в ₽: ×rub/usd-cnh'},
+  'EUR/CNH': {venue:'Forex', mult:100000, hint:'Forex EUR/CNH: 1 лот 100K€'},
+  'XAU/USD': {venue:'Forex', mult:10000,  hint:'Forex XAU/USD: 1 лот = 100 oz, 1$ = $100/лот → в ₽ ×rub'},
+  'XAG/USD': {venue:'Forex', mult:500000, hint:'Forex XAG/USD: 1 лот = 5000 oz, 1$ = $5000/лот → в ₽ ×rub'},
+  'BTCUSDT': {venue:'Bitget',mult:1,      hint:'Bitget BTC: 1 лот = 1 BTC, 1$ движения = 1$/лот'},
+  'ETHUSDT': {venue:'Bitget',mult:1,      hint:'Bitget ETH: 1 лот = 1 ETH, 1$ движения = 1$/лот'}
+};
+function pfLoad(){
+  try{const raw=localStorage.getItem(PF_LS_KEY);if(!raw)return [];const arr=JSON.parse(raw);return Array.isArray(arr)?arr:[];}catch(e){console.error('pfLoad',e);return [];}
+}
+function pfSave(arr){try{localStorage.setItem(PF_LS_KEY,JSON.stringify(arr));}catch(e){console.error('pfSave',e);}}
+let PF_LEGS = pfLoad();
+
+function pfNewLeg(strategy){
+  return {
+    id: 'p'+Math.random().toString(36).slice(2,10),
+    strategy: strategy || 'Новая стратегия',
+    ticker: '',
+    venue: 'MOEX',
+    side: 'long',
+    lots: 0,
+    entry: 0,
+    current: 0,
+    mult: 1,
+    date: new Date().toISOString().slice(0,10),
+    note: ''
+  };
+}
+function pfAddLeg(){
+  // Pick strategy from last row if any, else new
+  const last = PF_LEGS[PF_LEGS.length-1];
+  const strategy = last ? last.strategy : 'Новая стратегия';
+  PF_LEGS.push(pfNewLeg(strategy));
+  pfSave(PF_LEGS); pfRender();
+}
+function pfNewStrategy(){
+  const name = prompt('Название новой стратегии:', 'Баксо-юань');
+  if(!name) return;
+  PF_LEGS.push(pfNewLeg(name));
+  pfSave(PF_LEGS); pfRender();
+}
+function pfDeleteLeg(id){
+  PF_LEGS = PF_LEGS.filter(l=>l.id!==id);
+  pfSave(PF_LEGS); pfRender();
+}
+function pfUpdateField(id, field, value){
+  const leg = PF_LEGS.find(l=>l.id===id);
+  if(!leg) return;
+  if(['lots','entry','current','mult'].includes(field)){
+    value = +(String(value).replace(/\s/g,'').replace(',','.')) || 0;
+  }
+  // Strategy rename: if user changes strategy name on a leg, check if other legs still use the old name
+  if(field==='strategy' && leg.strategy !== value){
+    const oldName = leg.strategy;
+    leg.strategy = value;
+    const stillUsed = PF_LEGS.some(l => l.id!==id && l.strategy===oldName);
+    // If no other legs use the old strategy name, move its metadata to the new name
+    if(!stillUsed && PF_STRATS[oldName] && !PF_STRATS[value]){
+      PF_STRATS[value] = PF_STRATS[oldName];
+      delete PF_STRATS[oldName];
+      pfSaveStrats();
+    }
+  } else {
+    leg[field] = value;
+  }
+  // Auto-fill multiplier when ticker matches a known spec
+  if(field==='ticker'){
+    const spec = PF_SPECS[value];
+    if(spec){
+      if(!leg.mult || leg.mult===1) leg.mult = spec.mult;
+      if(!leg.venue || leg.venue==='MOEX') leg.venue = spec.venue;
+    }
+  }
+  pfSave(PF_LEGS); pfRender();
+}
+function pfCalcPnlRub(leg){
+  const dir = leg.side==='long' ? 1 : -1;
+  return (leg.current - leg.entry) * dir * leg.lots * leg.mult;
+}
+// v0.0.8.b: Portfolio-level σ and VaR
+function pfCalcPortfolioStats(){
+  const stratMap = {};
+  for(const leg of PF_LEGS){
+    const name = leg.strategy || 'Без стратегии';
+    const s = stratMap[name] = stratMap[name] || {name, notional:0, pnl:0, legsCount:0};
+    s.notional += Math.abs(leg.lots * leg.entry * leg.mult); // ₽ notional, sum of |leg|
+    s.pnl += pfCalcPnlRub(leg);
+    s.legsCount++;
+  }
+  for(const name in stratMap){
+    const meta = pfGetStratMeta(name);
+    stratMap[name].type = meta.type;
+    stratMap[name].sigma = meta.sigma;
+  }
+  const strats = Object.values(stratMap);
+  const totalNotional = strats.reduce((a,s)=>a+s.notional,0);
+  if(totalNotional===0 || strats.length===0){
+    return {sigmaPctMonthly:0, sigma10d:0, sigmaDay:0, var1s10d:0, var2s10d:0, totalNotional:0, strats:[], concentration:0};
+  }
+  // σ portfolio² = Σ wᵢwⱼ σᵢσⱼ ρᵢⱼ   (weighted by notional, σ in fraction)
+  let varPort = 0;
+  for(let i=0;i<strats.length;i++){
+    const wi = strats[i].notional / totalNotional;
+    const si = (strats[i].sigma||0) / 100;
+    for(let j=0;j<strats.length;j++){
+      const wj = strats[j].notional / totalNotional;
+      const sj = (strats[j].sigma||0) / 100;
+      const rho = (PF_CORR[strats[i].type]||{})[strats[j].type] || 0;
+      varPort += wi*wj*si*sj*rho;
+    }
+  }
+  const sigmaPctMonthly = Math.sqrt(Math.max(0,varPort)) * 100;
+  const sigmaDay   = sigmaPctMonthly / Math.sqrt(21);    // trading days per month
+  const sigma10d   = sigmaPctMonthly * Math.sqrt(10/21); // 10 trading days
+  const var1s10d   = sigma10d / 100 * totalNotional;     // VaR at 1σ in ₽
+  const var2s10d   = 2 * var1s10d;
+  // Concentration — max weight (Herfindahl-like)
+  const maxW = strats.reduce((a,s)=>Math.max(a, s.notional/totalNotional),0);
+  return {sigmaPctMonthly, sigmaDay, sigma10d, var1s10d, var2s10d, totalNotional, strats, concentration:maxW};
+}
+function pfRender(){
+  const tb = $('pfBody'); if(!tb) return;
+  tb.innerHTML='';
+  const rub = +$('inRub').value || 77;
+  // Group legs by strategy
+  const groups = {};
+  PF_LEGS.forEach(l=>{(groups[l.strategy]=groups[l.strategy]||[]).push(l);});
+  let idx=0, totalRub=0;
+  const strategies = Object.keys(groups);
+  for(const strat of strategies){
+    const gLegs = groups[strat];
+    let stratRub = 0;
+    const meta = pfGetStratMeta(strat);
+    const typeOpts = Object.keys(STRATEGY_TYPES).map(t=>
+      `<option value="${t}"${t===meta.type?' selected':''}>${STRATEGY_TYPES[t].label}</option>`
+    ).join('');
+    // Group header with editable type/sigma
+    const gh = document.createElement('tr');
+    gh.className='pf-group-hdr';
+    gh.innerHTML = `<td colspan="13" style="text-transform:none">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:13px">📂 <b>${escapeHtml(strat)}</b></span>
+        <span style="color:var(--tm);font-size:11px">${gLegs.length} ног</span>
+        <span style="color:var(--tl);font-size:11px">Тип:</span>
+        <select onchange="pfUpdateStratMeta('${escapeJs(strat)}','type',this.value)" style="background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;font-family:inherit">${typeOpts}</select>
+        <span style="color:var(--tl);font-size:11px">σ:</span>
+        <input type="number" step="0.5" value="${meta.sigma}" onchange="pfUpdateStratMeta('${escapeJs(strat)}','sigma',this.value)" style="width:55px;background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px;text-align:right;font-family:inherit"><span style="color:var(--tm);font-size:10px">%/мес</span>
+      </div>
+    </td>`;
+    tb.appendChild(gh);
+    for(const leg of gLegs){
+      idx++;
+      const pnlRub = pfCalcPnlRub(leg);
+      stratRub += pnlRub;
+      totalRub += pnlRub;
+      const pnlUsd = pnlRub / rub;
+      const pnlColor = pnlRub>=0 ? 'var(--green)' : 'var(--red)';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--tm)">${idx}</td>
+        <td><input type="text" value="${escapeHtml(leg.strategy)}" onchange="pfUpdateField('${leg.id}','strategy',this.value)"></td>
+        <td><input type="text" list="pfTickerList" value="${escapeHtml(leg.ticker)}" placeholder="USDRUBF/Si/..." onchange="pfUpdateField('${leg.id}','ticker',this.value)" style="text-align:left"></td>
+        <td><select onchange="pfUpdateField('${leg.id}','venue',this.value)">
+          <option${leg.venue==='MOEX'?' selected':''}>MOEX</option>
+          <option${leg.venue==='Forex'?' selected':''}>Forex</option>
+          <option${leg.venue==='Bitget'?' selected':''}>Bitget</option>
+        </select></td>
+        <td><select onchange="pfUpdateField('${leg.id}','side',this.value)">
+          <option value="long"${leg.side==='long'?' selected':''}>🟢 long</option>
+          <option value="short"${leg.side==='short'?' selected':''}>🔴 short</option>
+        </select></td>
+        <td><input type="number" step="0.01" value="${leg.lots}" onchange="pfUpdateField('${leg.id}','lots',this.value)"></td>
+        <td><input type="number" step="0.00001" value="${leg.entry}" onchange="pfUpdateField('${leg.id}','entry',this.value)"></td>
+        <td><input type="number" step="0.00001" value="${leg.current}" onchange="pfUpdateField('${leg.id}','current',this.value)"></td>
+        <td><input type="number" step="1" value="${leg.mult}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот"></td>
+        <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
+        <td class="hl" style="color:${pnlColor}">${fm(Math.round(pnlRub))} ₽</td>
+        <td class="hl" style="color:${pnlColor}">$${fm(Math.round(pnlUsd))}</td>
+        <td><button class="pf-del-btn" onclick="pfDeleteLeg('${leg.id}')" title="Удалить ногу">✕</button></td>`;
+      tb.appendChild(tr);
+    }
+    // Sub-total per strategy
+    const st = document.createElement('tr');
+    const stC = stratRub>=0?'var(--green)':'var(--red)';
+    st.innerHTML = `<td colspan="10" style="text-align:right;color:var(--tm);font-size:11px;background:rgba(139,92,246,.04)">Итого «${escapeHtml(strat)}»:</td><td class="hl" style="color:${stC};background:rgba(139,92,246,.04)">${fm(Math.round(stratRub))} ₽</td><td class="hl" style="color:${stC};background:rgba(139,92,246,.04)">$${fm(Math.round(stratRub/rub))}</td><td style="background:rgba(139,92,246,.04)"></td>`;
+    tb.appendChild(st);
+  }
+  // Summary
+  const totalUsd = totalRub / rub;
+  $('pfCount').textContent = strategies.length;
+  $('pfLegs').textContent = PF_LEGS.length;
+  $('pfPnlRub').textContent = (totalRub>=0?'+':'')+fm(Math.round(totalRub))+' ₽';
+  $('pfPnlRub').style.color = totalRub>=0?'var(--green)':'var(--red)';
+  $('pfPnlUsd').textContent = (totalUsd>=0?'+':'')+'$'+fm(Math.round(totalUsd));
+  $('pfPnlUsd').style.color = totalUsd>=0?'var(--green)':'var(--red)';
+  $('pfFootRub').textContent = (totalRub>=0?'+':'')+fm(Math.round(totalRub))+' ₽';
+  $('pfFootRub').style.color = totalRub>=0?'var(--green)':'var(--red)';
+  $('pfFootUsd').textContent = (totalUsd>=0?'+':'')+'$'+fm(Math.round(totalUsd));
+  $('pfFootUsd').style.color = totalUsd>=0?'var(--green)':'var(--red)';
+
+  // v0.0.8.b: Portfolio-level σ & VaR
+  const stats = pfCalcPortfolioStats();
+  const fmtRub = v=>{
+    const a=Math.abs(v);
+    if(a>=1000000)return (v/1000000).toFixed(2)+' М₽';
+    if(a>=10000)return fm(Math.round(v/1000))+' К₽';
+    return fm(Math.round(v))+' ₽';
+  };
+  $('pfTotalNot').textContent = fmtRub(stats.totalNotional);
+  $('pfSigmaM').textContent  = stats.sigmaPctMonthly.toFixed(2)+'%';
+  $('pfSigma10').textContent = stats.sigma10d.toFixed(2)+'%';
+  $('pfVar1').textContent = '−'+fmtRub(stats.var1s10d);
+  $('pfVar2').textContent = '−'+fmtRub(stats.var2s10d);
+  // Color by sigma magnitude
+  const sigLvlColor = stats.sigma10d<1?'var(--green)':stats.sigma10d<3?'var(--yellow)':stats.sigma10d<6?'var(--orange)':'var(--red)';
+  $('pfSigma10').style.color = sigLvlColor;
+  $('pfSigmaM').style.color = sigLvlColor;
+  $('pfVar1').style.color = 'var(--orange)';
+  $('pfVar2').style.color = 'var(--red)';
+  // Summary: diversification, top correlations, top weights
+  if(stats.strats.length===0){
+    $('pfRiskSummary').innerHTML = '<span style="color:var(--tm)">Нет позиций — добавь ноги, укажи тип каждой стратегии, и увидишь σ-оценку риска портфеля с учётом корреляций между типами.</span>';
+  } else {
+    const sortedW = stats.strats.slice().sort((a,b)=>b.notional-a.notional);
+    const topWList = sortedW.slice(0,5).map(s=>`<b>${escapeHtml(s.name)}</b> (${(s.notional/stats.totalNotional*100).toFixed(0)}% · ${STRATEGY_TYPES[s.type]?.label||s.type} · σ ${s.sigma}%)`).join(' · ');
+    const concPct = stats.concentration*100;
+    const concClr = concPct<30?'var(--green)':concPct<50?'var(--yellow)':'var(--red)';
+    // Find top 3 correlation pairs
+    const pairs = [];
+    for(let i=0;i<stats.strats.length;i++){
+      for(let j=i+1;j<stats.strats.length;j++){
+        const a=stats.strats[i], b=stats.strats[j];
+        const rho = (PF_CORR[a.type]||{})[b.type] || 0;
+        if(rho>0.2)pairs.push({a:a.name,b:b.name,rho});
+      }
+    }
+    pairs.sort((a,b)=>b.rho-a.rho);
+    const topCorr = pairs.slice(0,3).map(p=>`<b>${escapeHtml(p.a)}</b> ↔ <b>${escapeHtml(p.b)}</b>: ρ=${p.rho.toFixed(2)}`).join(' · ');
+
+    $('pfRiskSummary').innerHTML =
+      '<div><b style="color:var(--tw)">Веса (нотионал):</b> '+topWList+'</div>'
+      + '<div style="margin-top:4px"><b style="color:var(--tw)">Концентрация:</b> <b style="color:'+concClr+'">'+concPct.toFixed(0)+'%</b> (макс. вес в одной стратегии)</div>'
+      + (topCorr?'<div style="margin-top:4px"><b style="color:var(--tw)">Связанные стратегии:</b> '+topCorr+'</div>':'')
+      + '<div style="margin-top:6px;color:var(--tm);font-size:11px">VaR 1σ = ожидаемая просадка при движении спредов в 1 стандартное отклонение. VaR 2σ ≈ 95% квантиль. Расчёт по формуле σ²_порт = Σ wᵢwⱼσᵢσⱼρᵢⱼ с корреляционной матрицей по типам стратегий.</div>';
+  }
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeJs(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+function pfExport(){
+  const blob = new Blob([JSON.stringify(PF_LEGS, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'portfolio_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function pfImport(){
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='application/json';
+  inp.onchange = (e) => {
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try{
+        const data = JSON.parse(r.result);
+        if(!Array.isArray(data)) throw new Error('Expected array');
+        if(confirm('Заменить текущий портфель на импортированный? ('+data.length+' ног)')){
+          PF_LEGS = data; pfSave(PF_LEGS); pfRender();
+        }
+      }catch(err){ alert('Ошибка импорта: '+err.message); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function pfClear(){
+  if(!confirm('Точно удалить ВСЕ позиции из портфеля? Это необратимо (если не экспортировал JSON).')) return;
+  PF_LEGS = []; pfSave(PF_LEGS); pfRender();
+}
+// Ticker autocomplete
+(function(){
+  const dl = document.createElement('datalist');
+  dl.id = 'pfTickerList';
+  Object.keys(PF_SPECS).forEach(t=>{ const o=document.createElement('option'); o.value=t; dl.appendChild(o); });
+  document.body.appendChild(dl);
+})();
+
 document.querySelectorAll('input,select').forEach(el=>{
   if(el.id==='inLots') return; // slider handled separately
   const h=()=>{
@@ -4167,6 +4631,7 @@ document.querySelectorAll('input,select').forEach(el=>{
     else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
     else if(mode==='PERP_EU')calcPerp('PERP_EU');
     else if(mode==='PERP_GLD_MX')calcGldMx();
+    else if(mode==='PORTFOLIO')pfRender();
     else{autoLotMode=true;calc();}
   };
   el.addEventListener('input',h);el.addEventListener('change',h);
