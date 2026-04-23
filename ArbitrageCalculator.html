@@ -159,7 +159,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.e</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.f</p>
     </div>
   </div>
 
@@ -2919,7 +2919,9 @@ function calcOvw(){
       const GOLD=goldSt.price||9000, Si=siFront.si||76310, GD=gdFront.fut||3900;
       const goGold=goldSt.go||900, goSi=siFront.siGo||12267, goGd=gdFront.go||30000;
       const swap=goldSt.swapAvg!=null?goldSt.swapAvg:0.10;
-      const days=ovwDaysOverride!=null?ovwDaysOverride:Math.max(1,daysToExp(gdFront.exp)-35); // default horizon: small relative to expiry
+      // v0.0.7.f: default holding horizon pulled from the gold tab (gmDays) = 5 days by default
+      // (matches the trading strategy: short excursions from fair, close within a few days)
+      const days=ovwDaysOverride!=null?ovwDaysOverride:Math.max(1,+$('gmDays')?.value||5);
       const gmDaysToExp=daysToExp(gdFront.exp);
       const gmCbr=+$('gmCbr')?.value||16; const cbr=gmCbr/100;
       const gmQdays=+$('gmQdays')?.value||92;
