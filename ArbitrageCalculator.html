@@ -161,7 +161,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.c</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.d</p>
     </div>
   </div>
 
@@ -233,7 +233,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>USD/CNH (Forex)</label><input id="trFx" type="number" step="0.001" value="6.81" oninput="calcTriple()" onchange="calcTriple()"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="trRub" type="number" step="0.01" value="77" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="trDays" type="number" step="1" value="65" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="trIV" type="number" step="0.5" value="5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="trIV" type="number" step="0.5" value="7.5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchTriple" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusTriple" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -339,7 +339,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>EUR/CNH (Forex)</label><input id="teFx" type="number" step="0.001" value="8.0325" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="teRub" type="number" step="0.01" value="77" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="teDays" type="number" step="1" value="65" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="teIV" type="number" step="0.5" value="5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="teIV" type="number" step="0.5" value="7.5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchTripleEu" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusTripleEu" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -443,7 +443,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>EUR/USD (Forex)</label><input id="tuFx" type="number" step="0.00001" value="1.17304" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="tuRub" type="number" step="0.01" value="77" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="tuDays" type="number" step="1" value="65" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="tuIV" type="number" step="0.5" value="5" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="tuIV" type="number" step="0.5" value="7.5" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchTripleU" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusTripleU" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -547,7 +547,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>USD/CNH (Forex)</label><input id="puFx" type="number" step="0.001" value="6.810" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="puRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="puDays" type="number" step="1" value="10" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="puIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="puIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchPu" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusPu" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -657,7 +657,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>EUR/CNH (Forex)</label><input id="peFx" type="number" step="0.001" value="8.0325" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="peRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="peDays" type="number" step="1" value="10" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="peIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="peIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchPe" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusPe" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -767,7 +767,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>EUR/USD (Forex)</label><input id="prFx" type="number" step="0.00001" value="1.17304" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit"></div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="prRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="prDays" type="number" step="1" value="10" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">дн</div></div>
-          <div class="row"><label>IV спреда</label><input id="prIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="row"><label>IV спреда</label><input id="prIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchPr" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
           <div id="fetchStatusPr" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -2336,7 +2336,7 @@ function calcOvw(){
 
   // Triple arb rows — iterate contracts M/U/Z
   const trSwapLDef=+$('trSwapL').value||.245, trSwapSDef=+$('trSwapS').value||-.717;
-  const trFxLevT=+$('trFxLev').value||100, trIVT=+$('trIV').value||5;
+  const trFxLevT=+$('trFxLev').value||100, trIVT=+$('trIV').value||7.5;
   const fxCNH=MODES.UCNY.spot||+$('trFx').value||6.81;
   for(const[ckey,td] of Object.entries(TRIPLE_DATA.TRIPLE.contracts)){
     const days=daysToExp(td.exp);
@@ -2436,7 +2436,7 @@ function calcOvw(){
   // EU Triple arb row
   // EU Triple arb rows — iterate contracts M/U/Z
   const teSwapLDef=+$('teSwapL').value||0.007, teSwapSDef=+$('teSwapS').value||-0.507;
-  const teFxLevE=+$('teFxLev').value||100, teIVE=+$('teIV').value||5;
+  const teFxLevE=+$('teFxLev').value||100, teIVE=+$('teIV').value||7.5;
   const fxEURCNH=(MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('teFx').value||8.0325);
   for(const[ckey,te] of Object.entries(TRIPLE_DATA.TRIPLE_EU.contracts)){
     const days=daysToExp(te.exp);
@@ -2536,7 +2536,7 @@ function calcOvw(){
 
   // USD Triple arb rows — iterate contracts M/U/Z (Eu/Si vs EUR/USD)
   const tuSwapLDef=+$('tuSwapL').value||0.1, tuSwapSDef=+$('tuSwapS').value||-0.3;
-  const tuFxLevU=+$('tuFxLev').value||100, tuIVU=+$('tuIV').value||5;
+  const tuFxLevU=+$('tuFxLev').value||100, tuIVU=+$('tuIV').value||7.5;
   const fxEURUSD=MODES.EURUSD.spot||+$('tuFx').value||1.17304;
   for(const[ckey,tu] of Object.entries(TRIPLE_DATA.TRIPLE_USD.contracts)){
     const days=daysToExp(tu.exp);
@@ -2635,9 +2635,9 @@ function calcOvw(){
 
   // v0.0.5: perpetual triple rows (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
   const perpCats=[
-    {key:'PERP_UCNH', label:'USDRUBF÷CNYRUBF/UCNH', l1:'USDRUBF', l2:'CNYRUBF', fxSpot:(MODES.UCNY.spot||+$('puFx').value||6.81), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('puFxSwapS').value||-0.717, fxSwL:+$('puFxSwapL').value||0.245, fxLevU:+$('puFxLev').value||100, ivU:+$('puIV').value||5, daysDefault:+$('puDays').value||10},
-    {key:'PERP_ECNH', label:'EURRUBF÷CNYRUBF/ECNH', l1:'EURRUBF', l2:'CNYRUBF', fxSpot:((MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('peFx').value||8.0325)), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('peFxSwapS').value||-0.507, fxSwL:+$('peFxSwapL').value||0.007, fxLevU:+$('peFxLev').value||100, ivU:+$('peIV').value||5, daysDefault:+$('peDays').value||10},
-    {key:'PERP_EU',   label:'EURRUBF÷USDRUBF/EU',   l1:'EURRUBF', l2:'USDRUBF', fxSpot:(MODES.EURUSD.spot||+$('prFx').value||1.17304), fxPipValMode:'usd', pipSize:0.0001, fxSwS:+$('prFxSwapS').value||-0.3, fxSwL:+$('prFxSwapL').value||0.1, fxLevU:+$('prFxLev').value||100, ivU:+$('prIV').value||5, daysDefault:+$('prDays').value||10}
+    {key:'PERP_UCNH', label:'USDRUBF÷CNYRUBF/UCNH', l1:'USDRUBF', l2:'CNYRUBF', fxSpot:(MODES.UCNY.spot||+$('puFx').value||6.81), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('puFxSwapS').value||-0.717, fxSwL:+$('puFxSwapL').value||0.245, fxLevU:+$('puFxLev').value||100, ivU:+$('puIV').value||7.5, daysDefault:+$('puDays').value||10},
+    {key:'PERP_ECNH', label:'EURRUBF÷CNYRUBF/ECNH', l1:'EURRUBF', l2:'CNYRUBF', fxSpot:((MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('peFx').value||8.0325)), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('peFxSwapS').value||-0.507, fxSwL:+$('peFxSwapL').value||0.007, fxLevU:+$('peFxLev').value||100, ivU:+$('peIV').value||7.5, daysDefault:+$('peDays').value||10},
+    {key:'PERP_EU',   label:'EURRUBF÷USDRUBF/EU',   l1:'EURRUBF', l2:'USDRUBF', fxSpot:(MODES.EURUSD.spot||+$('prFx').value||1.17304), fxPipValMode:'usd', pipSize:0.0001, fxSwS:+$('prFxSwapS').value||-0.3, fxSwL:+$('prFxSwapL').value||0.1, fxLevU:+$('prFxLev').value||100, ivU:+$('prIV').value||7.5, daysDefault:+$('prDays').value||10}
   ];
   for(const pc of perpCats){
     const s1=PERP_STATE[pc.l1], s2=PERP_STATE[pc.l2];
@@ -2787,9 +2787,10 @@ function calcTriple(){
   const maxMx=Math.floor(pska/goPerSi);
   const maxFx=Math.floor(fxCap*fxLev/1000); // each Si = $1000
   let mx=Math.min(maxFx,maxMx);
-  mx=Math.max(1,Math.min(5000,mx));
+  mx=Math.max(1,Math.min(100000,mx)); // v0.0.5.d: cap raised 5000 → 100000 for large accounts
   let step;
-  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;else step=100;
+  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;
+  else if(mx<=10000)step=100;else if(mx<=50000)step=500;else step=1000;
   mx=Math.round(mx/step)*step;if(mx<step)mx=step;
   const sl=$('trLots');
   sl.min=step;sl.max=mx;sl.step=step;
@@ -3002,9 +3003,10 @@ function calcTripleEu(){
   const maxMx=Math.floor(pska/goPerEu);
   const eurusd=eu/1000/rub;
   const maxFx=Math.floor(fxCap*fxLev/(1000*eurusd));
-  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(5000,mx));
+  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(100000,mx)); // v0.0.5.d: raised 5000 → 100000
   let step;
-  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;else step=100;
+  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;
+  else if(mx<=10000)step=100;else if(mx<=50000)step=500;else step=1000;
   mx=Math.round(mx/step)*step;if(mx<step)mx=step;
   const sl=$('teLots');
   sl.min=step;sl.max=mx;sl.step=step;
@@ -3206,9 +3208,10 @@ function calcTripleU(){
   const eurusd=eu/si;
   // each Eu contract = 1000€ notional; value in USD = 1000*eurusd
   const maxFx=Math.floor(fxCap*fxLev/(1000*eurusd));
-  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(5000,mx));
+  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(100000,mx)); // v0.0.5.d: raised 5000 → 100000
   let step;
-  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;else step=100;
+  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;
+  else if(mx<=10000)step=100;else if(mx<=50000)step=500;else step=1000;
   mx=Math.round(mx/step)*step;if(mx<step)mx=step;
   const sl=$('tuLots');
   sl.min=step;sl.max=mx;sl.step=step;
@@ -3437,9 +3440,10 @@ function calcPerp(key){
   // For USD/CNH or EUR/CNH cross: notional$/contract = LOT1 × (leg1_price_rub / rub) — USD equivalent of 1000 BA
   const usdPerContract=cfg.leg1.baseUnit==='$'?LOT1:(LOT1*l1/rub);
   const maxFx=Math.floor(fxCap*fxLev/usdPerContract);
-  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(5000,mx));
+  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(100000,mx)); // v0.0.5.d: raised 5000 → 100000
   let step;
-  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;else step=100;
+  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;
+  else if(mx<=10000)step=100;else if(mx<=50000)step=500;else step=1000;
   mx=Math.round(mx/step)*step;if(mx<step)mx=step;
   const sl=$(p+'Lots');
   sl.min=step;sl.max=mx;sl.step=step;
