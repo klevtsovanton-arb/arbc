@@ -129,9 +129,9 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabTriple"    data-cat="CUR_TRI" onclick="switchTo('TRIPLE')" style="font-size:12px">Si/Cr/USDCNH</button>
       <button class="tab" id="tabTripleEu"  data-cat="CUR_TRI" onclick="switchTo('TRIPLE_EU')" style="font-size:12px">Eu/Cr/EURCNH</button>
       <button class="tab" id="tabTripleU"   data-cat="CUR_TRI" onclick="switchTo('TRIPLE_USD')" style="font-size:12px">Eu/Si/EURUSD</button>
-      <button class="tab" id="tabPerpUCNH"  data-cat="PERP_TRI" onclick="showStub('PERP_UCNH')" style="font-size:11px">♾️ USDRUBF÷CNYRUBF/UCNH</button>
-      <button class="tab" id="tabPerpECNH"  data-cat="PERP_TRI" onclick="showStub('PERP_ECNH')" style="font-size:11px">♾️ EURRUBF÷CNYRUBF/ECNH</button>
-      <button class="tab" id="tabPerpEU"    data-cat="PERP_TRI" onclick="showStub('PERP_EU')"   style="font-size:11px">♾️ EURRUBF÷USDRUBF/EU</button>
+      <button class="tab" id="tabPerpUCNH"  data-cat="PERP_TRI" onclick="switchTo('PERP_UCNH')" style="font-size:11px">♾️ USDRUBF÷CNYRUBF/UCNH</button>
+      <button class="tab" id="tabPerpECNH"  data-cat="PERP_TRI" onclick="switchTo('PERP_ECNH')" style="font-size:11px">♾️ EURRUBF÷CNYRUBF/ECNH</button>
+      <button class="tab" id="tabPerpEU"    data-cat="PERP_TRI" onclick="switchTo('PERP_EU')"   style="font-size:11px">♾️ EURRUBF÷USDRUBF/EU</button>
       <button class="tab" id="tabPerpGldMx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_MX')" style="font-size:11px">♾️ GLDRUBF/Si vs GD</button>
       <button class="tab" id="tabPerpGldFx" data-cat="PERP_TRI" onclick="showStub('PERP_GLD_FX')" style="font-size:11px">♾️ GLDRUBF/Si vs XAU</button>
       <button class="tab" id="tabGold"      data-cat="METAL"  onclick="switchTo('GOLD')">Gold</button>
@@ -161,7 +161,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.4.c</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.a</p>
     </div>
   </div>
 
@@ -205,6 +205,7 @@ tr.ovw-row-hidden{display:none !important}
         <span class="lbl">Категории:</span>
         <label><input type="checkbox" data-cat="currency"        checked onchange="applyOvwFilter()"> 💱 Валюты</label>
         <label><input type="checkbox" data-cat="currency_triple" checked onchange="applyOvwFilter()"> 🔗 Вал.тройнички</label>
+        <label><input type="checkbox" data-cat="perp_triple"     checked onchange="applyOvwFilter()"> ♾️ Вечники</label>
         <label><input type="checkbox" data-cat="metal"           checked onchange="applyOvwFilter()"> 🥇 Металлы</label>
         <label><input type="checkbox" data-cat="crypto"          checked onchange="applyOvwFilter()"> ₿ Крипта</label>
       </div>
@@ -535,6 +536,336 @@ tr.ovw-row-hidden{display:none !important}
     </div>
   </div>
 
+  <!-- PERPETUAL TRIPLE #1: USDRUBF ÷ CNYRUBF vs USD/CNH -->
+  <div id="perpUcnhContent" style="display:none">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:#9333EA">♾️ Цены ног (вечники + форекс)</div>
+          <div class="row"><label>USDRUBF (₽/$)</label><input id="puL1" type="number" step="0.01" value="77.00" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>CNYRUBF (₽/юань)</label><input id="puL2" type="number" step="0.001" value="11.210" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>USD/CNH (Forex)</label><input id="puFx" type="number" step="0.001" value="6.810" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit"></div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="puRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Дней в позиции</label><input id="puDays" type="number" step="1" value="10" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">дн</div></div>
+          <div class="row"><label>IV спреда</label><input id="puIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <button onclick="fetchPrices()" id="btnFetchPu" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+          <div id="fetchStatusPu" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💰 Капитал</div>
+          <div class="row"><label>Forex (свои)</label><input id="puFxCap" type="text" inputmode="numeric" value="5 000" oninput="syncCap('puFxCap');fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">$</div></div>
+          <div class="row"><label>Плечо Forex</label><input id="puFxLev" type="number" step="1" value="100" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">:1</div></div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="puMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('puMxOwn');fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="puPropLev" type="number" step="0.5" value="5" oninput="syncCap('puPropLev');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="puMxRisk" type="number" step="5" value="50" oninput="syncCap('puMxRisk');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="row"><label>ГО USDRUBF</label><input id="puGoL1" type="text" inputmode="numeric" value="7 700" oninput="fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО CNYRUBF</label><input id="puGoL2" type="text" inputmode="numeric" value="1 120" oninput="fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>Стоп-аут FX</label><input id="puStopout" type="number" step="5" value="50" oninput="syncCap('puStopout');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 Фандинг вечников (SWAPRATE)</div>
+          <div class="row"><label>Фандинг USDRUBF</label><input id="puSwapL1" type="number" step="0.001" value="0.100" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/$/дн</div></div>
+          <div class="hint"><span id="puSwapL1Info" style="color:var(--yellow);font-weight:700">—</span> <span style="color:var(--tm)">· клиринг ~19:05 МСК · знак «+» = лонг платит</span></div>
+          <div class="row"><label>Фандинг CNYRUBF</label><input id="puSwapL2" type="number" step="0.001" value="0.015" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/юань/дн</div></div>
+          <div class="hint"><span id="puSwapL2Info" style="color:var(--yellow);font-weight:700">—</span></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 FX-издержки</div>
+          <div class="row"><label>Своп USD/CNH short</label><input id="puFxSwapS" type="number" step="0.001" value="-0.717" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">пипс</div></div>
+          <div class="row"><label>Своп USD/CNH long</label><input id="puFxSwapL" type="number" step="0.001" value="0.245" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">пипс</div></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="puRepo" type="number" step="1" value="21" oninput="syncCap('puRepo');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="row"><label>Пейаут</label><input id="puPayout" type="number" step="1" value="5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
+          <div class="row"><label>Комиссия FX/лот</label><input id="puComm" type="number" step="1" value="5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">$</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="big"><div class="num" id="puSpreadVal" style="color:#9333EA">−0.20%</div><div class="sub" id="puSpreadSub">Синтетика дешевле</div></div>
+          <div class="sep"></div>
+          <div class="row"><label style="font-size:13px">Ожидаемая раздвижка</label><input id="puExpSpread" type="number" step="0.01" value="" placeholder="авто" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')" style="width:80px"><div class="unit">%</div></div>
+          <div class="hint">Пусто = считает из цен</div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--yellow)">📏 Размер позиции</div>
+          <div class="slider-val" id="puLotsDisp">10 USDRUBF + 68 CNYRUBF + 0.10 FX</div>
+          <div class="slider-box"><div style="display:flex;align-items:center;gap:8px">
+            <button onclick="adjPerpLots('PERP_UCNH',-1)" class="lot-btn">−</button>
+            <input id="puLots" type="range" min="1" max="250" step="1" value="10" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')" style="flex:1">
+            <button onclick="adjPerpLots('PERP_UCNH',1)" class="lot-btn">+</button>
+          </div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span id="puSlMin">1</span><span id="puSlMax">250</span></div>
+        </div>
+        <div class="card">
+          <div class="gauge"><div class="gauge-bar"><div class="gauge-fill" id="puGaugeF"></div></div>
+            <div class="gauge-marks"><span>0</span><span>1σ</span><span>2σ</span><span>3σ</span></div></div>
+          <div class="gauge-label"><span class="val" id="puGVal">1.20σ</span><br><span class="txt" id="puGTxt">УМЕРЕННО</span><br><span class="sub" id="puGSub">Шанс моржа: ~32%</span></div>
+        </div>
+        <div class="card">
+          <div class="buf-grid">
+            <div><div class="lbl">Forex буфер</div><div class="val" id="puBFx" style="color:var(--orange)">500 п.</div><div class="pct" id="puBFxP">5%</div></div>
+            <div><div class="lbl">МОЕХ буфер</div><div class="val" id="puBMx" style="color:var(--red)">300 п.</div><div class="pct" id="puBMxP">3%</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💵 P&L (лучший: всё на FX)</div>
+          <div class="pl-row"><span class="l">Гросс (раздвижка)</span><span class="v" id="puPlGross" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Своп FX</span><span class="v" id="puPlSwap" style="color:var(--red)">-$90</span></div>
+          <div class="pl-row"><span class="l">Фандинг вечников</span><span class="v" id="puPlFund" style="color:var(--red)">-$50</span></div>
+          <div class="pl-row"><span class="l">РЕПО</span><span class="v" id="puPlRepo" style="color:var(--red)">-$200</span></div>
+          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="puPlComm" style="color:var(--red)">-$5</span></div>
+          <div class="net-row"><span class="l">НЕТТО лучший</span><span class="v" id="puPlNet" style="color:var(--green)">+$255</span></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--red)">💵 P&L (худший: всё на МОЕХ + пейаут)</div>
+          <div class="pl-row"><span class="l">Гросс</span><span class="v" id="puPlGrossW" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Пейаут пропу</span><span class="v" id="puPlPayW" style="color:var(--red)">-$30</span></div>
+          <div class="pl-row"><span class="l">Свопы + Фандинг + РЕПО + Комм</span><span class="v" id="puPlCostsW" style="color:var(--red)">-$345</span></div>
+          <div class="net-row"><span class="l">НЕТТО худший</span><span class="v" id="puPlNetW" style="color:var(--green)">+$225</span></div>
+        </div>
+        <div class="card">
+          <div class="roi-grid">
+            <div><div class="lbl">ROI лучш.</div><div class="val" id="puRoiB" style="color:var(--cyan)">2.3%</div></div>
+            <div><div class="lbl">Годовых</div><div class="val" id="puAnnB" style="color:var(--cyan)">~84%</div></div>
+            <div><div class="lbl">Капитал</div><div class="val" id="puCap" style="color:var(--tl)">$26K</div></div>
+          </div>
+        </div>
+        <div class="reb" style="margin-top:10px">
+          <div class="title" style="color:#9333EA">⚖ РЕБАЛАНС (равный риск)</div>
+          <div id="puRebContent"></div>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-t" style="color:var(--yellow)">📊 Задействованный капитал</div>
+          <div id="puCapUsage"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-t" style="color:#9333EA">🎯 Четыре сценария схождения</div>
+      <div id="puScenConv" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px"></div>
+    </div>
+  </div>
+
+  <!-- PERPETUAL TRIPLE #2: EURRUBF ÷ CNYRUBF vs EUR/CNH -->
+  <div id="perpEcnhContent" style="display:none">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:#9333EA">♾️ Цены ног (вечники + форекс)</div>
+          <div class="row"><label>EURRUBF (₽/€)</label><input id="peL1" type="number" step="0.01" value="89.20" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>CNYRUBF (₽/юань)</label><input id="peL2" type="number" step="0.001" value="11.210" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>EUR/CNH (Forex)</label><input id="peFx" type="number" step="0.001" value="8.0325" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit"></div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="peRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Дней в позиции</label><input id="peDays" type="number" step="1" value="10" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">дн</div></div>
+          <div class="row"><label>IV спреда</label><input id="peIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <button onclick="fetchPrices()" id="btnFetchPe" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+          <div id="fetchStatusPe" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💰 Капитал</div>
+          <div class="row"><label>Forex (свои)</label><input id="peFxCap" type="text" inputmode="numeric" value="5 000" oninput="syncCap('peFxCap');fmtOnInput(this);calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">$</div></div>
+          <div class="row"><label>Плечо Forex</label><input id="peFxLev" type="number" step="1" value="100" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">:1</div></div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="peMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('peMxOwn');fmtOnInput(this);calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="pePropLev" type="number" step="0.5" value="5" oninput="syncCap('pePropLev');calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="peMxRisk" type="number" step="5" value="50" oninput="syncCap('peMxRisk');calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="row"><label>ГО EURRUBF</label><input id="peGoL1" type="text" inputmode="numeric" value="8 920" oninput="fmtOnInput(this);calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО CNYRUBF</label><input id="peGoL2" type="text" inputmode="numeric" value="1 120" oninput="fmtOnInput(this);calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>Стоп-аут FX</label><input id="peStopout" type="number" step="5" value="50" oninput="syncCap('peStopout');calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 Фандинг вечников (SWAPRATE)</div>
+          <div class="row"><label>Фандинг EURRUBF</label><input id="peSwapL1" type="number" step="0.001" value="0.110" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/€/дн</div></div>
+          <div class="hint"><span id="peSwapL1Info" style="color:var(--yellow);font-weight:700">—</span> <span style="color:var(--tm)">· клиринг ~19:05 МСК</span></div>
+          <div class="row"><label>Фандинг CNYRUBF</label><input id="peSwapL2" type="number" step="0.001" value="0.015" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/юань/дн</div></div>
+          <div class="hint"><span id="peSwapL2Info" style="color:var(--yellow);font-weight:700">—</span></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 FX-издержки</div>
+          <div class="row"><label>Своп EUR/CNH short</label><input id="peFxSwapS" type="number" step="0.001" value="-0.507" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">пипс</div></div>
+          <div class="row"><label>Своп EUR/CNH long</label><input id="peFxSwapL" type="number" step="0.001" value="0.007" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">пипс</div></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="peRepo" type="number" step="1" value="21" oninput="syncCap('peRepo');calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="row"><label>Пейаут</label><input id="pePayout" type="number" step="1" value="5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
+          <div class="row"><label>Комиссия FX/лот</label><input id="peComm" type="number" step="1" value="5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">$</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="big"><div class="num" id="peSpreadVal" style="color:#9333EA">−0.20%</div><div class="sub" id="peSpreadSub">Синтетика дешевле</div></div>
+          <div class="sep"></div>
+          <div class="row"><label style="font-size:13px">Ожидаемая раздвижка</label><input id="peExpSpread" type="number" step="0.01" value="" placeholder="авто" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')" style="width:80px"><div class="unit">%</div></div>
+          <div class="hint">Пусто = считает из цен</div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--yellow)">📏 Размер позиции</div>
+          <div class="slider-val" id="peLotsDisp">10 EURRUBF + 80 CNYRUBF + 0.10 FX</div>
+          <div class="slider-box"><div style="display:flex;align-items:center;gap:8px">
+            <button onclick="adjPerpLots('PERP_ECNH',-1)" class="lot-btn">−</button>
+            <input id="peLots" type="range" min="1" max="250" step="1" value="10" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')" style="flex:1">
+            <button onclick="adjPerpLots('PERP_ECNH',1)" class="lot-btn">+</button>
+          </div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span id="peSlMin">1</span><span id="peSlMax">250</span></div>
+        </div>
+        <div class="card">
+          <div class="gauge"><div class="gauge-bar"><div class="gauge-fill" id="peGaugeF"></div></div>
+            <div class="gauge-marks"><span>0</span><span>1σ</span><span>2σ</span><span>3σ</span></div></div>
+          <div class="gauge-label"><span class="val" id="peGVal">1.20σ</span><br><span class="txt" id="peGTxt">УМЕРЕННО</span><br><span class="sub" id="peGSub">Шанс моржа: ~32%</span></div>
+        </div>
+        <div class="card">
+          <div class="buf-grid">
+            <div><div class="lbl">Forex буфер</div><div class="val" id="peBFx" style="color:var(--orange)">500 п.</div><div class="pct" id="peBFxP">5%</div></div>
+            <div><div class="lbl">МОЕХ буфер</div><div class="val" id="peBMx" style="color:var(--red)">300 п.</div><div class="pct" id="peBMxP">3%</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💵 P&L (лучший: всё на FX)</div>
+          <div class="pl-row"><span class="l">Гросс (раздвижка)</span><span class="v" id="pePlGross" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Своп FX</span><span class="v" id="pePlSwap" style="color:var(--red)">-$90</span></div>
+          <div class="pl-row"><span class="l">Фандинг вечников</span><span class="v" id="pePlFund" style="color:var(--red)">-$50</span></div>
+          <div class="pl-row"><span class="l">РЕПО</span><span class="v" id="pePlRepo" style="color:var(--red)">-$200</span></div>
+          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="pePlComm" style="color:var(--red)">-$5</span></div>
+          <div class="net-row"><span class="l">НЕТТО лучший</span><span class="v" id="pePlNet" style="color:var(--green)">+$255</span></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--red)">💵 P&L (худший: всё на МОЕХ + пейаут)</div>
+          <div class="pl-row"><span class="l">Гросс</span><span class="v" id="pePlGrossW" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Пейаут пропу</span><span class="v" id="pePlPayW" style="color:var(--red)">-$30</span></div>
+          <div class="pl-row"><span class="l">Свопы + Фандинг + РЕПО + Комм</span><span class="v" id="pePlCostsW" style="color:var(--red)">-$345</span></div>
+          <div class="net-row"><span class="l">НЕТТО худший</span><span class="v" id="pePlNetW" style="color:var(--green)">+$225</span></div>
+        </div>
+        <div class="card">
+          <div class="roi-grid">
+            <div><div class="lbl">ROI лучш.</div><div class="val" id="peRoiB" style="color:var(--cyan)">2.3%</div></div>
+            <div><div class="lbl">Годовых</div><div class="val" id="peAnnB" style="color:var(--cyan)">~84%</div></div>
+            <div><div class="lbl">Капитал</div><div class="val" id="peCap" style="color:var(--tl)">$26K</div></div>
+          </div>
+        </div>
+        <div class="reb" style="margin-top:10px">
+          <div class="title" style="color:#9333EA">⚖ РЕБАЛАНС (равный риск)</div>
+          <div id="peRebContent"></div>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-t" style="color:var(--yellow)">📊 Задействованный капитал</div>
+          <div id="peCapUsage"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-t" style="color:#9333EA">🎯 Четыре сценария схождения</div>
+      <div id="peScenConv" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px"></div>
+    </div>
+  </div>
+
+  <!-- PERPETUAL TRIPLE #3: EURRUBF ÷ USDRUBF vs EUR/USD -->
+  <div id="perpEuContent" style="display:none">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:#9333EA">♾️ Цены ног (вечники + форекс)</div>
+          <div class="row"><label>EURRUBF (₽/€)</label><input id="prL1" type="number" step="0.01" value="89.20" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>USDRUBF (₽/$)</label><input id="prL2" type="number" step="0.01" value="77.00" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>EUR/USD (Forex)</label><input id="prFx" type="number" step="0.00001" value="1.17304" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit"></div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="prRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Дней в позиции</label><input id="prDays" type="number" step="1" value="10" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">дн</div></div>
+          <div class="row"><label>IV спреда</label><input id="prIV" type="number" step="0.5" value="5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <button onclick="fetchPrices()" id="btnFetchPr" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+          <div id="fetchStatusPr" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💰 Капитал</div>
+          <div class="row"><label>Forex (свои)</label><input id="prFxCap" type="text" inputmode="numeric" value="5 000" oninput="syncCap('prFxCap');fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">$</div></div>
+          <div class="row"><label>Плечо Forex</label><input id="prFxLev" type="number" step="1" value="100" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">:1</div></div>
+          <div class="row"><label>МОЕХ (свои)</label><input id="prMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('prMxOwn');fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>Плечо пропа</label><input id="prPropLev" type="number" step="0.5" value="5" oninput="syncCap('prPropLev');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">×</div></div>
+          <div class="row"><label>Морж МОЕХ</label><input id="prMxRisk" type="number" step="5" value="50" oninput="syncCap('prMxRisk');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="row"><label>ГО EURRUBF</label><input id="prGoL1" type="text" inputmode="numeric" value="8 920" oninput="fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО USDRUBF</label><input id="prGoL2" type="text" inputmode="numeric" value="7 700" oninput="fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>Стоп-аут FX</label><input id="prStopout" type="number" step="5" value="50" oninput="syncCap('prStopout');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 Фандинг вечников (SWAPRATE)</div>
+          <div class="row"><label>Фандинг EURRUBF</label><input id="prSwapL1" type="number" step="0.001" value="0.110" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/€/дн</div></div>
+          <div class="hint"><span id="prSwapL1Info" style="color:var(--yellow);font-weight:700">—</span> <span style="color:var(--tm)">· клиринг ~19:05 МСК</span></div>
+          <div class="row"><label>Фандинг USDRUBF</label><input id="prSwapL2" type="number" step="0.001" value="0.100" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/$/дн</div></div>
+          <div class="hint"><span id="prSwapL2Info" style="color:var(--yellow);font-weight:700">—</span></div>
+          <div class="sep"></div>
+          <div class="card-t" style="color:var(--red)">💸 FX-издержки</div>
+          <div class="row"><label>Своп EUR/USD short</label><input id="prFxSwapS" type="number" step="0.01" value="-0.3" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">пипс</div></div>
+          <div class="row"><label>Своп EUR/USD long</label><input id="prFxSwapL" type="number" step="0.01" value="0.1" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">пипс</div></div>
+          <div class="row"><label>РЕПО (год.)</label><input id="prRepo" type="number" step="1" value="21" oninput="syncCap('prRepo');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="row"><label>Пейаут</label><input id="prPayout" type="number" step="1" value="5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
+          <div class="row"><label>Комиссия FX/лот</label><input id="prComm" type="number" step="1" value="5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">$</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="big"><div class="num" id="prSpreadVal" style="color:#9333EA">−0.20%</div><div class="sub" id="prSpreadSub">Синтетика дешевле</div></div>
+          <div class="sep"></div>
+          <div class="row"><label style="font-size:13px">Ожидаемая раздвижка</label><input id="prExpSpread" type="number" step="0.01" value="" placeholder="авто" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')" style="width:80px"><div class="unit">%</div></div>
+          <div class="hint">Пусто = считает из цен</div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--yellow)">📏 Размер позиции</div>
+          <div class="slider-val" id="prLotsDisp">10 EURRUBF + 12 USDRUBF + 0.10 FX</div>
+          <div class="slider-box"><div style="display:flex;align-items:center;gap:8px">
+            <button onclick="adjPerpLots('PERP_EU',-1)" class="lot-btn">−</button>
+            <input id="prLots" type="range" min="1" max="250" step="1" value="10" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')" style="flex:1">
+            <button onclick="adjPerpLots('PERP_EU',1)" class="lot-btn">+</button>
+          </div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tm)"><span id="prSlMin">1</span><span id="prSlMax">250</span></div>
+        </div>
+        <div class="card">
+          <div class="gauge"><div class="gauge-bar"><div class="gauge-fill" id="prGaugeF"></div></div>
+            <div class="gauge-marks"><span>0</span><span>1σ</span><span>2σ</span><span>3σ</span></div></div>
+          <div class="gauge-label"><span class="val" id="prGVal">1.20σ</span><br><span class="txt" id="prGTxt">УМЕРЕННО</span><br><span class="sub" id="prGSub">Шанс моржа: ~32%</span></div>
+        </div>
+        <div class="card">
+          <div class="buf-grid">
+            <div><div class="lbl">Forex буфер</div><div class="val" id="prBFx" style="color:var(--orange)">500 п.</div><div class="pct" id="prBFxP">5%</div></div>
+            <div><div class="lbl">МОЕХ буфер</div><div class="val" id="prBMx" style="color:var(--red)">300 п.</div><div class="pct" id="prBMxP">3%</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-t" style="color:var(--green)">💵 P&L (лучший: всё на FX)</div>
+          <div class="pl-row"><span class="l">Гросс (раздвижка)</span><span class="v" id="prPlGross" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Своп FX</span><span class="v" id="prPlSwap" style="color:var(--red)">-$90</span></div>
+          <div class="pl-row"><span class="l">Фандинг вечников</span><span class="v" id="prPlFund" style="color:var(--red)">-$50</span></div>
+          <div class="pl-row"><span class="l">РЕПО</span><span class="v" id="prPlRepo" style="color:var(--red)">-$200</span></div>
+          <div class="pl-row"><span class="l">Комиссии</span><span class="v" id="prPlComm" style="color:var(--red)">-$5</span></div>
+          <div class="net-row"><span class="l">НЕТТО лучший</span><span class="v" id="prPlNet" style="color:var(--green)">+$255</span></div>
+        </div>
+        <div class="card">
+          <div class="card-t" style="color:var(--red)">💵 P&L (худший: всё на МОЕХ + пейаут)</div>
+          <div class="pl-row"><span class="l">Гросс</span><span class="v" id="prPlGrossW" style="color:var(--green)">+$600</span></div>
+          <div class="pl-row"><span class="l">Пейаут пропу</span><span class="v" id="prPlPayW" style="color:var(--red)">-$30</span></div>
+          <div class="pl-row"><span class="l">Свопы + Фандинг + РЕПО + Комм</span><span class="v" id="prPlCostsW" style="color:var(--red)">-$345</span></div>
+          <div class="net-row"><span class="l">НЕТТО худший</span><span class="v" id="prPlNetW" style="color:var(--green)">+$225</span></div>
+        </div>
+        <div class="card">
+          <div class="roi-grid">
+            <div><div class="lbl">ROI лучш.</div><div class="val" id="prRoiB" style="color:var(--cyan)">2.3%</div></div>
+            <div><div class="lbl">Годовых</div><div class="val" id="prAnnB" style="color:var(--cyan)">~84%</div></div>
+            <div><div class="lbl">Капитал</div><div class="val" id="prCap" style="color:var(--tl)">$26K</div></div>
+          </div>
+        </div>
+        <div class="reb" style="margin-top:10px">
+          <div class="title" style="color:#9333EA">⚖ РЕБАЛАНС (равный риск)</div>
+          <div id="prRebContent"></div>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <div class="card-t" style="color:var(--yellow)">📊 Задействованный капитал</div>
+          <div id="prCapUsage"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-t" style="color:#9333EA">🎯 Четыре сценария схождения</div>
+      <div id="prScenConv" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px"></div>
+    </div>
+  </div>
+
   <!-- Plug panel for sections under development -->
   <div id="stubContent" style="display:none">
     <div class="stub-panel">
@@ -709,7 +1040,8 @@ const ASSET_TYPES={
   EURUSD:'currency', UCNY:'currency',
   GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
   BTC:'crypto', ETH:'crypto',
-  TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple'
+  TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple',
+  PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple'
 };
 // Category → list of tab IDs. ALL = no filter.
 const CATEGORY_MAP={
@@ -727,15 +1059,6 @@ const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR
 
 // Stub content for sections under development
 const STUB_CONTENT={
-  PERP_UCNH:{icon:'♾️',title:'Тройничок вечников — USDRUBF ÷ CNYRUBF vs USD/CNH',
-    plan:'<b>Формула синтетики:</b> <code>USDRUBF / CNYRUBF = USD/CNH</code><br><b>Против:</b> форексный USD/CNH<br><b>Особенности:</b> нет экспирации, фандинг раз в сутки (спецификация — <code>moex.com/a8493</code>), расчёт дневной стоимости удержания из прайсинга контрактов.<br><b>Новые параметры:</b> ставка фандинга каждой ноги, время клиринга, отсутствие экспирации (вместо неё — «горизонт удержания»).',
-    ver:'Движок появится в <b>v0.0.7</b> после добавления маршрута <code>/moex-perp</code> на воркере.'},
-  PERP_ECNH:{icon:'♾️',title:'Тройничок вечников — EURRUBF ÷ CNYRUBF vs EUR/CNH',
-    plan:'<b>Формула синтетики:</b> <code>EURRUBF / CNYRUBF = EUR/CNH</code><br><b>Против:</b> форексный EUR/CNH<br>Аналог евровального тройничка, но из вечников без экспирации.',
-    ver:'Движок — <b>v0.0.7</b>.'},
-  PERP_EU:{icon:'♾️',title:'Тройничок вечников — EURRUBF ÷ USDRUBF vs EUR/USD',
-    plan:'<b>Формула синтетики:</b> <code>EURRUBF / USDRUBF = EUR/USD</code><br><b>Против:</b> форексный EUR/USD<br>Третий сторонний путь собрать EUR/USD на МОЕХ — через вечники без экспирации (альтернатива фьючам Eu/Si).',
-    ver:'Движок — <b>v0.0.7</b>.'},
   PERP_GLD_MX:{icon:'♾️',title:'Золото-вечник vs фьючерс МОЕХ — GLDRUBF vs GD',
     plan:'<b>Формула синтетики:</b> <code>GLDRUBF × 31.1 × 1000 / Si = $/унция</code><br><b>Против:</b> фьючерс Gold (GD) на МОЕХ<br>Арбитраж между вечником золота и его же фьючерсом — через доллар-Si как переход от ₽/грамм к $/унция.',
     ver:'Движок — <b>v0.0.7</b>.'},
@@ -788,7 +1111,7 @@ function showStub(key){
   $('mainContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
   $('contractPills').style.display='none';
   {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
   // clear active state on instrument tabs
@@ -928,6 +1251,42 @@ const TRIPLE_DATA={
   }
 };
 
+// === v0.0.5 === Perpetual futures triples (no expiration, with SWAPRATE funding)
+// For each triple: synth = leg1 / leg2, arbitraged vs FX spot.
+// Funding semantics: SWAPRATE in ₽ per BA unit per day; positive → long pays short.
+const PERP_CONFIG={
+  PERP_UCNH:{
+    prefix:'pu', color:'#9333EA', contentId:'perpUcnhContent', tabId:'tabPerpUCNH',
+    title:'Вечники USDRUBF÷CNYRUBF vs USD/CNH',
+    legend:'USDRUBF÷CNYRUBF → синтетический USD/CNH, торгуем против форекса',
+    leg1:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)',   baseUnit:'$',    lotVol:1000, swapUnit:'₽/$/дн',    defaultPrice:77.00, defaultGo:7700,  defaultSwap:0.10},
+    leg2:{ticker:'CNYRUBF', shortLbl:'CNYRUBF', priceLbl:'CNYRUBF (₽/юань)', baseUnit:'юань', lotVol:1000, swapUnit:'₽/юань/дн', defaultPrice:11.21, defaultGo:1120,  defaultSwap:0.015},
+    fx:{symbol:'USD/CNH', lbl:'USD/CNH (Forex)', defaultPrice:6.81, pipSize:0.001, pipValMode:'cnh', swapS:-0.717, swapL:0.245}
+  },
+  PERP_ECNH:{
+    prefix:'pe', color:'#9333EA', contentId:'perpEcnhContent', tabId:'tabPerpECNH',
+    title:'Вечники EURRUBF÷CNYRUBF vs EUR/CNH',
+    legend:'EURRUBF÷CNYRUBF → синтетический EUR/CNH, торгуем против форекса',
+    leg1:{ticker:'EURRUBF', shortLbl:'EURRUBF', priceLbl:'EURRUBF (₽/€)',   baseUnit:'€',    lotVol:1000, swapUnit:'₽/€/дн',    defaultPrice:89.20, defaultGo:8920,  defaultSwap:0.11},
+    leg2:{ticker:'CNYRUBF', shortLbl:'CNYRUBF', priceLbl:'CNYRUBF (₽/юань)', baseUnit:'юань', lotVol:1000, swapUnit:'₽/юань/дн', defaultPrice:11.21, defaultGo:1120,  defaultSwap:0.015},
+    fx:{symbol:'EUR/CNH', lbl:'EUR/CNH (Forex)', defaultPrice:8.0325, pipSize:0.001, pipValMode:'cnh', swapS:-0.507, swapL:0.007}
+  },
+  PERP_EU:{
+    prefix:'pr', color:'#9333EA', contentId:'perpEuContent', tabId:'tabPerpEU',
+    title:'Вечники EURRUBF÷USDRUBF vs EUR/USD',
+    legend:'EURRUBF÷USDRUBF → синтетический EUR/USD, торгуем против форекса',
+    leg1:{ticker:'EURRUBF', shortLbl:'EURRUBF', priceLbl:'EURRUBF (₽/€)', baseUnit:'€', lotVol:1000, swapUnit:'₽/€/дн', defaultPrice:89.20, defaultGo:8920, defaultSwap:0.11},
+    leg2:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)', baseUnit:'$', lotVol:1000, swapUnit:'₽/$/дн', defaultPrice:77.00, defaultGo:7700, defaultSwap:0.10},
+    fx:{symbol:'EUR/USD', lbl:'EUR/USD (Forex)', defaultPrice:1.17304, pipSize:0.0001, pipValMode:'usd', swapS:-0.3, swapL:0.1}
+  }
+};
+// Live state: updated by fetchPrices. Keeps last-known prices/funding for each ticker.
+const PERP_STATE={
+  USDRUBF:{price:77.00, go:7700, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
+  CNYRUBF:{price:11.21, go:1120, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
+  EURRUBF:{price:89.20, go:8920, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''}
+};
+
 
 // === Formatted input helpers ===
 function fmtInt(n){
@@ -954,7 +1313,10 @@ const CAP_STEPS={
   ovwRub:100000,
   trFxCap:100, trMxOwn:100000, trGoSi:100, trGoCr:100,
   teFxCap:100, teMxOwn:100000, teGoEu:100, teGoCr:100,
-  tuFxCap:100, tuMxOwn:100000, tuGoEu:100, tuGoSi:100
+  tuFxCap:100, tuMxOwn:100000, tuGoEu:100, tuGoSi:100,
+  puFxCap:100, puMxOwn:100000, puGoL1:100, puGoL2:100,
+  peFxCap:100, peMxOwn:100000, peGoL1:100, peGoL2:100,
+  prFxCap:100, prMxOwn:100000, prGoL1:100, prGoL2:100
 };
 function stepCap(id,dir){
   const step=CAP_STEPS[id]||1;
@@ -967,6 +1329,9 @@ function stepCap(id,dir){
   if(id.startsWith('tr')){calcTriple&&calcTriple();return;}
   if(id.startsWith('te')){calcTripleEu&&calcTripleEu();return;}
   if(id.startsWith('tu')){calcTripleU&&calcTripleU();return;}
+  if(id.startsWith('pu')){calcPerp&&calcPerp('PERP_UCNH');return;}
+  if(id.startsWith('pe')){calcPerp&&calcPerp('PERP_ECNH');return;}
+  if(id.startsWith('pr')){calcPerp&&calcPerp('PERP_EU');  return;}
   calc&&calc();
 }
 function injectCapSpins(){
@@ -990,14 +1355,14 @@ if(document.readyState!=='loading') injectCapSpins();
 // in Overview (explore hypothetical totals), while inFxCap/inMxOwn are actual per-side
 // capital that IS shared across instrument+triple tabs.
 const SHARED_CAP_GROUPS={
-  fxCap:  ['inFxCap','trFxCap','teFxCap','tuFxCap'],
-  mxOwn:  ['inMxOwn','trMxOwn','teMxOwn','tuMxOwn'],
-  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','ovwProp'],
-  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','ovwRisk'],
+  fxCap:  ['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap'],
+  mxOwn:  ['inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn'],
+  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','puPropLev','pePropLev','prPropLev','ovwProp'],
+  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','puMxRisk','peMxRisk','prMxRisk','ovwRisk'],
   // stopout intentionally NOT synced (crypto vs forex semantics differ)
-  repoAnn:['inRepo','trRepo','teRepo','tuRepo','ovwRepo']
+  repoAnn:['inRepo','trRepo','teRepo','tuRepo','puRepo','peRepo','prRepo','ovwRepo']
 };
-const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','tuFxCap','inMxOwn','trMxOwn','teMxOwn','tuMxOwn','inGO','ovwRub','trGoSi','trGoCr','teGoEu','teGoCr','tuGoEu','tuGoSi']);
+const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap','inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','inGO','ovwRub','trGoSi','trGoCr','teGoEu','teGoCr','tuGoEu','tuGoSi','puGoL1','puGoL2','peGoL1','peGoL2','prGoL1','prGoL2']);
 function syncCap(srcId){
   let key=null;
   for(const k in SHARED_CAP_GROUPS){if(SHARED_CAP_GROUPS[k].includes(srcId)){key=k;break;}}
@@ -1014,6 +1379,9 @@ function syncCap(srcId){
   else if(mode==='TRIPLE')calcTriple();
   else if(mode==='TRIPLE_EU')calcTripleEu();
   else if(mode==='TRIPLE_USD')calcTripleU();
+  else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
+  else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
+  else if(mode==='PERP_EU')calcPerp('PERP_EU');
   else if(mode!=='OVW')calc&&calc();
 }
 
@@ -1028,7 +1396,7 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
@@ -1037,7 +1405,7 @@ function switchTo(m){
     mode='OVW';
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
-    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
     $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
@@ -1049,7 +1417,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE||'M';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
     $('tripleContent').style.display='';
     const td=TRIPLE_DATA.TRIPLE.contracts[currentContract];
     if(td){
@@ -1071,7 +1439,7 @@ function switchTo(m){
     currentContract=savedContract.TRIPLE_EU||'M';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
-    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
     $('tripleEuContent').style.display='';
     const te=TRIPLE_DATA.TRIPLE_EU.contracts[currentContract];
     if(te){
@@ -1086,6 +1454,22 @@ function switchTo(m){
     $('hdrSub').textContent='Eu×CNY синтетика vs Forex EURCNH | Эксп. '+expDispTE;
     updateContractPills('#E5C100');
     calcTripleEu();
+    return;
+  }
+  // v0.0.5: perpetual triples (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
+  if(m==='PERP_UCNH'||m==='PERP_ECNH'||m==='PERP_EU'){
+    const cfg=PERP_CONFIG[m];
+    if(!cfg){return;}
+    mode=m;
+    $(cfg.tabId).classList.add('on');$(cfg.tabId).style.background=cfg.color;
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+    // hide other perp panels
+    ['perpUcnhContent','perpEcnhContent','perpEuContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
+    $(cfg.contentId).style.display='';
+    $('hdrTitle').textContent=cfg.title;
+    $('hdrSub').textContent=cfg.legend+' · горизонт удержания настраивается';
+    calcPerp(m);
     return;
   }
   if(m==='TRIPLE_USD'){
@@ -1117,7 +1501,7 @@ function switchTo(m){
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
   $('tripleEuContent').style.display='none';
-  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
+  $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}
   $('mainContent').style.display='';
   // Show correct pill row: crypto has 4 contracts (J/K/M/N), others have 3 (M/U/Z)
   if(p.isCrypto){
@@ -2247,6 +2631,114 @@ function calcOvw(){
     ovwRows.push({netBest:bNetU,roiBest:bRoiU,annBest:annBU,netWorst:bNetWU,roiWorst:roiWU,annWorst:annWU,sigma:bSigU,tr:trTU});
   }
 
+  // v0.0.5: perpetual triple rows (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
+  const perpCats=[
+    {key:'PERP_UCNH', label:'USDRUBF÷CNYRUBF/UCNH', l1:'USDRUBF', l2:'CNYRUBF', fxSpot:(MODES.UCNY.spot||+$('puFx').value||6.81), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('puFxSwapS').value||-0.717, fxSwL:+$('puFxSwapL').value||0.245, fxLevU:+$('puFxLev').value||100, ivU:+$('puIV').value||5, daysDefault:+$('puDays').value||10},
+    {key:'PERP_ECNH', label:'EURRUBF÷CNYRUBF/ECNH', l1:'EURRUBF', l2:'CNYRUBF', fxSpot:((MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('peFx').value||8.0325)), fxPipValMode:'cnh', pipSize:0.001, fxSwS:+$('peFxSwapS').value||-0.507, fxSwL:+$('peFxSwapL').value||0.007, fxLevU:+$('peFxLev').value||100, ivU:+$('peIV').value||5, daysDefault:+$('peDays').value||10},
+    {key:'PERP_EU',   label:'EURRUBF÷USDRUBF/EU',   l1:'EURRUBF', l2:'USDRUBF', fxSpot:(MODES.EURUSD.spot||+$('prFx').value||1.17304), fxPipValMode:'usd', pipSize:0.0001, fxSwS:+$('prFxSwapS').value||-0.3, fxSwL:+$('prFxSwapL').value||0.1, fxLevU:+$('prFxLev').value||100, ivU:+$('prIV').value||5, daysDefault:+$('prDays').value||10}
+  ];
+  for(const pc of perpCats){
+    const s1=PERP_STATE[pc.l1], s2=PERP_STATE[pc.l2];
+    if(!s1||!s2)continue;
+    const l1P=s1.price, l2P=s2.price, fxP=pc.fxSpot;
+    const days=pc.daysDefault;
+    const synth=l1P/l2P;
+    const triSp=(synth-fxP)/fxP*100;
+    const absSp=Math.abs(triSp);
+    const isN=triSp<0;
+    const fxSwap=isN?pc.fxSwS:pc.fxSwL;
+    const goL1=s1.go, goL2=s2.go;
+    const LOT1=s1.lotVol||1000, LOT2=s2.lotVol||1000;
+    const swL1=s1.swapAvg!=null?s1.swapAvg:0;
+    const swL2=s2.swapAvg!=null?s2.swapAvg:0;
+    const l2PerL1=Math.round(fxP);
+    const goPerL1=goL1+l2PerL1*goL2;
+    const pskaP=totalRub*propLev;
+    const usdPerContract=(pc.l1==='USDRUBF')?LOT1:(LOT1*l1P/rub);
+    const maxL1C=Math.min(Math.floor(pskaP/goPerL1),Math.floor(totalUsd/(usdPerContract/pc.fxLevU+usdPerContract*pc.pipSize*100)));
+    let pStep;
+    if(maxL1C<=20)pStep=1;else if(maxL1C<=100)pStep=5;else if(maxL1C<=500)pStep=10;
+    else if(maxL1C<=2000)pStep=50;else pStep=100;
+    let bN1=0,bFx=0,bMx=0,bSig=0,bNet=0,bNetW=0,bRoi=0,bTT='',bTTW='';
+    for(let n1=pStep;n1<=maxL1C;n1+=pStep){
+      const notRub=n1*LOT1*l1P;
+      const notUsd=notRub/rub;
+      const fxLotsP=n1/100;
+      const n2C=Math.round(fxP*n1);
+      const fxMargP=notUsd/pc.fxLevU;
+      const seP=stopout*fxMargP;
+      const mxGoP=n1*goL1+n2C*goL2;
+      if(mxGoP>pskaP)break;
+      const fxCapP=(totalUsd*mxRisk+seP)/(1+mxRisk);
+      const mxOwnP=(totalUsd-fxCapP)*rub;
+      if(fxCapP<seP+100||mxOwnP<10000)continue;
+      if(mxGoP>mxOwnP*propLev)continue;
+      const fxBufP=(fxCapP-seP)/notUsd*100;
+      const mxBufP=mxOwnP*mxRisk/(notRub/100);
+      const minP=Math.min(fxBufP,mxBufP);
+      const sigPP=pc.ivU/100*Math.sqrt(days/365);
+      const sigP=sigPP>0?minP/100/sigPP:0;
+      if(sigP<1.2)break;
+      const grossP=absSp/100*notUsd;
+      const fxPipValU=pc.fxPipValMode==='usd'?10:(100*s2.price/rub); // CNY leg drives CNH pip value
+      const fxSwT=fxSwap*fxPipValU*fxLotsP*days;
+      const dir1=isN?+1:-1;const dir2=-dir1;
+      const fundRub=(-dir1*swL1*LOT1*n1-dir2*swL2*LOT2*n2C)*days;
+      const fundT=fundRub/rub;
+      const borP=Math.max(0,mxGoP-mxOwnP);
+      const repoP=borP*repoAnn/365*days/rub;
+      const cmP=Math.max(1,Math.round(fxLotsP))*5;
+      const netP=grossP+fxSwT+fundT-repoP-cmP;
+      const payWP=grossP*payoutPct;
+      const netWP=netP-payWP;
+      const totCP=fxCapP+mxOwnP/rub;
+      bN1=n1;bFx=Math.round(fxCapP);bMx=Math.round(mxOwnP);bSig=sigP;bNet=netP;bNetW=netWP;bRoi=netP/totCP*100;
+      const borKP=Math.round(borP/1000);
+      bTT=`Gross (раздвижка): $${fm(Math.round(grossP))}`
+        +`\n${fxSwT>=0?'+':'−'} Своп FX: $${fm(Math.round(Math.abs(fxSwT)))}`
+        +`\n${fundT>=0?'+':'−'} Фандинг вечников: $${fm(Math.round(Math.abs(fundT)))}`
+        +`\n− РЕПО: $${fm(Math.round(repoP))}${borP>0?' (заём '+borKP+'К₽ на '+days+'д)':' (своих хватает)'}`
+        +`\n− Комиссии: $${fm(Math.round(cmP))}`
+        +`\n═══════════════`
+        +`\n= NET: $${fm(Math.round(netP))}`;
+      bTTW=bTT+`\n\n− Пейаут пропу (${Math.round(payoutPct*100)}%): $${fm(Math.round(payWP))}`
+        +`\n═══════════════`
+        +`\n= NET (худший): $${fm(Math.round(netWP))}`;
+    }
+    const totCP=bFx+bMx/rub;
+    const annBP=days>0?bRoi/days*365:0;
+    const roiWP=totCP>0?bNetW/totCP*100:0;
+    const annWP=days>0?roiWP/days*365:0;
+    const sigCP=bSig>=2?'var(--green)':bSig>=1.2?'var(--yellow)':'var(--red)';
+    const netCP=bNet>=0?'var(--green)':'var(--red)';
+    const netWCP=bNetW>=0?'var(--green)':'var(--red)';
+    const dirTP=isN?'бэкв.':'конт.';
+    const dirCP=isN?'var(--green)':'var(--yellow)';
+    const bFxLotsP=(bN1/100).toFixed(2);
+    const bN2C=Math.round(fxP*bN1);
+    const trPT=document.createElement('tr');
+    trPT.style.cursor='pointer';
+    trPT.dataset.cat='perp_triple';
+    const _perpKey=pc.key;
+    trPT.onclick=()=>{switchTo(_perpKey);};
+    trPT.innerHTML=`
+      <td class="hl" style="color:#9333EA;font-size:14px;font-weight:900">♾️ ${pc.label} <span style="font-size:10px;color:var(--tm);font-weight:500">· ${days}д</span></td>
+      <td class="hl">${absSp.toFixed(2)}%</td>
+      <td style="color:${dirCP}">${dirTP}</td>
+      <td>${bN1>0?bFxLotsP:'—'}</td>
+      <td>${bN1>0?fm(bN1)+' '+pc.l1+' + '+fm(bN2C)+' '+pc.l2:'—'}</td>
+      <td>$${fm(bFx)}</td>
+      <td>${fm(Math.round(bMx/1000))}К</td>
+      <td class="hl" style="color:${sigCP}">${bSig>0?bSig.toFixed(2)+'σ':'—'}</td>
+      <td class="hl" style="color:${netCP}" title="${bTT}">${bN1>0?'$'+fm(Math.round(bNet)):'—'}</td>
+      <td style="color:${netCP}" title="${bTT}">${bN1>0?bRoi.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netCP}" title="${bTT}">${bN1>0?'~'+annBP.toFixed(0)+'%':'—'}</td>
+      <td class="hl" style="color:${netWCP}" title="${bTTW}">${bN1>0?'$'+fm(Math.round(bNetW)):'—'}</td>
+      <td style="color:${netWCP}" title="${bTTW}">${bN1>0?roiWP.toFixed(1)+'%':'—'}</td>
+      <td style="color:${netWCP}" title="${bTTW}">${bN1>0?'~'+annWP.toFixed(0)+'%':'—'}</td>`;
+    ovwRows.push({netBest:bNet,roiBest:bRoi,annBest:annBP,netWorst:bNetW,roiWorst:roiWP,annWorst:annWP,sigma:bSig,tr:trPT});
+  }
+
   // Sort by current sort key+dir and render
   window._ovwRows=ovwRows;
   renderOvwSort();
@@ -2873,6 +3365,245 @@ function calcTripleU(){
     +tuCard('Худший: просадка + пейаут','🔴',-moveUsd,gross+moveUsd,'FX просел на 80% буфера.');
 }
 
+// === v0.0.5 === PERPETUAL TRIPLES (USDRUBF/CNYRUBF, EURRUBF/CNYRUBF, EURRUBF/USDRUBF)
+function adjPerpLots(key,dir){
+  const cfg=PERP_CONFIG[key];if(!cfg)return;
+  const sl=$(cfg.prefix+'Lots');
+  let v=+sl.value+dir*(+sl.step);
+  v=Math.max(+sl.min,Math.min(+sl.max,v));
+  sl.value=v;
+  calcPerp(key);
+}
+
+function calcPerp(key){
+  const cfg=PERP_CONFIG[key];if(!cfg)return;
+  const p=cfg.prefix;
+  const l1=+$(p+'L1').value, l2=+$(p+'L2').value, fx=+$(p+'Fx').value, rub=+$(p+'Rub').value;
+  const days=+$(p+'Days').value, iv=+$(p+'IV').value;
+  const fxCap=nv(p+'FxCap'), mxOwn=nv(p+'MxOwn');
+  const fxLev=+$(p+'FxLev').value, propLev=+$(p+'PropLev').value;
+  const stopout=+$(p+'Stopout').value/100, mxRisk=+$(p+'MxRisk').value/100;
+  const goL1=nv(p+'GoL1'), goL2=nv(p+'GoL2');
+  const swL1=+$(p+'SwapL1').value, swL2=+$(p+'SwapL2').value; // SWAPRATE ₽/BA-unit/day
+  const fxSwS=+$(p+'FxSwapS').value, fxSwL=+$(p+'FxSwapL').value;
+  const repoAnn=+$(p+'Repo').value/100, payoutPct=+$(p+'Payout').value/100;
+  const comm=+$(p+'Comm').value;
+
+  // Synthetic = leg1 / leg2 (currency perpetual style)
+  const synthetic=l1/l2;
+  const spreadNat=(synthetic-fx)/fx*100;
+  const expSp=$(p+'ExpSpread').value.trim();
+  const spreadPct=expSp!==''?+expSp:spreadNat;
+  const isNegative=spreadPct<0;
+
+  $(p+'SpreadVal').textContent=(spreadPct>=0?'+':'')+spreadPct.toFixed(3)+'%';
+  $(p+'SpreadVal').style.color=isNegative?'var(--orange)':cfg.color;
+  const L1name=cfg.leg1.shortLbl,L2name=cfg.leg2.shortLbl;
+  const dirTxt=isNegative?`Синтетика дешевле → Buy ${L1name} + Short ${L2name} + Short FX`
+                         :`Синтетика дороже → Short ${L1name} + Buy ${L2name} + Buy FX`;
+  const natTxt='Факт: '+(spreadNat>=0?'+':'')+spreadNat.toFixed(3)+'%';
+  $(p+'SpreadSub').textContent=expSp!==''?dirTxt+' | '+natTxt:dirTxt;
+
+  // Adaptive slider — base unit = 1 leg1 contract (lotVol=1000 for all current perp majors)
+  const pska=mxOwn*propLev;
+  const l2PerL1=Math.round(fx); // n2 contracts per 1 leg1 contract
+  const goPerL1=goL1+l2PerL1*goL2;
+  const maxMx=Math.floor(pska/goPerL1);
+  // 1 leg1 contract = 1000 BA units; 1 FX standard lot = 100K BA → 0.01 lot per contract
+  const LOT1=cfg.leg1.lotVol, LOT2=cfg.leg2.lotVol;
+  // FX notional in USD per leg1 contract: LOT1 × synthetic_in_USD
+  // For EUR/USD: leg1=EUR, notional$/contract = LOT1 × fx (EUR/USD)
+  // For USD/CNH or EUR/CNH cross: notional$/contract = LOT1 × (leg1_price_rub / rub) — USD equivalent of 1000 BA
+  const usdPerContract=cfg.leg1.baseUnit==='$'?LOT1:(LOT1*l1/rub);
+  const maxFx=Math.floor(fxCap*fxLev/usdPerContract);
+  let mx=Math.min(maxFx,maxMx);mx=Math.max(1,Math.min(5000,mx));
+  let step;
+  if(mx<=20)step=1;else if(mx<=100)step=5;else if(mx<=500)step=10;else if(mx<=2000)step=50;else step=100;
+  mx=Math.round(mx/step)*step;if(mx<step)mx=step;
+  const sl=$(p+'Lots');
+  sl.min=step;sl.max=mx;sl.step=step;
+  let cur=+sl.value;cur=Math.round(cur/step)*step;
+  if(cur>mx)cur=mx;if(cur<+sl.min)cur=+sl.min;
+  sl.value=cur;
+  $(p+'SlMin').textContent=step;$(p+'SlMax').textContent=mx;
+
+  const n1=+sl.value;
+  const n2=Math.round(fx*n1);
+  const fxLots=n1/100; // 100 contracts × 1000 BA = 100K BA = 1 standard lot
+  const notionalRub=n1*LOT1*l1;
+  const notional=notionalRub/rub;
+
+  $(p+'LotsDisp').textContent=fm(n1)+' '+L1name+' + '+fm(n2)+' '+L2name+' + '+fxLots.toFixed(2)+' FX';
+
+  // Margins
+  const fxMarg=notional/fxLev;
+  const mxGoTotal=n1*goL1+n2*goL2;
+
+  // FX buffer — pip value depends on FX pair
+  // USD/CNH, EUR/CNH: pip=0.001, pipValPerLot = 100 × CNYRUBF_price / rub ($/pip for 100K BA)
+  // EUR/USD: pip=0.0001, pipValPerLot = $10 fixed
+  const se=stopout*fxMarg;
+  const fxB=fxCap-se;
+  let fxPipValPerLot, pipSize;
+  if(cfg.fx.pipValMode==='usd'){
+    fxPipValPerLot=10; pipSize=0.0001;
+  } else {
+    // 'cnh' mode — use CNYRUBF price (always leg2 for UCNH/ECNH, never used for EU)
+    const cnyRub=(cfg.leg2.ticker==='CNYRUBF')?l2:(PERP_STATE.CNYRUBF.price||11.21);
+    fxPipValPerLot=100*cnyRub/rub; pipSize=0.001;
+  }
+  const fxPipVal=fxPipValPerLot*fxLots;
+  const fxBufPips=fxPipVal>0?Math.round(fxB/fxPipVal):0;
+  const fxBufPct=fxBufPips*pipSize/fx*100;
+
+  // MOEX buffer
+  const mxSensPerPct=notionalRub/100;
+  const mxBufRub=mxOwn*mxRisk;
+  const mxBufPct=mxSensPerPct>0?mxBufRub/mxSensPerPct:0;
+
+  const minPct=Math.min(fxBufPct,mxBufPct);
+  const sigP=iv/100*Math.sqrt(days/365);
+  const sig=sigP>0?minPct/100/sigP:0;
+
+  $(p+'BFx').textContent=fm(fxBufPips)+' п.';$(p+'BFxP').textContent=fxBufPct.toFixed(1)+'%';
+  $(p+'BMx').textContent=fm(Math.round(mxBufRub/1000))+'К₽';$(p+'BMxP').textContent=mxBufPct.toFixed(1)+'%';
+
+  // Sigma gauge
+  const sigPctG=Math.min(sig/3,1)*100;
+  const sc=sig>=2?'var(--green)':sig>=1?'var(--yellow)':sig>=.5?'var(--orange)':'var(--red)';
+  const sLbl=sig>=2?'КОМФОРТНО':sig>=1?'УМЕРЕННО':sig>=.5?'РИСКОВАННО':'ОПАСНО';
+  const bp=sig>=3?'<0.3':sig>=2?'<5':sig>=1?'~32':sig>=.5?'~62':'>68';
+  $(p+'GaugeF').style.width=sigPctG+'%';$(p+'GaugeF').style.background=sc;
+  $(p+'GVal').textContent=sig.toFixed(2)+'σ';$(p+'GVal').style.color=sc;
+  $(p+'GTxt').textContent=sLbl;$(p+'GTxt').style.color=sc;
+  $(p+'GSub').textContent='Шанс моржа: ~'+bp+'%';
+
+  // P&L
+  const gross=Math.abs(spreadPct)/100*notional;
+
+  // Perpetual funding — SWAPRATE × LOT × contracts × days (in rubles), then ÷ rub → USD
+  // Direction: when synth < fx (isNegative) → we BUY leg1, SHORT leg2; positive SWAPRATE → long pays
+  // So: leg1 long with swL1 → cost = +swL1 × LOT × n1 × days ₽; leg2 short with swL2 → gain = +swL2 × LOT × n2 × days ₽
+  // When !isNegative: invert.
+  const dir1=isNegative?+1:-1; // +1 = long leg1 (pays if swap>0), -1 = short leg1 (receives)
+  const dir2=-dir1;
+  const fundL1_rub=-dir1*swL1*LOT1*n1*days;  // negative = we pay
+  const fundL2_rub=-dir2*swL2*LOT2*n2*days;
+  const fundT=(fundL1_rub+fundL2_rub)/rub; // USD
+
+  // FX swap
+  const fxSwapPips=isNegative?fxSwS:fxSwL;
+  const swT=fxSwapPips*fxPipValPerLot*fxLots*days;
+
+  const bor=Math.max(0,mxGoTotal-mxOwn);
+  const repoT=bor*repoAnn/365*days/rub;
+  const cm=Math.max(1,Math.round(fxLots))*comm;
+  const totCap=fxCap+mxOwn/rub;
+
+  const netBest=gross+swT+fundT-repoT-cm;
+  const roiB=netBest/totCap*100;
+  const annB=days>0?roiB/days*365:0;
+  const payW=gross*payoutPct;
+  const netWorst=gross+swT+fundT-repoT-cm-payW;
+
+  $(p+'PlGross').textContent='+$'+fm(gross,0);$(p+'PlGross').style.color='var(--green)';
+  $(p+'PlSwap').textContent=(swT>=0?'+':'')+' $'+fm(swT,0);$(p+'PlSwap').style.color=swT>=0?'var(--green)':'var(--red)';
+  $(p+'PlFund').textContent=(fundT>=0?'+':'')+' $'+fm(fundT,0);$(p+'PlFund').style.color=fundT>=0?'var(--green)':'var(--red)';
+  $(p+'PlRepo').textContent='-$'+fm(repoT,0);
+  $(p+'PlComm').textContent='-$'+fm(cm,0);
+  $(p+'PlNet').textContent=(netBest>=0?'+':'')+' $'+fm(netBest,0);$(p+'PlNet').style.color=netBest>=0?'var(--green)':'var(--red)';
+  $(p+'PlGrossW').textContent='+$'+fm(gross,0);$(p+'PlGrossW').style.color='var(--green)';
+  $(p+'PlPayW').textContent='-$'+fm(payW,0);
+  const costsW=swT+fundT-repoT-cm;
+  $(p+'PlCostsW').textContent=(costsW>=0?'+':'')+' $'+fm(costsW,0);$(p+'PlCostsW').style.color=costsW>=0?'var(--green)':'var(--red)';
+  $(p+'PlNetW').textContent=(netWorst>=0?'+':'')+' $'+fm(netWorst,0);$(p+'PlNetW').style.color=netWorst>=0?'var(--green)':'var(--red)';
+  $(p+'RoiB').textContent=roiB.toFixed(1)+'%';
+  $(p+'AnnB').textContent='~'+annB.toFixed(0)+'%';
+  $(p+'Cap').textContent='$'+fm(totCap,0);
+
+  // Live hints for funding fields
+  const st1=PERP_STATE[cfg.leg1.ticker], st2=PERP_STATE[cfg.leg2.ticker];
+  if(st1&&st1.swapInfo)$(p+'SwapL1Info').textContent=st1.swapInfo;
+  if(st2&&st2.swapInfo)$(p+'SwapL2Info').textContent=st2.swapInfo;
+
+  // Capital usage + costs panel
+  const freeFx=fxCap-fxMarg;
+  const fundDailyRub=fundL1_rub/days + fundL2_rub/days;
+  const fundDailyUsd=fundDailyRub/rub;
+  const repoN=bor*repoAnn/365;
+  $(p+'CapUsage').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div><div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--cyan)">FOREX</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">Маржа: <b style="color:var(--tw)">$'+fm(fxMarg,0)+'</b> ('+fxLots.toFixed(2)+' лотов)</div>'
+    +'<div style="font-size:12px;color:var(--tl)">Свободно: <b style="color:'+(freeFx>0?'var(--green)':'var(--red)')+'">$'+fm(freeFx,0)+'</b></div></div>'
+    +'<div><div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--yellow)">МОЕХ</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">ГО '+L1name+': <b style="color:var(--tw)">'+fm(Math.round(n1*goL1/1000))+'К₽</b> ('+fm(n1)+' контр.)</div>'
+    +'<div style="font-size:12px;color:var(--tl)">ГО '+L2name+': <b style="color:var(--tw)">'+fm(Math.round(n2*goL2/1000))+'К₽</b> ('+fm(n2)+' контр.)</div>'
+    +'<div style="font-size:12px;color:var(--tl)">ГО итого: <b style="color:var(--tw)">'+fm(Math.round(mxGoTotal/1000))+'К₽</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">Заём: <b style="color:'+(bor>0?'var(--orange)':'var(--green)')+'">'+( bor>0?fm(Math.round(bor/1000))+'К₽':'нет')+'</b></div></div></div>'
+    +'<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
+    +'<div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--red)">ИЗДЕРЖКИ</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">Своп FX/ночь: <b style="color:'+(fxSwapPips*fxPipValPerLot*fxLots>=0?'var(--green)':'var(--red)')+'">'+(fxSwapPips*fxPipValPerLot*fxLots>=0?'+':'')+'$'+fm(fxSwapPips*fxPipValPerLot*fxLots,2)+'</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">Фандинг вечников/день: <b style="color:'+(fundDailyUsd>=0?'var(--green)':'var(--red)')+'">'+(fundDailyUsd>=0?'+':'')+'$'+fm(fundDailyUsd,2)+'</b> ('+(fundDailyRub>=0?'+':'')+fm(Math.round(fundDailyRub))+'₽)</div>'
+    +'<div style="font-size:12px;color:var(--tl)">Суммарно свопы+фандинг за '+days+' дн: <b style="color:'+((swT+fundT)>=0?'var(--green)':'var(--red)')+'">'+((swT+fundT)>=0?'+':'')+'$'+fm(swT+fundT,0)+'</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">РЕПО/ночь: <b style="color:'+(repoN>0?'var(--red)':'var(--green)')+'">'+(repoN>0?fm(repoN,0)+'₽':'0₽')+'</b></div>'
+    +(repoT>0?'<div style="font-size:12px;color:var(--tl)">РЕПО за '+days+' дн: <b style="color:var(--red)">−'+fm(Math.round(repoT*rub))+'₽ ($'+fm(repoT,0)+')</b></div>':'')
+    +'</div>';
+
+  // Rebalance
+  const optFx=(totCap*mxRisk+se)/(1+mxRisk);
+  const optMx=(totCap-optFx)*rub;
+  const diff=fxCap-optFx;
+  if(Math.abs(diff)>100){
+    const amt=Math.abs(diff);const amtRub=Math.round(amt*rub);
+    const nFx=Math.round(optFx),nMx=Math.round(optMx);
+    const nFxBuf=(nFx-se)/notional*100;
+    const nMxBuf=nMx*mxRisk/(notionalRub/100);
+    const nSig=sigP>0?Math.min(nFxBuf,nMxBuf)/100/sigP:0;
+    const nSc=nSig>=1?'var(--green)':nSig>=.5?'var(--yellow)':'var(--red)';
+    const transferTxt=diff>0
+      ?'Перевести <b style="color:var(--yellow)">$'+fm(Math.round(amt))+'</b> с Forex → ₽ на МОЕХ'
+      :'Вывести <b style="color:var(--yellow)">'+fm(amtRub)+'₽</b> с МОЕХ → $'+fm(Math.round(amt))+' на Forex';
+    $(p+'RebContent').innerHTML=`<p>${transferTxt}</p>
+      <p>Forex: $${fm(nFx)} | МОЕХ: ${fm(Math.round(nMx/1000))}К₽</p>
+      <p>Оба буфера: <b style="color:var(--green)">${Math.min(nFxBuf,nMxBuf).toFixed(1)}%</b> = <b style="color:${nSc}">${nSig.toFixed(2)}σ</b></p>`;
+  } else {
+    $(p+'RebContent').innerHTML='<p style="color:var(--tm)">Ребаланс не требуется</p>';
+  }
+
+  // 4 scenarios
+  function perpCard(title,emoji,fxPnl,mxPnl,desc){
+    const mxRub=mxPnl*rub;
+    const payR=mxPnl>0?mxRub*payoutPct:0;const payU=payR/rub;
+    const nb=fxPnl+mxPnl+swT+fundT-repoT-cm;const na=nb-payU;
+    const finalN=mxPnl>0?na:nb;
+    const roiP=finalN/totCap*100;const annP=days>0?roiP/days*365:0;
+    const cF=fxPnl>=0?'var(--green)':'var(--red)';const cM=mxPnl>=0?'var(--green)':'var(--red)';const cN=finalN>=0?'var(--green)':'var(--red)';
+    const payTag=mxPnl>0
+      ?'<div style="font-size:11px;color:var(--orange);margin-top:4px">Пейаут: −'+fm(Math.round(payR))+'₽ ($'+fm(Math.round(payU))+')</div>'
+      :'<div style="font-size:11px;color:var(--green);margin-top:4px">Пейаут = 0</div>';
+    return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">'
+      +'<div style="font-size:13px;font-weight:800;margin-bottom:6px">'+emoji+' '+title+'</div>'
+      +'<div style="font-size:10px;color:var(--tm);margin-bottom:6px">'+desc+'</div>'
+      +'<div style="font-size:12px;color:var(--tl)">Forex: <b style="color:'+cF+'">'+(fxPnl>=0?'+':'')+'$'+fm(Math.round(fxPnl))+'</b></div>'
+      +'<div style="font-size:12px;color:var(--tl)">МОЕХ: <b style="color:'+cM+'">'+(mxPnl>=0?'+':'')+fm(Math.round(mxRub))+'₽</b></div>'
+      +'<div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">'
+      +'<div style="font-size:11px;color:var(--tl)">Своп FX: <b style="color:'+(swT>=0?'var(--green)':'var(--red)')+'">'+(swT>=0?'+':'')+'$'+fm(Math.round(swT))+'</b></div>'
+      +'<div style="font-size:11px;color:var(--tl)">Фандинг: <b style="color:'+(fundT>=0?'var(--green)':'var(--red)')+'">'+(fundT>=0?'+':'')+'$'+fm(Math.round(fundT))+'</b></div>'
+      +'<div style="font-size:11px;color:var(--tl)">РЕПО: <b style="color:var(--red)">−$'+fm(Math.round(repoT))+'</b></div>'
+      +payTag+'</div>'
+      +'<div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">'
+      +'<div style="font-size:14px;font-weight:900;color:'+cN+'">'+(finalN>=0?'+':'')+'$'+fm(Math.round(finalN))+'</div>'
+      +'<div style="font-size:11px;color:var(--tm)">ROI: '+roiP.toFixed(1)+'% (~'+annP.toFixed(0)+'% год.)</div>'
+      +'</div></div>';
+  }
+  const moveUsd=fxLots>0?0.8*fxB/fxLots/100000*notional:0;
+  $(p+'ScenConv').innerHTML=
+    perpCard('Лучший: всё на FX','🟢',gross,0,'FX заработал всё. Пейаут = 0.')
+    +perpCard('Средний: пополам','🟡',gross/2,gross/2,'Обе ноги заработали поровну.')
+    +perpCard('Плохой: всё на МОЕХ','🟠',0,gross,'МОЕХ заработал всё. Платим пейаут.')
+    +perpCard('Худший: просадка + пейаут','🔴',-moveUsd,gross+moveUsd,'FX просел на 80% буфера.');
+}
+
 document.querySelectorAll('input,select').forEach(el=>{
   if(el.id==='inLots') return; // slider handled separately
   const h=()=>{
@@ -2880,6 +3611,9 @@ document.querySelectorAll('input,select').forEach(el=>{
     else if(mode==='TRIPLE')calcTriple();
     else if(mode==='TRIPLE_EU')calcTripleEu();
     else if(mode==='TRIPLE_USD')calcTripleU();
+    else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
+    else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
+    else if(mode==='PERP_EU')calcPerp('PERP_EU');
     else{autoLotMode=true;calc();}
   };
   el.addEventListener('input',h);el.addEventListener('change',h);
@@ -2917,10 +3651,12 @@ async function fetchPrices(){
 
   // MOEX ISS (free, no key)
   try{
-    // Build ticker list: all instruments × all contracts + triple-arb all contracts
+    // Build ticker list: all instruments × all contracts + triple-arb + perpetual futures
     const tickerSet=new Set();
     for(const p of Object.values(MODES))for(const c of Object.values(p.contracts))tickerSet.add(c.moexTicker);
     ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
+    // v0.0.5: perpetual tickers for PERP_DATA tab and overview row
+    ['USDRUBF','CNYRUBF','EURRUBF'].forEach(t=>tickerSet.add(t));
     const tickers=[...tickerSet].join(',');
     const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+tickers);
     const d=await r.json();
@@ -2998,6 +3734,36 @@ async function fetchPrices(){
       const tu=TRIPLE_DATA.TRIPLE_USD.contracts[currentContract];
       if(tu){$('tuEu').value=tu.eu;$('tuSi').value=tu.si;setNum('tuGoEu',tu.euGo);setNum('tuGoSi',tu.siGo);}
     }
+    // v0.0.5: apply perpetual prices to PERP_STATE and current perp tab if open
+    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF']){
+      const m=mx[tk];
+      if(m){
+        PERP_STATE[tk].price=m.price;
+        if(m.go)PERP_STATE[tk].go=Math.round(m.go);
+      }
+    }
+    // Find LOTVOLUME in securities block if present (column LOTVOLUME)
+    {
+      const siCols=d.securities.columns, siRows=d.securities.data;
+      const lvIdx=siCols.indexOf('LOTVOLUME'), idIdx=siCols.indexOf('SECID');
+      if(lvIdx>=0&&idIdx>=0){
+        for(const row of siRows){
+          const id=row[idIdx], lv=row[lvIdx];
+          if(PERP_STATE[id]&&lv)PERP_STATE[id].lotVol=+lv;
+        }
+      }
+    }
+    // Apply to visible perp tab's inputs
+    function applyPerpTabUI(key){
+      const cfg=PERP_CONFIG[key];if(!cfg)return;
+      const p=cfg.prefix;
+      const s1=PERP_STATE[cfg.leg1.ticker], s2=PERP_STATE[cfg.leg2.ticker];
+      if(s1){$(p+'L1').value=s1.price; setNum(p+'GoL1',s1.go);}
+      if(s2){$(p+'L2').value=s2.price; setNum(p+'GoL2',s2.go);}
+    }
+    if(mode==='PERP_UCNH')applyPerpTabUI('PERP_UCNH');
+    if(mode==='PERP_ECNH')applyPerpTabUI('PERP_ECNH');
+    if(mode==='PERP_EU')  applyPerpTabUI('PERP_EU');
     mxOk=Object.keys(mx).length;
     // Build details — show front-month per instrument to keep message short
     for(const[k,v] of Object.entries(MODES)){
@@ -3035,8 +3801,42 @@ async function fetchPrices(){
   if(MODES.EURUSD.spot&&MODES.UCNY.spot){
     const eurcnh=MODES.EURUSD.spot*MODES.UCNY.spot;
     $('teFx').value=eurcnh.toFixed(4);
+    // v0.0.5: also sync EUR/CNH into PERP_ECNH
+    $('peFx').value=eurcnh.toFixed(4);
   }
+  // v0.0.5: sync USD/CNH and EUR/USD spots into perpetual tabs
+  if(MODES.UCNY.spot){$('puFx').value=(+MODES.UCNY.spot).toFixed(4);}
+  if(MODES.EURUSD.spot){$('prFx').value=(+MODES.EURUSD.spot).toFixed(5);}
 
+  // v0.0.5: fetch 30-day average SWAPRATE for perpetual legs via worker /moex-history
+  let perpOk=0;
+  try{
+    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/moex-history?t=USDRUBF,CNYRUBF,EURRUBF&days=30');
+    const d=await r.json();
+    for(const tk of ['USDRUBF','CNYRUBF','EURRUBF']){
+      const v=d[tk];
+      if(v&&isFinite(v.avg)){
+        PERP_STATE[tk].swapAvg=+v.avg;
+        PERP_STATE[tk].swapLast=+v.last;
+        PERP_STATE[tk].swapInfo='средн. '+v.samples+' дн: '+v.avg.toFixed(4)+' · посл. '+(+v.last).toFixed(4)+' ('+(v.lastDate||'')+')';
+        perpOk++;
+      } else if(v&&v.error){
+        PERP_STATE[tk].swapInfo='⚠ '+v.error;
+      }
+    }
+    // If a perpetual tab is open — prefill its swap fields with the fresh averages
+    function applyPerpSwaps(key){
+      const cfg=PERP_CONFIG[key];if(!cfg)return;
+      const p=cfg.prefix;
+      const s1=PERP_STATE[cfg.leg1.ticker], s2=PERP_STATE[cfg.leg2.ticker];
+      if(s1&&s1.swapAvg!=null)$(p+'SwapL1').value=s1.swapAvg.toFixed(4);
+      if(s2&&s2.swapAvg!=null)$(p+'SwapL2').value=s2.swapAvg.toFixed(4);
+      if(s1)$(p+'SwapL1Info').textContent=s1.swapInfo||'';
+      if(s2)$(p+'SwapL2Info').textContent=s2.swapInfo||'';
+    }
+    applyPerpSwaps('PERP_UCNH');applyPerpSwaps('PERP_ECNH');applyPerpSwaps('PERP_EU');
+    details.push('SWAPRATE:'+perpOk+'/3');
+  }catch(e){details.push('SWAPRATE:⚠'+String(e.message||e).slice(0,30));}
 
   // Crypto: прямой запрос в Bitget из браузера ученика (Bitget блокирует Cloudflare IP,
   // поэтому не через воркер). Публичный endpoint, ключи не нужны.
@@ -3074,11 +3874,17 @@ async function fetchPrices(){
   $('trRub').value=rub.toFixed(2);
   $('teRub').value=rub.toFixed(2);
   $('tuRub').value=rub.toFixed(2);
+  $('puRub').value=rub.toFixed(2);
+  $('peRub').value=rub.toFixed(2);
+  $('prRub').value=rub.toFixed(2);
   // Recalc active tab
   if(mode==='OVW')calcOvw();
   else if(mode==='TRIPLE')calcTriple();
   else if(mode==='TRIPLE_EU')calcTripleEu();
   else if(mode==='TRIPLE_USD')calcTripleU();
+  else if(mode==='PERP_UCNH')calcPerp('PERP_UCNH');
+  else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
+  else if(mode==='PERP_EU')calcPerp('PERP_EU');
   else calc();
 }
 
