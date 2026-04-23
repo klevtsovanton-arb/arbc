@@ -160,7 +160,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.5.e</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.6.b</p>
     </div>
   </div>
 
@@ -194,6 +194,10 @@ tr.ovw-row-hidden{display:none !important}
         <span style="font-size:14px;font-weight:700;color:var(--tl)">Пейаут</span>
         <input id="ovwPay" type="number" step="1" value="5" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
         <span style="font-size:12px;color:var(--tm)">%</span>
+        <span style="width:12px"></span>
+        <span style="font-size:14px;font-weight:700;color:var(--tl)" title="Опционально: единый горизонт для ROI всех рядов. Пусто = для фьючерсов считается до экспирации, для вечников — 10 дней.">Дней до единицы</span>
+        <input id="ovwDays" type="number" step="1" value="" placeholder="авто" oninput="calcOvw()" onchange="calcOvw()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:6px;color:var(--tw);padding:8px;font-size:15px;font-weight:800;text-align:right;font-family:inherit">
+        <span style="font-size:12px;color:var(--tm)">дн</span>
       </div>
       <button onclick="fetchPrices()" id="btnFetchOvw" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
       <div id="fetchStatusOvw" style="font-size:10px;color:var(--tm);text-align:center;min-height:14px"></div>
@@ -1078,6 +1082,26 @@ const STUB_CONTENT={
     ver:'Каркас — <b>v0.0.5</b>, движок NET — <b>v0.0.8</b>, корреляции — <b>v0.0.9</b>.'}
 };
 
+// v0.0.6: optimal capital/lots snapshot per instrument row from overview — applied when switchTo() opens that tab
+const OVW_PRESET={};
+// Apply preset (capital, pay/stopout, lot size) to a given tab's fields by prefix.
+// Days are NOT touched here — each tab keeps its own days-field (daysToExp for futures, 10 for perps).
+function applyOvwPresetToTab(presetKey, prefix, lotsFieldId){
+  const p=OVW_PRESET[presetKey];
+  if(!p)return;
+  const fxCapId = (prefix==='in')?'inFxCap':(prefix+'FxCap');
+  const mxOwnId = (prefix==='in')?'inMxOwn':(prefix+'MxOwn');
+  if($(fxCapId))setNum(fxCapId, p.fxCap);
+  if($(mxOwnId))setNum(mxOwnId, p.mxOwn);
+  // Pull pay/stopout from overview settings
+  const ovwPay = +$('ovwPay').value;
+  const ovwStop = +$('ovwStop').value;
+  const payId = (prefix==='in')?'inPayout':(prefix+'Payout');
+  const stopId= (prefix==='in')?'inStopout':(prefix+'Stopout');
+  if($(payId))$(payId).value = ovwPay;
+  if($(stopId) && !(prefix==='in' && mode && MODES[mode] && MODES[mode].isCrypto))$(stopId).value = ovwStop;
+  if(lotsFieldId && $(lotsFieldId))$(lotsFieldId).value = p.lots;
+}
 let currentCategory='ALL';
 function filterByCategory(cat){
   currentCategory=cat;
@@ -1427,6 +1451,8 @@ function switchTo(m){
     $('hdrTitle').textContent='Тройной арбитраж Si/CNY/USDCNH';
     $('hdrSub').textContent='Si×CNY синтетика vs Forex USDCNH | Эксп. '+expDispT;
     updateContractPills('var(--orange)');
+    // v0.0.6: seed tab with overview preset (capital, days, lots)
+    applyOvwPresetToTab('TRIPLE_'+currentContract, 'tr', 'trLots');
     calcTriple();
     return;
   }
@@ -1449,6 +1475,8 @@ function switchTo(m){
     $('hdrTitle').textContent='Евровый тройничок Eu/CNY/EURCNH';
     $('hdrSub').textContent='Eu×CNY синтетика vs Forex EURCNH | Эксп. '+expDispTE;
     updateContractPills('#E5C100');
+    // v0.0.6
+    applyOvwPresetToTab('TRIPLE_EU_'+currentContract, 'te', 'teLots');
     calcTripleEu();
     return;
   }
@@ -1467,6 +1495,8 @@ function switchTo(m){
     $('hdrSub').textContent=cfg.legend+' · горизонт удержания настраивается';
     // v0.0.5.b: pull live prices/GO/SWAPRATE into UI fields
     applyPerpTabUI(m);
+    // v0.0.6: apply overview preset (capital, days, lots) for this perpetual triple
+    applyOvwPresetToTab(m, cfg.prefix, cfg.prefix+'Lots');
     calcPerp(m);
     return;
   }
@@ -1489,6 +1519,8 @@ function switchTo(m){
     $('hdrTitle').textContent='Евродолларовый тройничок Eu/Si/EURUSD';
     $('hdrSub').textContent='Eu÷Si синтетика vs Forex EURUSD | Эксп. '+expDispTU;
     updateContractPills('#3B82F6');
+    // v0.0.6
+    applyOvwPresetToTab('TRIPLE_USD_'+currentContract, 'tu', 'tuLots');
     calcTripleU();
     return;
   }
@@ -1529,7 +1561,9 @@ function switchTo(m){
   const _scTitle=$('scTitle');if(_scTitle)_scTitle.textContent='📋 Таблица сценариев — базовый (всё на '+_side+')';
   document.querySelectorAll('[id=accentLabel],[id=scTitle],[id=rebTitle]').forEach(e=>e.style.color=ac);
   updateContractPills();
-  autoLotMode=true;
+  // v0.0.6: apply overview preset (capital, days, lots) for this instrument+contract
+  applyOvwPresetToTab(m+'_'+currentContract, 'in', 'inLots');
+  autoLotMode=false; // respect the preset lot size
   adaptSlider();
   calc();
 }
@@ -2168,6 +2202,9 @@ function calcOvw(){
   const stopout=+$('ovwStop').value/100;
   const repoAnn=+$('ovwRepo').value/100;
   const payoutPct=+$('ovwPay').value/100;
+  // v0.0.6.b: OPTIONAL horizon override. Empty = auto per row (daysToExp for futures, 10 for perpetuals).
+  const ovwDaysRaw=$('ovwDays').value.trim();
+  const ovwDaysOverride=ovwDaysRaw!==''?Math.max(1,+ovwDaysRaw):null;
   $('ovwRate').textContent=rub.toFixed(2);
   const totalUsd=totalRub/rub;
 
@@ -2178,7 +2215,7 @@ function calcOvw(){
   for(const[key,base] of Object.entries(MODES)){
     for(const[ckey,ct] of Object.entries(base.contracts)){
     const p=Object.assign({},base,ct);
-    const days=daysToExp(p.exp);
+    const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(p.exp);
     const spot=p.spot,fut=p.fut;
     const pipVal=p.pipValForeign?p.pipVal/spot:p.pipVal;
     const stepPr=p.pipValForeign?rub/spot:p.stepPr;
@@ -2326,6 +2363,8 @@ function calcOvw(){
       <td class="hl" style="color:${netWC}" title="${bestTTW}">${bestLots>0?'$'+fm(Math.round(bestNetW)):'—'}</td>
       <td style="color:${netWC}" title="${bestTTW}">${bestLots>0?roiW.toFixed(1)+'%':'—'}</td>
       <td style="color:${netWC}" title="${bestTTW}">${bestLots>0?'~'+annW.toFixed(0)+'%':'—'}</td>`;
+    // v0.0.6: preset for tab activation via switchTo()
+    if(bestLots>0)OVW_PRESET[key+'_'+ckey]={fxCap:bestFx,mxOwn:bestMx,lots:bestLots};
     ovwRows.push({netBest:bestNet,roiBest:bestRoi,annBest:annB,netWorst:bestNetW,roiWorst:roiW,annWorst:annW,sigma:bestSig,tr});
     }
   }
@@ -2335,7 +2374,7 @@ function calcOvw(){
   const trFxLevT=+$('trFxLev').value||100, trIVT=+$('trIV').value||7.5;
   const fxCNH=MODES.UCNY.spot||+$('trFx').value||6.81;
   for(const[ckey,td] of Object.entries(TRIPLE_DATA.TRIPLE.contracts)){
-    const days=daysToExp(td.exp);
+    const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(td.exp);
     const si=td.si, cr=td.cr, fx=fxCNH;
     const synthetic=si/1000/cr;
     const triSpread=(synthetic-fx)/fx*100;
@@ -2426,6 +2465,8 @@ function calcOvw(){
       <td class="hl" style="color:${netWCT}" title="${bTTW}">${bSiC>0?'$'+fm(Math.round(bNetW)):'—'}</td>
       <td style="color:${netWCT}" title="${bTTW}">${bSiC>0?roiWT.toFixed(1)+'%':'—'}</td>
       <td style="color:${netWCT}" title="${bTTW}">${bSiC>0?'~'+annWT.toFixed(0)+'%':'—'}</td>`;
+    // v0.0.6
+    if(bSiC>0)OVW_PRESET['TRIPLE_'+ckey]={fxCap:bFxC,mxOwn:bMxC,lots:bSiC};
     ovwRows.push({netBest:bNet,roiBest:bRoi,annBest:annBT,netWorst:bNetW,roiWorst:roiWT,annWorst:annWT,sigma:bSig,tr:trT});
   }
 
@@ -2435,7 +2476,7 @@ function calcOvw(){
   const teFxLevE=+$('teFxLev').value||100, teIVE=+$('teIV').value||7.5;
   const fxEURCNH=(MODES.EURUSD.spot&&MODES.UCNY.spot)?MODES.EURUSD.spot*MODES.UCNY.spot:(+$('teFx').value||8.0325);
   for(const[ckey,te] of Object.entries(TRIPLE_DATA.TRIPLE_EU.contracts)){
-    const days=daysToExp(te.exp);
+    const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(te.exp);
     const euP=te.eu, crP=te.cr, fxP=fxEURCNH;
     const synth=euP/1000/crP;
     const triSp=(synth-fxP)/fxP*100;
@@ -2527,6 +2568,8 @@ function calcOvw(){
       <td class="hl" style="color:${netWCE}" title="${bTTWE}">${bEuC>0?'$'+fm(Math.round(bNetWE)):'—'}</td>
       <td style="color:${netWCE}" title="${bTTWE}">${bEuC>0?roiWE.toFixed(1)+'%':'—'}</td>
       <td style="color:${netWCE}" title="${bTTWE}">${bEuC>0?'~'+annWE.toFixed(0)+'%':'—'}</td>`;
+    // v0.0.6
+    if(bEuC>0)OVW_PRESET['TRIPLE_EU_'+ckey]={fxCap:bFxE,mxOwn:bMxE,lots:bEuC};
     ovwRows.push({netBest:bNetE,roiBest:bRoiE,annBest:annBE,netWorst:bNetWE,roiWorst:roiWE,annWorst:annWE,sigma:bSigE,tr:trTE});
   }
 
@@ -2535,7 +2578,7 @@ function calcOvw(){
   const tuFxLevU=+$('tuFxLev').value||100, tuIVU=+$('tuIV').value||7.5;
   const fxEURUSD=MODES.EURUSD.spot||+$('tuFx').value||1.17304;
   for(const[ckey,tu] of Object.entries(TRIPLE_DATA.TRIPLE_USD.contracts)){
-    const days=daysToExp(tu.exp);
+    const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(tu.exp);
     const euP=tu.eu, siP=tu.si, fxP=fxEURUSD;
     const synth=euP/siP;
     const triSp=(synth-fxP)/fxP*100;
@@ -2626,6 +2669,8 @@ function calcOvw(){
       <td class="hl" style="color:${netWCU}" title="${bTTWU}">${bEuC>0?'$'+fm(Math.round(bNetWU)):'—'}</td>
       <td style="color:${netWCU}" title="${bTTWU}">${bEuC>0?roiWU.toFixed(1)+'%':'—'}</td>
       <td style="color:${netWCU}" title="${bTTWU}">${bEuC>0?'~'+annWU.toFixed(0)+'%':'—'}</td>`;
+    // v0.0.6
+    if(bEuC>0)OVW_PRESET['TRIPLE_USD_'+ckey]={fxCap:bFxU,mxOwn:bMxU,lots:bEuC};
     ovwRows.push({netBest:bNetU,roiBest:bRoiU,annBest:annBU,netWorst:bNetWU,roiWorst:roiWU,annWorst:annWU,sigma:bSigU,tr:trTU});
   }
 
@@ -2639,7 +2684,7 @@ function calcOvw(){
     const s1=PERP_STATE[pc.l1], s2=PERP_STATE[pc.l2];
     if(!s1||!s2)continue;
     const l1P=s1.price, l2P=s2.price, fxP=pc.fxSpot;
-    const days=pc.daysDefault;
+    const days=ovwDaysOverride!=null?ovwDaysOverride:10; // perpetuals: no expiration → default holding horizon 10d
     const synth=l1P/l2P;
     const triSp=(synth-fxP)/fxP*100;
     const absSp=Math.abs(triSp);
@@ -2734,6 +2779,8 @@ function calcOvw(){
       <td class="hl" style="color:${netWCP}" title="${bTTW}">${bN1>0?'$'+fm(Math.round(bNetW)):'—'}</td>
       <td style="color:${netWCP}" title="${bTTW}">${bN1>0?roiWP.toFixed(1)+'%':'—'}</td>
       <td style="color:${netWCP}" title="${bTTW}">${bN1>0?'~'+annWP.toFixed(0)+'%':'—'}</td>`;
+    // v0.0.6
+    if(bN1>0)OVW_PRESET[pc.key]={fxCap:bFx,mxOwn:bMx,lots:bN1};
     ovwRows.push({netBest:bNet,roiBest:bRoi,annBest:annBP,netWorst:bNetW,roiWorst:roiWP,annWorst:annWP,sigma:bSig,tr:trPT});
   }
 
