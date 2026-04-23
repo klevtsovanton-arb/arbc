@@ -159,7 +159,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.c</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.d</p>
     </div>
   </div>
 
@@ -4212,13 +4212,15 @@ async function fetchPrices(){
       const mf=mx[v.contracts.M&&v.contracts.M.moexTicker];
       if(mf&&mf.stepPrice)v.stepPr=mf.stepPrice;
     }
-    // Update current instrument tab UI
-    if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){
+    // Update current instrument tab UI (only when mode is a standard futures instrument in MODES)
+    if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'&&MODES[mode]){
       const p=getP();
-      const m=mx[p.moexTicker];
-      if(m){
-        $('inFut').value=m.price;
-        if(m.go)setNum('inGO',Math.round(m.go));
+      if(p&&p.moexTicker){
+        const m=mx[p.moexTicker];
+        if(m){
+          $('inFut').value=m.price;
+          if(m.go)setNum('inGO',Math.round(m.go));
+        }
       }
     }
     // Apply to all TRIPLE_DATA contracts (Si/CR/Eu)
