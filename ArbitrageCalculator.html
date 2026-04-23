@@ -159,7 +159,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.d</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.7.e</p>
     </div>
   </div>
 
@@ -2930,6 +2930,13 @@ function calcOvw(){
       const alpha=spread-fair;
       const absAlpha=Math.abs(alpha);
       const isShort=alpha>=0;
+      // v0.0.7.e: fair drifts during holding period
+      const daysCalendarOvw = days;
+      const daysTradingOvw  = Math.max(1, Math.round(days * 5/7));
+      const daysToExpAtCloseOvw = Math.max(0, gmDaysToExp - daysCalendarOvw);
+      const fairAtCloseOvw = 100/(1+(cbr/4)*daysToExpAtCloseOvw/gmQdays);
+      const realizedAlphaOvw = spread - fairAtCloseOvw;
+      const realizedAbsOvw = Math.abs(realizedAlphaOvw);
 
       // Optimizer — sigma-based sizing
       const pska=totalRub*propLev;
@@ -2954,26 +2961,29 @@ function calcOvw(){
         const sigPT=gmIV/100*Math.sqrt(days/365);
         const sigT=sigPT>0?mxBufPct/100/sigPT:0;
         if(sigT<1.2)break;
-        const grossRub=absAlpha/100*notionalRub;
+        // gross uses REALIZED alpha (after fair drift over calendar days)
+        const grossRub=realizedAbsOvw/100*notionalRub;
         const dirGold=isShort?-1:+1;
-        const fundRub=-dirGold*swap*n1*days;
+        // funding — only on trading days
+        const fundRub=-dirGold*swap*n1*daysTradingOvw;
         const bor=Math.max(0,mxGoT-totalRub);
-        const repoRub=bor*repoAnn/365*days;
+        const repoRub=bor*repoAnn/365*daysCalendarOvw;
         const commRub=(n1+n2+n3)*5;
         const netBeforeRub=grossRub+fundRub-repoRub-commRub;
         const payRub=netBeforeRub>0?netBeforeRub*payoutPct:0;
         const netRub=netBeforeRub-payRub;
-        // Worst = spread went further by |α| → gross becomes negative
-        const grossWRub=-absAlpha/100*notionalRub;
+        // Worst = spread went further by |realizedAlpha| → gross negative
+        const grossWRub=-realizedAbsOvw/100*notionalRub;
         const netWBeforeRub=grossWRub+fundRub-repoRub-commRub;
         const payWRub=netWBeforeRub>0?netWBeforeRub*payoutPct:0;
         const netWRub=netWBeforeRub-payWRub;
         bN1=n1;bMx=totalRub;bSig=sigT;bNetRub=netRub;bNetWRub=netWRub;
         bRoi=netRub/totalRub*100;
         const borK=Math.round(bor/1000);
-        bTT=`Gross (α=${absAlpha.toFixed(2)}%): ${fm(Math.round(grossRub))} ₽`
-          +`\n${fundRub>=0?'+':'−'} Фандинг: ${fm(Math.round(Math.abs(fundRub)))} ₽`
-          +`\n− РЕПО: ${fm(Math.round(repoRub))} ₽${bor>0?' (заём '+borK+' К₽ на '+days+'д)':' (своих хватает)'}`
+        bTT=`α нoм=${alpha.toFixed(2)}% · fair ${fair.toFixed(2)}→${fairAtCloseOvw.toFixed(2)} · α реал=${realizedAlphaOvw.toFixed(2)}%`
+          +`\nGross (α реал): ${fm(Math.round(grossRub))} ₽`
+          +`\n${fundRub>=0?'+':'−'} Фандинг (${daysTradingOvw} торг.дн): ${fm(Math.round(Math.abs(fundRub)))} ₽`
+          +`\n− РЕПО (${daysCalendarOvw} кал.дн): ${fm(Math.round(repoRub))} ₽${bor>0?' (заём '+borK+' К₽)':' (своих хватает)'}`
           +`\n− Комиссии: ${fm(Math.round(commRub))} ₽`
           +(payRub>0?`\n− Пейаут (${Math.round(payoutPct*100)}%): ${fm(Math.round(payRub))} ₽`:'')
           +`\n═══════════════`
@@ -3949,17 +3959,26 @@ function calcGldMx(){
   const repoAnn=+$('gmRepo').value/100, payoutPct=+$('gmPayout').value/100;
   const comm=+$('gmComm').value;
 
-  // Current spread and fair
+  // v0.0.7.e: two days metrics — calendar (for fair drift and REPO) and trading (for SWAPRATE funding)
+  const daysCalendar = days;
+  const daysTrading  = Math.max(1, Math.round(days * 5/7));
+
+  // Current spread, fair today and fair at the end of holding period
   const spread = GOLD * 31.1 * 100000 / (Si * GD);
   const fair   = 100 / (1 + (cbr/4) * daysToExp / qdays);
-  const alpha  = spread - fair; // in points on the scale of 100 (= %)
+  const daysToExpAtClose = Math.max(0, daysToExp - daysCalendar);
+  const fairAtClose = 100 / (1 + (cbr/4) * daysToExpAtClose / qdays);
+  const alpha = spread - fair; // nominal alpha at entry (what tradingview shows)
+  // Realized alpha — actual profit fraction if spread returns exactly to fair_at_close
+  const realizedAlpha = spread - fairAtClose;
 
   $('gmSpreadCur').textContent = spread.toFixed(2);
-  $('gmSpreadFair').textContent = fair.toFixed(2);
+  $('gmSpreadFair').textContent = fair.toFixed(2)+' → '+fairAtClose.toFixed(2);
   $('gmAlpha').textContent = (alpha>=0?'+':'')+alpha.toFixed(3)+'%';
 
-  // Signal intensity — alpha >= 0.4% = signal "take it"
+  // Signal intensity — based on NOMINAL alpha ≥ 0.4%
   const alphaAbs = Math.abs(alpha);
+  const realizedAbs = Math.abs(realizedAlpha);
   let alphaColor, hintText;
   if(alphaAbs >= 0.4){
     alphaColor = alpha>0 ? 'var(--green)' : 'var(--orange)';
@@ -3972,6 +3991,11 @@ function calcGldMx(){
   } else {
     alphaColor = 'var(--tm)';
     hintText = 'Около справедливой — позы нет';
+  }
+  // Add realized alpha info if holding period shrinks it meaningfully
+  const alphaShrink = alphaAbs>0 ? (1 - realizedAbs/alphaAbs)*100 : 0;
+  if(alphaAbs >= 0.1 && alphaShrink > 5){
+    hintText += '<br><span style="color:var(--tm)">При закрытии через '+daysCalendar+' дн fair уйдёт к '+fairAtClose.toFixed(2)+' → реальная α ≈ '+(realizedAlpha>=0?'+':'')+realizedAlpha.toFixed(3)+'% ('+(100-alphaShrink).toFixed(0)+'% от номинальной)</span>';
   }
   $('gmAlpha').style.color = alphaColor;
   $('gmAlphaHint').innerHTML = hintText;
@@ -4009,14 +4033,14 @@ function calcGldMx(){
   // Total GO and borrowing (all in rubles — everything on MOEX)
   const mxGoTotal = n1*goGold + n2*goSi + n3*goGd;
   const bor = Math.max(0, mxGoTotal - mxOwn);
-  const repoRub = bor * repoAnn / 365 * days;           // ₽
-  const commRub = (n1 + n2 + n3) * comm;                // ₽
+  const repoRub = bor * repoAnn / 365 * daysCalendar;    // REPO accrues every calendar night
+  const commRub = (n1 + n2 + n3) * comm;                  // round-trip commission
 
-  // MOEX buffer and sigma
-  const mxSensPerPct = notionalRub / 100; // per 1% of spread movement, ₽
+  // MOEX buffer and sigma (sigma from calendar days — volatility is calendar-based)
+  const mxSensPerPct = notionalRub / 100;
   const mxBufRub = mxOwn * mxRisk;
   const mxBufPct = mxSensPerPct>0 ? mxBufRub / mxSensPerPct : 0;
-  const sigP = iv/100 * Math.sqrt(days/365);
+  const sigP = iv/100 * Math.sqrt(daysCalendar/365);
   const sig = sigP>0 ? mxBufPct/100/sigP : 0;
 
   $('gmBMx').textContent = fm(Math.round(mxBufRub/1000))+' К₽';
@@ -4030,14 +4054,15 @@ function calcGldMx(){
   $('gmGTxt').textContent = sLbl; $('gmGTxt').style.color = sc;
   $('gmGSub').textContent = 'Шанс моржа: ~'+bp+'%';
 
-  // P&L in RUBLES — all three legs on MOEX, no conversion needed
-  // gross_rub = α/100 × notionalRub (when spread returns to fair by α)
-  const grossRub = alphaAbs/100 * notionalRub;
+  // P&L in RUBLES — all three legs on MOEX
+  // v0.0.7.e: gross is realized alpha (current − fair_at_close), not nominal alpha
+  // Fair drifts up toward 100 as daysToExp decreases, so holding shrinks our captured α
+  const grossRub = realizedAbs/100 * notionalRub;
 
-  // Funding on GLDRUBF — positive SWAPRATE = long pays short = we receive (short)
+  // Funding on GLDRUBF — only accrues on trading days (Sat/Sun skipped)
   const dirGold = alpha>=0 ? -1 : +1; // -1 = short GLDRUBF
   const fundRubPerDay = -dirGold * swap * 1 * n1; // positive if we receive
-  const fundRub = fundRubPerDay * days;
+  const fundRub = fundRubPerDay * daysTrading;
 
   // Net
   const netBeforeRub = grossRub + fundRub - repoRub - commRub;
@@ -4063,18 +4088,18 @@ function calcGldMx(){
   $('gmPlNet').textContent   = (netRub>=0?'+':'−')+fmtRub(Math.abs(netRub));
   $('gmPlNet').style.color   = netRub>=0 ? 'var(--green)' : 'var(--red)';
   const roi = totCapRub>0 ? netRub/totCapRub*100 : 0;
-  const ann = days>0 ? roi/days*365 : 0;
+  const ann = daysCalendar>0 ? roi/daysCalendar*365 : 0;
   $('gmRoi').textContent = roi.toFixed(2)+'%';
   $('gmAnn').textContent = '~'+ann.toFixed(0)+'%';
   $('gmCap').textContent = fmtRub(totCapRub);
 
-  // Live swap hint from PERP_STATE — all in rubles
+  // Live swap hint from PERP_STATE — all in rubles, trading days only for funding
   const st = PERP_STATE.GLDRUBF;
   if(st && st.swapInfo){
     $('gmSwapInfo').innerHTML =
       st.swapInfo
       + '<br>→ 1 контр (1 г) = <b>'+swap.toFixed(4)+' ₽/день</b>'
-      + ' · твои '+n1+' контр × '+days+' дн ['+(dirGold>0?'long':'short')+']: '
+      + ' · твои '+n1+' контр × '+daysTrading+' торг. дн ['+(dirGold>0?'long':'short')+']: '
       + '<b style="color:'+(fundRub>=0?'var(--green)':'var(--red)')+'">'
       + (fundRub>=0?'+':'−')+fm(Math.abs(Math.round(fundRub)))+' ₽</b>';
   }
@@ -4091,18 +4116,23 @@ function calcGldMx(){
     + 'Фандинг/день: <b style="color:'+(fundRubPerDay>=0?'var(--green)':'var(--red)')+'">'+(fundRubPerDay>=0?'+':'')+fm(Math.round(fundRubPerDay))+' ₽</b>'
     + (bor>0?' · РЕПО/день: <b style="color:var(--red)">'+fm(Math.round(bor*repoAnn/365))+' ₽</b>':'')
     + '</div>'
-    + '<div style="font-size:11px;color:var(--tm);margin-top:4px">Нотионал позиции: <b style="color:var(--tl)">'+fmtRub(notionalRub)+'</b></div>'
+    + '<div style="font-size:11px;color:var(--tm);margin-top:6px;border-top:1px solid var(--border);padding-top:6px">'
+    + '<b style="color:var(--tl)">Горизонт:</b> '+daysCalendar+' календ. · <b style="color:var(--tl)">'+daysTrading+' торговых</b> (для фандинга)<br>'
+    + '<b style="color:var(--tl)">Fair:</b> сегодня '+fair.toFixed(2)+' → через '+daysCalendar+' дн '+fairAtClose.toFixed(2)+' (дрейф +'+(fairAtClose-fair).toFixed(2)+')<br>'
+    + '<b style="color:var(--tl)">Реальная α:</b> '+(realizedAlpha>=0?'+':'')+realizedAlpha.toFixed(3)+'% (номинальная '+(alpha>=0?'+':'')+alpha.toFixed(3)+'%)<br>'
+    + '<b style="color:var(--tl)">Нотионал:</b> '+fmtRub(notionalRub)
+    + '</div>'
     + '</div>';
 
-  // 4 scenarios — all in rubles
+  // 4 scenarios — all in rubles, based on realized alpha (post fair-drift)
   function gmCard(title, emoji, spreadMove, desc){
-    const realizedPct = alphaAbs * spreadMove; // in % points
+    const realizedPct = realizedAbs * spreadMove; // uses post-drift α (not nominal)
     const gr = realizedPct/100 * notionalRub;   // ₽
     const before = gr + fundRub - repoRub - commRub;
     const pay = before > 0 ? before * payoutPct : 0;
     const final = before - pay;
     const roiP = totCapRub>0 ? final/totCapRub*100 : 0;
-    const annP = days>0 ? roiP/days*365 : 0;
+    const annP = daysCalendar>0 ? roiP/daysCalendar*365 : 0;
     const cN = final>=0?'var(--green)':'var(--red)';
     const grC = gr>=0?'var(--green)':'var(--red)';
     return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">'
@@ -4118,10 +4148,10 @@ function calcGldMx(){
       + '</div></div>';
   }
   $('gmScenConv').innerHTML =
-      gmCard('Лучший: полный возврат к fair','🟢',1,'Спред сошёлся к жёлтой линии за '+days+' дн. Вся α захвачена.')
-    + gmCard('Средний: половина возврата','🟡',0.5,'Спред прошёл половину пути к fair. Половина α.')
-    + gmCard('Плохой: не вернулся','🟠',0,'Спред застрял. Живём только на carry (фандинг − РЕПО).')
-    + gmCard('Худший: ушёл дальше','🔴',-1,'Спред улетел ещё на |α| в обратную сторону. Двойной минус по раздвижке.');
+      gmCard('Лучший: полный возврат к fair','🟢',1,'Спред сошёлся к fair_close='+fairAtClose.toFixed(2)+' за '+daysCalendar+' дн. Захвачена вся реальная α ('+realizedAlpha.toFixed(2)+'%).')
+    + gmCard('Средний: половина возврата','🟡',0.5,'Спред прошёл половину пути к fair_close. Половина реальной α.')
+    + gmCard('Плохой: не вернулся','🟠',0,'Спред застрял там же, но fair уплыл наверх. Живём только на carry (фандинг − РЕПО).')
+    + gmCard('Худший: ушёл дальше','🔴',-1,'Спред улетел ещё на |α| в обратную сторону. Минус реальная α сверху.');
 }
 
 document.querySelectorAll('input,select').forEach(el=>{
