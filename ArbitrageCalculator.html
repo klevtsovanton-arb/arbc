@@ -179,7 +179,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.8.b</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.8.d</p>
     </div>
   </div>
 
@@ -994,8 +994,9 @@ tr.ovw-row-hidden{display:none !important}
     <div class="card">
       <div class="card-t" style="color:#EC4899">💼 Мои позиции — мой реальный портфель</div>
       <div style="font-size:12px;color:var(--tl);line-height:1.6">
-        Каркас для ведения реальных позиций. Ноги группируются по <b>стратегии</b> — чтобы видеть общий PnL по каждой связке (например «Баксо-юань», «Серебро-базис»). PnL по ноге = <code>(текущая − вход) × направление × лоты × ₽/пункт</code>.<br>
-        <span style="color:var(--tm)">Всё хранится в localStorage браузера — пропадёт только если очистишь cookies/данные сайта. Можно экспортировать в JSON на всякий случай.</span>
+        Выбери <b>торговую связку</b> (это вкладки калькулятора) и контракт — связка добавится в портфель сразу с правильными ногами, тикерами и направлениями. Останется заполнить <b>лоты</b> и <b>цену входа</b>.<br>
+        PnL по ноге = <code>(текущая − вход) × направление × лоты × ₽/пункт</code>. Текущая цена подтягивается автоматом для известных тикеров.<br>
+        <span style="color:var(--tm)">Всё хранится в localStorage — пропадёт только при очистке данных сайта. Сохрани JSON через «Экспорт» если боишься потерять.</span>
       </div>
     </div>
     <div class="pf-summary">
@@ -1018,12 +1019,28 @@ tr.ovw-row-hidden{display:none !important}
       </div>
     </div>
     <div class="card" style="overflow-x:auto">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-        <div style="font-size:13px;font-weight:800;color:var(--tw)">Таблица ног</div>
-        <div style="display:flex;gap:8px">
-          <button class="pf-add-btn" onclick="pfAddLeg()">+ Добавить ногу</button>
-          <button class="pf-add-btn" style="border-color:var(--cyan);color:var(--cyan);background:rgba(0,180,216,.1)" onclick="pfNewStrategy()">+ Новая стратегия</button>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:800;color:var(--tw);align-self:center">Таблица ног</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;color:var(--tm)">Торговая связка:</span>
+          <select id="pfBundleSelect" onchange="pfBundleChanged()" style="background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;min-width:280px"></select>
+          <select id="pfContractSelect" style="background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;display:none">
+            <option value="M">Июн 26 (M)</option>
+            <option value="U">Сен 26 (U)</option>
+            <option value="Z">Дек 26 (Z)</option>
+          </select>
+          <select id="pfContractSelectCrypto" style="background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;display:none">
+            <option value="J">Апр 26 (J)</option>
+            <option value="K">Май 26 (K)</option>
+            <option value="M">Июн 26 (M)</option>
+            <option value="N">Июл 26 (N)</option>
+          </select>
+          <button class="pf-add-btn" onclick="pfAddBundle()">+ Добавить связку</button>
         </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="pf-add-btn" id="pfRefreshBtn" onclick="pfFetchAndRefresh()" style="border-color:var(--yellow);color:var(--yellow);background:rgba(255,209,102,.1);font-size:12px;padding:6px 14px">🔄 Обновить цены из рынка</button>
+        <button class="pf-add-btn" onclick="pfAddLeg()" style="font-size:12px;padding:6px 14px">+ Свободная нога</button>
       </div>
       <table class="pf-table" id="pfTable">
         <thead><tr>
@@ -1054,8 +1071,8 @@ tr.ovw-row-hidden{display:none !important}
     <div class="card">
       <div class="card-t" style="color:var(--yellow)">🚧 В разработке</div>
       <div style="font-size:12px;color:var(--tl);line-height:1.7">
-        <b>v0.0.8</b> — автоподтяг текущих цен из ISS/TwelveData/Bitget при обновлении страницы<br>
-        <b>v0.0.9</b> — матрица корреляций ног + суммарная σ портфеля (с учётом всех открытых поз)<br>
+        <s><b>v0.0.8</b> — автоподтяг цен из ISS/TwelveData/Bitget</s> ✅ сделано (● = цена из live)<br>
+        <s><b>v0.0.9</b> — матрица корреляций + σ портфеля</s> ✅ сделано (с учётом всех открытых ног и типов стратегий)<br>
         <b>v0.0.10</b> — накопленные свопы/фандинг/РЕПО с даты входа → реальный NET<br>
         <b>v0.0.11</b> — рекомендации по ребалансу на уровне портфеля
       </div>
@@ -1679,7 +1696,8 @@ function switchTo(m){
     $('portfolioContent').style.display='';
     $('hdrTitle').textContent='Мои позиции · портфель';
     $('hdrSub').textContent='Ручной ввод открытых ног · PnL в реалтайме · localStorage';
-    pfRender();
+    // v0.0.8.c: on tab open, sync current prices from already-fetched live data (no network call)
+    pfRefreshCurrent();
     return;
   }
   // v0.0.7: Gold triple — GLDRUBF × 31.1 × 100000 / (Si × GD) vs fair line
@@ -4282,6 +4300,101 @@ const PF_CORR = {
   crypto_basis: {cur_triple:0.0, perp_triple:0.0, gold_fair:0.0, metal_basis:0.0, simple_basis:0.0, crypto_basis:1.0, other:0.0},
   other:        {cur_triple:0.0, perp_triple:0.0, gold_fair:0.0, metal_basis:0.0, simple_basis:0.0, crypto_basis:0.0, other:1.0}
 };
+// === v0.0.8.d === TRADE BUNDLES — preset templates matching the calculator's tabs.
+// User picks a bundle + (optionally) a contract → all legs auto-added with correct tickers/directions.
+// Default sides reflect the typical direction from the calculator's "default trade" hint.
+const TRADE_BUNDLES = {
+  // Simple basis (single instrument vs forex/bitget)
+  BASIS_EU:   {label:'💱 EUR/USD (ED фьюч × EUR/USD форекс)', type:'simple_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'ED'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'EUR/USD', side:'short', venue:'Forex'}
+    ]},
+  BASIS_UCNY: {label:'💱 USD/CNH (UC фьюч × USD/CNH форекс)', type:'simple_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'UC'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'USD/CNH', side:'short', venue:'Forex'}
+    ]},
+  // Currency triples (3-leg via Si/Cr/Eu)
+  TRI_SI_CR_UCNH: {label:'🔗 Si/Cr/USDCNH тройничок', type:'cur_triple', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'Si'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'CR'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'USD/CNH', side:'short', venue:'Forex'}
+    ]},
+  TRI_EU_CR_EURCNH: {label:'🔗 Eu/Cr/EURCNH тройничок', type:'cur_triple', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'Eu'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'CR'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'EUR/CNH', side:'short', venue:'Forex'}
+    ]},
+  TRI_EU_SI_EURUSD: {label:'🔗 Eu/Si/EURUSD тройничок', type:'cur_triple', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'Eu'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'Si'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'EUR/USD', side:'short', venue:'Forex'}
+    ]},
+  // Perpetual triples (no contract)
+  PERP_UCNH: {label:'♾️ USDRUBF÷CNYRUBF vs USD/CNH', type:'perp_triple', contractKind:'none',
+    legs: () => [
+      {ticker:'USDRUBF', side:'short', venue:'MOEX'},
+      {ticker:'CNYRUBF', side:'long',  venue:'MOEX'},
+      {ticker:'USD/CNH', side:'long',  venue:'Forex'}
+    ]},
+  PERP_ECNH: {label:'♾️ EURRUBF÷CNYRUBF vs EUR/CNH', type:'perp_triple', contractKind:'none',
+    legs: () => [
+      {ticker:'EURRUBF', side:'short', venue:'MOEX'},
+      {ticker:'CNYRUBF', side:'long',  venue:'MOEX'},
+      {ticker:'EUR/CNH', side:'long',  venue:'Forex'}
+    ]},
+  PERP_EU: {label:'♾️ EURRUBF÷USDRUBF vs EUR/USD', type:'perp_triple', contractKind:'none',
+    legs: () => [
+      {ticker:'EURRUBF', side:'short', venue:'MOEX'},
+      {ticker:'USDRUBF', side:'long',  venue:'MOEX'},
+      {ticker:'EUR/USD', side:'long',  venue:'Forex'}
+    ]},
+  // Gold fair-spread (3 MOEX legs, no forex)
+  GOLD_FAIR: {label:'🥇 GLDRUBF/Si vs GD (фандинг-золото)', type:'gold_fair', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'GLDRUBF',  side:'short', venue:'MOEX'},
+      {ticker:'Si'+c+'6', side:'long',  venue:'MOEX'},
+      {ticker:'GD'+c+'6', side:'long',  venue:'MOEX'}
+    ]},
+  // Metal basis (MOEX vs forex)
+  METAL_GOLD: {label:'🥇 Gold (GD фьюч × XAU/USD)', type:'metal_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'GD'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'XAU/USD', side:'long',  venue:'Forex'}
+    ]},
+  METAL_SILVER: {label:'⚪ Silver (SV фьюч × XAG/USD)', type:'metal_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'SV'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'XAG/USD', side:'long',  venue:'Forex'}
+    ]},
+  METAL_PLAT: {label:'🥉 Platinum (PT фьюч × XPT/USD)', type:'metal_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'PT'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'XPT/USD', side:'long',  venue:'Forex'}
+    ]},
+  METAL_PALL: {label:'🟤 Palladium (PD фьюч × XPD/USD)', type:'metal_basis', contractKind:'quarterly',
+    legs: c => [
+      {ticker:'PD'+c+'6', side:'short', venue:'MOEX'},
+      {ticker:'XPD/USD', side:'long',  venue:'Forex'}
+    ]},
+  // Crypto basis (MOEX vs Bitget perp)
+  CRYPTO_BTC: {label:'₿ BTC (BT фьюч × BTCUSDT)', type:'crypto_basis', contractKind:'crypto',
+    legs: c => [
+      {ticker:'BT'+c+'6',  side:'short', venue:'MOEX'},
+      {ticker:'BTCUSDT',  side:'long',  venue:'Bitget'}
+    ]},
+  CRYPTO_ETH: {label:'₿ ETH (EH фьюч × ETHUSDT)', type:'crypto_basis', contractKind:'crypto',
+    legs: c => [
+      {ticker:'EH'+c+'6',  side:'short', venue:'MOEX'},
+      {ticker:'ETHUSDT',  side:'long',  venue:'Bitget'}
+    ]}
+};
+const CONTRACT_LABEL = {M:'Июн26', U:'Сен26', Z:'Дек26', J:'Апр26', K:'Май26', N:'Июл26'};
+
 let PF_STRATS = {};
 function pfLoadStrats(){try{const raw=localStorage.getItem(PF_STRAT_LS_KEY); return raw?JSON.parse(raw):{};}catch(e){return {};}}
 function pfSaveStrats(){try{localStorage.setItem(PF_STRAT_LS_KEY,JSON.stringify(PF_STRATS));}catch(e){console.error(e);}}
@@ -4363,14 +4476,53 @@ function pfNewLeg(strategy){
 function pfAddLeg(){
   // Pick strategy from last row if any, else new
   const last = PF_LEGS[PF_LEGS.length-1];
-  const strategy = last ? last.strategy : 'Новая стратегия';
+  const strategy = last ? last.strategy : 'Свободные ноги';
   PF_LEGS.push(pfNewLeg(strategy));
   pfSave(PF_LEGS); pfRender();
 }
-function pfNewStrategy(){
-  const name = prompt('Название новой стратегии:', 'Баксо-юань');
-  if(!name) return;
-  PF_LEGS.push(pfNewLeg(name));
+// v0.0.8.d: add a preset trading bundle (one click → all legs created with right tickers/sides)
+function pfAddBundle(){
+  const sel = $('pfBundleSelect');
+  const csel = $('pfContractSelect');
+  if(!sel) return;
+  const key = sel.value;
+  const bundle = TRADE_BUNDLES[key];
+  if(!bundle){alert('Выберите связку');return;}
+  let contract = '';
+  if(bundle.contractKind !== 'none'){
+    contract = csel ? csel.value : 'M';
+  }
+  // Build unique strategy name: "EUR/USD (фьюч) Июн26" or "USDRUBF÷CNYRUBF" etc.
+  const baseName = bundle.label.replace(/^[^\sа-яa-z]+\s*/i,''); // strip leading emoji
+  let stratName = baseName + (contract ? ' ' + (CONTRACT_LABEL[contract]||contract) : '');
+  // If exists, add a counter suffix
+  let counter = 2;
+  const existingNames = new Set(PF_LEGS.map(l=>l.strategy));
+  while(existingNames.has(stratName)){ stratName = baseName + (contract ? ' ' + (CONTRACT_LABEL[contract]||contract) : '') + ' (' + counter + ')'; counter++; }
+  // Set strategy metadata (type, default sigma)
+  PF_STRATS[stratName] = {type: bundle.type, sigma: STRATEGY_TYPES[bundle.type].sigmaDef};
+  pfSaveStrats();
+  // Generate legs
+  const legSpecs = bundle.legs(contract);
+  for(const ls of legSpecs){
+    const leg = pfNewLeg(stratName);
+    leg.ticker = ls.ticker;
+    leg.side = ls.side;
+    leg.venue = ls.venue;
+    // Pull multiplier and live price
+    const spec = PF_SPECS[ls.ticker] || (function(){
+      const m = ls.ticker.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+      if(m){const p=m[1][0].toUpperCase()+(m[1][1]||'').toLowerCase(); return PF_SPECS[p]||PF_SPECS[p.toUpperCase()];}
+      return null;
+    })();
+    if(spec) leg.mult = spec.mult;
+    const live = pfGetLivePrice(ls.ticker);
+    if(live != null && isFinite(live)){
+      leg.current = live;
+      leg.entry = live; // user will overwrite with real fill price
+    }
+    PF_LEGS.push(leg);
+  }
   pfSave(PF_LEGS); pfRender();
 }
 function pfDeleteLeg(id){
@@ -4397,19 +4549,97 @@ function pfUpdateField(id, field, value){
   } else {
     leg[field] = value;
   }
-  // Auto-fill multiplier when ticker matches a known spec
+  // Auto-fill multiplier/venue when ticker matches a known spec + live current price
   if(field==='ticker'){
-    const spec = PF_SPECS[value];
+    // Try exact match first
+    let spec = PF_SPECS[value];
+    // If not found, try parsing futures ticker (e.g. SiM6 → Si, EDM6 → ED)
+    if(!spec){
+      const m = value && value.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+      if(m){
+        const prefix = m[1][0].toUpperCase() + (m[1][1]||'').toLowerCase();
+        spec = PF_SPECS[prefix] || PF_SPECS[prefix.toUpperCase()];
+      }
+    }
     if(spec){
       if(!leg.mult || leg.mult===1) leg.mult = spec.mult;
       if(!leg.venue || leg.venue==='MOEX') leg.venue = spec.venue;
     }
+    // Always pull the latest known price for this ticker
+    const live = pfGetLivePrice(value);
+    if(live != null && isFinite(live)){
+      leg.current = live;
+      // If entry is empty, prefill it too (user can override)
+      if(!leg.entry || leg.entry === 0) leg.entry = live;
+    }
   }
   pfSave(PF_LEGS); pfRender();
 }
+// v0.0.8.c: auto-resolve current price for known tickers
+function pfGetLivePrice(ticker){
+  if(!ticker) return null;
+  const t = String(ticker).trim();
+  // Perpetuals
+  if(PERP_STATE[t] && PERP_STATE[t].price) return PERP_STATE[t].price;
+  // Forex / crypto spots
+  const fxMap = {
+    'EUR/USD': ()=>MODES.EURUSD && MODES.EURUSD.spot,
+    'USD/CNH': ()=>MODES.UCNY && MODES.UCNY.spot,
+    'EUR/CNH': ()=>(MODES.EURUSD && MODES.UCNY && MODES.EURUSD.spot && MODES.UCNY.spot) ? MODES.EURUSD.spot*MODES.UCNY.spot : null,
+    'XAU/USD': ()=>MODES.GOLD && MODES.GOLD.spot,
+    'XAG/USD': ()=>MODES.SILVER && MODES.SILVER.spot,
+    'XPT/USD': ()=>MODES.PLAT && MODES.PLAT.spot,
+    'XPD/USD': ()=>MODES.PALL && MODES.PALL.spot,
+    'BTCUSDT': ()=>MODES.BTC && MODES.BTC.spot,
+    'ETHUSDT': ()=>MODES.ETH && MODES.ETH.spot
+  };
+  if(fxMap[t]){const v=fxMap[t](); return v||null;}
+  // Futures ticker: PREFIX + MONTH + YEAR (e.g. SiM6, EDU6, GDZ6, BTJ6)
+  const m = t.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+  if(m){
+    const prefix=m[1].toUpperCase(), c=m[2].toUpperCase();
+    if(prefix==='SI')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).si||null;
+    if(prefix==='CR')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).cr||null;
+    if(prefix==='EU')return (TRIPLE_DATA.TRIPLE_EU.contracts[c]||{}).eu||null;
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const k = modeMap[prefix];
+    if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
+      return MODES[k].contracts[c].fut;
+    }
+  }
+  return null;
+}
+
 function pfCalcPnlRub(leg){
   const dir = leg.side==='long' ? 1 : -1;
-  return (leg.current - leg.entry) * dir * leg.lots * leg.mult;
+  // If leg.current is 0/empty and we know the ticker, use live price
+  const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
+  return (cur - leg.entry) * dir * leg.lots * leg.mult;
+}
+
+// v0.0.8.c: refresh leg.current from live data for known tickers
+function pfRefreshCurrent(){
+  let updated = 0;
+  for(const leg of PF_LEGS){
+    const live = pfGetLivePrice(leg.ticker);
+    if(live != null && isFinite(live)){
+      leg.current = live;
+      updated++;
+    }
+  }
+  pfSave(PF_LEGS);
+  pfRender();
+  return updated;
+}
+async function pfFetchAndRefresh(){
+  const btn = $('pfRefreshBtn'); if(btn){btn.disabled=true; btn.style.opacity='.5'; btn.textContent='⏳ Тяну...';}
+  try{
+    await fetchPrices();
+    const n = pfRefreshCurrent();
+    if(btn){btn.textContent='✅ Обновлено ('+n+' ног)'; setTimeout(()=>{btn.textContent='🔄 Обновить цены из рынка'; btn.disabled=false; btn.style.opacity='1';},2500);}
+  }catch(e){
+    if(btn){btn.textContent='❌ '+(e.message||'ошибка'); setTimeout(()=>{btn.textContent='🔄 Обновить цены из рынка'; btn.disabled=false; btn.style.opacity='1';},2500);}
+  }
 }
 // v0.0.8.b: Portfolio-level σ and VaR
 function pfCalcPortfolioStats(){
@@ -4489,11 +4719,15 @@ function pfRender(){
       totalRub += pnlRub;
       const pnlUsd = pnlRub / rub;
       const pnlColor = pnlRub>=0 ? 'var(--green)' : 'var(--red)';
+      // Live price indicator
+      const live = pfGetLivePrice(leg.ticker);
+      const isLiveMatch = (live!=null && leg.current && Math.abs(leg.current - live) < 1e-6);
+      const liveBadge = isLiveMatch ? '<span title="Цена из live-источника" style="color:var(--green);font-size:10px;margin-left:3px">●</span>' : (live!=null ? '<span title="Live: '+live+' (клик 🔄 чтобы обновить)" style="color:var(--yellow);font-size:10px;margin-left:3px">◌</span>' : '');
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="color:var(--tm)">${idx}</td>
         <td><input type="text" value="${escapeHtml(leg.strategy)}" onchange="pfUpdateField('${leg.id}','strategy',this.value)"></td>
-        <td><input type="text" list="pfTickerList" value="${escapeHtml(leg.ticker)}" placeholder="USDRUBF/Si/..." onchange="pfUpdateField('${leg.id}','ticker',this.value)" style="text-align:left"></td>
+        <td><input type="text" list="pfTickerList" value="${escapeHtml(leg.ticker)}" placeholder="USDRUBF/SiM6/ED..." onchange="pfUpdateField('${leg.id}','ticker',this.value)" style="text-align:left"></td>
         <td><select onchange="pfUpdateField('${leg.id}','venue',this.value)">
           <option${leg.venue==='MOEX'?' selected':''}>MOEX</option>
           <option${leg.venue==='Forex'?' selected':''}>Forex</option>
@@ -4505,7 +4739,7 @@ function pfRender(){
         </select></td>
         <td><input type="number" step="0.01" value="${leg.lots}" onchange="pfUpdateField('${leg.id}','lots',this.value)"></td>
         <td><input type="number" step="0.00001" value="${leg.entry}" onchange="pfUpdateField('${leg.id}','entry',this.value)"></td>
-        <td><input type="number" step="0.00001" value="${leg.current}" onchange="pfUpdateField('${leg.id}','current',this.value)"></td>
+        <td style="white-space:nowrap"><input type="number" step="0.00001" value="${leg.current}" onchange="pfUpdateField('${leg.id}','current',this.value)" style="width:calc(100% - 16px)">${liveBadge}</td>
         <td><input type="number" step="1" value="${leg.mult}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот"></td>
         <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
         <td class="hl" style="color:${pnlColor}">${fm(Math.round(pnlRub))} ₽</td>
@@ -4612,13 +4846,117 @@ function pfClear(){
   if(!confirm('Точно удалить ВСЕ позиции из портфеля? Это необратимо (если не экспортировал JSON).')) return;
   PF_LEGS = []; pfSave(PF_LEGS); pfRender();
 }
-// Ticker autocomplete
+// Ticker autocomplete — known perpetuals, forex spots, and all quarterly futures tickers
 (function(){
   const dl = document.createElement('datalist');
   dl.id = 'pfTickerList';
-  Object.keys(PF_SPECS).forEach(t=>{ const o=document.createElement('option'); o.value=t; dl.appendChild(o); });
+  const addOpt = (v)=>{const o=document.createElement('option'); o.value=v; dl.appendChild(o);};
+  Object.keys(PF_SPECS).forEach(addOpt);
+  // All futures contracts from MODES and TRIPLE_DATA
+  for(const key in MODES){
+    const m = MODES[key];
+    if(m && m.contracts){
+      for(const c in m.contracts){
+        const tk = m.contracts[c].moexTicker;
+        if(tk) addOpt(tk);
+      }
+    }
+  }
+  ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(addOpt);
   document.body.appendChild(dl);
 })();
+// v0.0.8.d: populate Trade Bundles dropdown
+(function(){
+  const sel = document.getElementById('pfBundleSelect');
+  if(!sel) return;
+  // Group by type for cleaner UX
+  const groups = {
+    'simple_basis': '— Простой базис —',
+    'cur_triple':   '— Валютные тройнички —',
+    'perp_triple':  '— Тройнички из вечников —',
+    'gold_fair':    '— Золото fair-spread —',
+    'metal_basis':  '— Металлы (базис) —',
+    'crypto_basis': '— Крипта —'
+  };
+  const seen = new Set();
+  for(const gType in groups){
+    const og = document.createElement('optgroup');
+    og.label = groups[gType];
+    let added = 0;
+    for(const k in TRADE_BUNDLES){
+      if(TRADE_BUNDLES[k].type === gType){
+        const o = document.createElement('option');
+        o.value = k;
+        o.textContent = TRADE_BUNDLES[k].label;
+        og.appendChild(o);
+        seen.add(k);
+        added++;
+      }
+    }
+    if(added) sel.appendChild(og);
+  }
+  // Anything not in groups → "Другое"
+  const og2 = document.createElement('optgroup');
+  og2.label = '— Другое —';
+  let extra = 0;
+  for(const k in TRADE_BUNDLES){
+    if(!seen.has(k)){
+      const o = document.createElement('option');
+      o.value = k; o.textContent = TRADE_BUNDLES[k].label;
+      og2.appendChild(o); extra++;
+    }
+  }
+  if(extra) sel.appendChild(og2);
+})();
+// Show/hide contract selector based on bundle's contractKind
+function pfBundleChanged(){
+  const sel = $('pfBundleSelect'); if(!sel) return;
+  const b = TRADE_BUNDLES[sel.value]; if(!b) return;
+  const cs = $('pfContractSelect'), ccs = $('pfContractSelectCrypto');
+  if(b.contractKind === 'quarterly'){cs.style.display=''; ccs.style.display='none';}
+  else if(b.contractKind === 'crypto'){cs.style.display='none'; ccs.style.display='';}
+  else {cs.style.display='none'; ccs.style.display='none';}
+}
+// Initial trigger after population
+setTimeout(()=>{const sel=$('pfBundleSelect'); if(sel && sel.value)pfBundleChanged();}, 100);
+// Override pfAddBundle to read from the right contract selector
+const _pfAddBundleOrig = pfAddBundle;
+pfAddBundle = function(){
+  const sel = $('pfBundleSelect'); if(!sel) return;
+  const bundle = TRADE_BUNDLES[sel.value];
+  if(!bundle){alert('Выберите связку');return;}
+  let contract = '';
+  if(bundle.contractKind === 'quarterly') contract = ($('pfContractSelect')||{}).value || 'M';
+  else if(bundle.contractKind === 'crypto') contract = ($('pfContractSelectCrypto')||{}).value || 'M';
+  // Same as original but with proper contract source
+  const baseName = bundle.label.replace(/^[^\sа-яa-z]+\s*/i,'');
+  let stratName = baseName + (contract ? ' ' + (CONTRACT_LABEL[contract]||contract) : '');
+  let counter = 2;
+  const existingNames = new Set(PF_LEGS.map(l=>l.strategy));
+  while(existingNames.has(stratName)){ stratName = baseName + (contract ? ' ' + (CONTRACT_LABEL[contract]||contract) : '') + ' (' + counter + ')'; counter++; }
+  PF_STRATS[stratName] = {type: bundle.type, sigma: STRATEGY_TYPES[bundle.type].sigmaDef};
+  pfSaveStrats();
+  const legSpecs = bundle.legs(contract);
+  for(const ls of legSpecs){
+    const leg = pfNewLeg(stratName);
+    leg.ticker = ls.ticker;
+    leg.side = ls.side;
+    leg.venue = ls.venue;
+    const spec = PF_SPECS[ls.ticker] || (function(){
+      const m = ls.ticker.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+      if(m){const p=m[1][0].toUpperCase()+(m[1][1]||'').toLowerCase(); return PF_SPECS[p]||PF_SPECS[p.toUpperCase()];}
+      return null;
+    })();
+    if(spec) leg.mult = spec.mult;
+    const live = pfGetLivePrice(ls.ticker);
+    if(live != null && isFinite(live)){
+      leg.current = live;
+      leg.entry = live;
+    }
+    PF_LEGS.push(leg);
+  }
+  pfSave(PF_LEGS); pfRender();
+};
 
 document.querySelectorAll('input,select').forEach(el=>{
   if(el.id==='inLots') return; // slider handled separately
