@@ -179,7 +179,7 @@ tr.ovw-row-hidden{display:none !important}
     <div class="hdr-right">
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.8.d</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.9.a</p>
     </div>
   </div>
 
@@ -1002,8 +1002,16 @@ tr.ovw-row-hidden{display:none !important}
     <div class="pf-summary">
       <div class="pf-stat"><div class="pf-lbl">Позиций</div><div class="pf-val" id="pfCount">0</div></div>
       <div class="pf-stat"><div class="pf-lbl">Ног всего</div><div class="pf-val" id="pfLegs">0</div></div>
-      <div class="pf-stat"><div class="pf-lbl">Суммарный PnL (₽)</div><div class="pf-val" id="pfPnlRub">0 ₽</div></div>
-      <div class="pf-stat"><div class="pf-lbl">Суммарный PnL ($)</div><div class="pf-val" id="pfPnlUsd">$0</div></div>
+      <div class="pf-stat"><div class="pf-lbl">Суммарный NET (₽) с учётом carry</div><div class="pf-val" id="pfPnlRub">0 ₽</div></div>
+      <div class="pf-stat"><div class="pf-lbl">Суммарный NET ($)</div><div class="pf-val" id="pfPnlUsd">$0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:#EC4899">🏦 Портфельный капитал и РЕПО</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px">
+        <label style="color:var(--tl)">Мой депозит МОЕХ: <input id="pfMxOwn" type="text" inputmode="numeric" placeholder="25 000 000" oninput="fmtOnInput(this);pfRender()" onchange="pfRender()" style="width:130px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> ₽</label>
+        <label style="color:var(--tl)">РЕПО: <input id="pfRepoAnn" type="number" step="0.5" value="21" oninput="pfRender()" onchange="pfRender()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> %/год</label>
+      </div>
+      <div id="pfRepoSummary" style="margin-top:8px;font-size:12px;color:var(--tl);line-height:1.7"></div>
     </div>
     <div class="card">
       <div class="card-t" style="color:#EC4899">📊 Портфельная статистика (σ и VaR)</div>
@@ -1045,8 +1053,8 @@ tr.ovw-row-hidden{display:none !important}
       <table class="pf-table" id="pfTable">
         <thead><tr>
           <th style="width:24px">#</th>
-          <th style="min-width:140px">Стратегия</th>
-          <th style="min-width:110px">Инструмент</th>
+          <th style="min-width:120px">Стратегия</th>
+          <th style="min-width:100px">Инструмент</th>
           <th>Площадка</th>
           <th>Направление</th>
           <th>Лоты</th>
@@ -1054,12 +1062,18 @@ tr.ovw-row-hidden{display:none !important}
           <th>Тек. цена</th>
           <th title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот. Для USDRUBF=1000, GLDRUBF=1, EUR/USD форекс=1000000 (1 пункт × 100K€ × rub/$) и т.п.">₽/пункт × лот</th>
           <th>Дата входа</th>
+          <th title="Дней с даты входа (календарных / торговых)">Дн</th>
+          <th title="Накопленный carry в ₽ с даты входа. Форекс/Bitget — впиши daily swap в ₽ вручную в тултипе.">Carry ₽</th>
           <th>PnL ₽</th>
-          <th>PnL $</th>
+          <th>NET ₽</th>
           <th style="width:28px"></th>
         </tr></thead>
         <tbody id="pfBody"></tbody>
-        <tfoot><tr class="pf-total"><td colspan="10" style="text-align:right">ИТОГО:</td><td id="pfFootRub" style="color:var(--green)">0 ₽</td><td id="pfFootUsd" style="color:var(--green)">$0</td><td></td></tr></tfoot>
+        <tfoot>
+          <tr class="pf-total"><td colspan="11" style="text-align:right">Gross PnL:</td><td></td><td id="pfFootRub" style="color:var(--green)">0 ₽</td><td></td><td></td></tr>
+          <tr class="pf-total"><td colspan="11" style="text-align:right">Carry:</td><td id="pfFootCarry" style="color:var(--red)">0 ₽</td><td></td><td></td><td></td></tr>
+          <tr class="pf-total"><td colspan="11" style="text-align:right">NET ₽ / $:</td><td></td><td></td><td id="pfFootNet" style="color:var(--green)">0 ₽</td><td id="pfFootUsd" style="color:var(--green)">$0</td></tr>
+        </tfoot>
       </table>
       <div class="pf-export">
         <button onclick="pfExport()">💾 Экспорт JSON</button>
@@ -1069,12 +1083,18 @@ tr.ovw-row-hidden{display:none !important}
       </div>
     </div>
     <div class="card">
-      <div class="card-t" style="color:var(--yellow)">🚧 В разработке</div>
+      <div class="card-t" style="color:var(--orange)">⚠️ Рекомендации и сигналы</div>
+      <div id="pfAlerts" style="font-size:13px;line-height:1.7">Нет активных позиций.</div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--green)">✅ Реализовано</div>
       <div style="font-size:12px;color:var(--tl);line-height:1.7">
-        <s><b>v0.0.8</b> — автоподтяг цен из ISS/TwelveData/Bitget</s> ✅ сделано (● = цена из live)<br>
-        <s><b>v0.0.9</b> — матрица корреляций + σ портфеля</s> ✅ сделано (с учётом всех открытых ног и типов стратегий)<br>
-        <b>v0.0.10</b> — накопленные свопы/фандинг/РЕПО с даты входа → реальный NET<br>
-        <b>v0.0.11</b> — рекомендации по ребалансу на уровне портфеля
+        <s><b>v0.0.8</b> — автоподтяг цен из ISS/TwelveData/Bitget</s> ✅ ● = цена из live<br>
+        <s><b>v0.0.8.b</b> — матрица корреляций + σ портфеля</s> ✅ через типы стратегий<br>
+        <s><b>v0.0.8.d</b> — торговые связки как шаблоны (один клик — все ноги)</s> ✅<br>
+        <s><b>v0.0.9</b> — carry с даты входа + портфельное РЕПО + alerts</s> ✅ текущая версия<br>
+        <b>v0.0.10</b> — ручной swap override для форекс/Bitget (дабл-клик по Carry)<br>
+        <b>v0.0.11</b> — конкретные quick-actions (сократить/добавить ноги)
       </div>
     </div>
   </div>
@@ -1698,6 +1718,12 @@ function switchTo(m){
     $('hdrSub').textContent='Ручной ввод открытых ног · PnL в реалтайме · localStorage';
     // v0.0.8.c: on tab open, sync current prices from already-fetched live data (no network call)
     pfRefreshCurrent();
+    // v0.0.9: init pfMxOwn from overview capital if empty
+    const mxEl = $('pfMxOwn');
+    if(mxEl && !mxEl.value){
+      const ovwVal = nv('ovwRub') || 0;
+      if(ovwVal) mxEl.value = fmtInt(ovwVal);
+    }
     return;
   }
   // v0.0.7: Gold triple — GLDRUBF × 31.1 × 100000 / (Si × GD) vs fair line
@@ -4470,8 +4496,22 @@ function pfNewLeg(strategy){
     current: 0,
     mult: 1,
     date: new Date().toISOString().slice(0,10),
+    swapDaily: 0,     // ₽/сутки на всю позицию (ручной override; 0 = use auto)
     note: ''
   };
+}
+// v0.0.9: manual swap override via prompt (double-click the Carry cell)
+function pfEditSwapDaily(id){
+  const leg = PF_LEGS.find(l=>l.id===id); if(!leg) return;
+  const cur = leg.swapDaily || 0;
+  const val = prompt(
+    `Ручной swap/день в ₽ на всю позицию (${leg.ticker||'?'}, ${leg.lots||0} лот × ${leg.side}):\n`
+    +`Отрицательный = мы платим, положительный = нам платят.\n`
+    +`0 = автоматически по тикеру.`,
+    String(cur));
+  if(val===null) return;
+  leg.swapDaily = +(String(val).replace(',','.')) || 0;
+  pfSave(PF_LEGS); pfRender();
 }
 function pfAddLeg(){
   // Pick strategy from last row if any, else new
@@ -4616,6 +4656,60 @@ function pfCalcPnlRub(leg){
   const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
   return (cur - leg.entry) * dir * leg.lots * leg.mult;
 }
+// v0.0.9: days since entry (calendar + approx trading)
+function pfCalcDaysHeld(leg){
+  if(!leg.date) return {cal:0, trade:0};
+  const d0 = new Date(leg.date); const now = new Date();
+  const cal = Math.max(0, Math.floor((now - d0) / 86400000));
+  const trade = Math.max(0, Math.round(cal * 5/7));
+  return {cal, trade};
+}
+// v0.0.9: auto-resolve GO (initial margin) per contract from our data sources
+function pfGetGoRub(ticker){
+  if(!ticker) return 0;
+  // Perpetuals
+  if(PERP_STATE[ticker] && PERP_STATE[ticker].go) return PERP_STATE[ticker].go;
+  // Futures: match PREFIX+MONTH+YEAR
+  const m = String(ticker).match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+  if(m){
+    const prefix = m[1].toUpperCase(), c = m[2].toUpperCase();
+    if(prefix==='SI'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.siGo:0;}
+    if(prefix==='CR'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.crGo:0;}
+    if(prefix==='EU'){const t=TRIPLE_DATA.TRIPLE_EU.contracts[c]; return t?t.euGo:0;}
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const k = modeMap[prefix];
+    if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
+      return MODES[k].contracts[c].go || 0;
+    }
+  }
+  return 0;
+}
+// v0.0.9: calculate accrued carry since entry (swap / funding)
+// Returns {ratePerDay_rub, totalRub, source} — source: 'perp', 'fx_manual', 'zero'
+function pfCalcCarryRub(leg){
+  if(!leg.date) return {ratePerDay:0, totalRub:0, source:'zero'};
+  const {cal, trade} = pfCalcDaysHeld(leg);
+  const dir = leg.side==='long' ? 1 : -1;
+  // Manual override takes precedence
+  if(leg.swapDaily != null && leg.swapDaily !== '' && +leg.swapDaily !== 0){
+    const rate = +leg.swapDaily;
+    return {ratePerDay: rate, totalRub: rate * cal, source: 'manual', cal, trade};
+  }
+  // MOEX perpetuals — SWAPRATE from state
+  if(PERP_STATE[leg.ticker] && PERP_STATE[leg.ticker].swapAvg != null){
+    const swap = PERP_STATE[leg.ticker].swapAvg;
+    const lotVol = PERP_STATE[leg.ticker].lotVol || 1;
+    // +SWAPRATE = long pays short. We: if long → pay; if short → receive.
+    // Our PnL daily (our side): -dir * swap * lotVol * lots
+    const ratePerDay = -dir * swap * lotVol * leg.lots;
+    return {ratePerDay, totalRub: ratePerDay * trade, source:'perp', cal, trade, swap};
+  }
+  // MOEX quarterly futures — carry is in contango, not charged daily
+  const isMoexFut = /^([A-Za-z]{2})([JKMNUZ])(\d)$/.test(leg.ticker) && leg.venue === 'MOEX';
+  if(isMoexFut) return {ratePerDay:0, totalRub:0, source:'zero_fut', cal, trade};
+  // Forex / Bitget — user must enter swapDaily manually; default to 0
+  return {ratePerDay:0, totalRub:0, source:'none', cal, trade};
+}
 
 // v0.0.8.c: refresh leg.current from live data for known tickers
 function pfRefreshCurrent(){
@@ -4689,7 +4783,7 @@ function pfRender(){
   // Group legs by strategy
   const groups = {};
   PF_LEGS.forEach(l=>{(groups[l.strategy]=groups[l.strategy]||[]).push(l);});
-  let idx=0, totalRub=0;
+  let idx=0, totalRub=0, totalCarry=0;
   const strategies = Object.keys(groups);
   for(const strat of strategies){
     const gLegs = groups[strat];
@@ -4712,17 +4806,29 @@ function pfRender(){
       </div>
     </td>`;
     tb.appendChild(gh);
+    let stratCarry = 0;
     for(const leg of gLegs){
       idx++;
       const pnlRub = pfCalcPnlRub(leg);
+      const carry = pfCalcCarryRub(leg);
+      const carryRub = carry.totalRub;
+      const netRub = pnlRub + carryRub;
       stratRub += pnlRub;
+      stratCarry += carryRub;
       totalRub += pnlRub;
-      const pnlUsd = pnlRub / rub;
       const pnlColor = pnlRub>=0 ? 'var(--green)' : 'var(--red)';
+      const carryColor = carryRub>=0 ? 'var(--green)' : (carryRub<0 ? 'var(--red)' : 'var(--tm)');
+      const netColor = netRub>=0 ? 'var(--green)' : 'var(--red)';
       // Live price indicator
       const live = pfGetLivePrice(leg.ticker);
       const isLiveMatch = (live!=null && leg.current && Math.abs(leg.current - live) < 1e-6);
       const liveBadge = isLiveMatch ? '<span title="Цена из live-источника" style="color:var(--green);font-size:10px;margin-left:3px">●</span>' : (live!=null ? '<span title="Live: '+live+' (клик 🔄 чтобы обновить)" style="color:var(--yellow);font-size:10px;margin-left:3px">◌</span>' : '');
+      const daysTitle = carry.cal ? `${carry.cal} календ. · ${carry.trade} торг.` : 'нет даты входа';
+      let carryTitle = 'Carry с даты входа';
+      if(carry.source === 'perp') carryTitle += '\nSWAPRATE × lotVol × lots × '+carry.trade+' торг.дн\nSWAP=' + (carry.swap||0).toFixed(4) + ' ₽/БА/день';
+      else if(carry.source === 'manual') carryTitle += '\nРучной swapDaily × '+carry.cal+' дн';
+      else if(carry.source === 'zero_fut') carryTitle += '\nКвартальный фьюч — carry в контанго (не вычисляется)';
+      else if(carry.source === 'none') carryTitle += '\nНет SWAPRATE — впиши swapDaily вручную (двойной клик на ячейку Carry)';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="color:var(--tm)">${idx}</td>
@@ -4742,29 +4848,48 @@ function pfRender(){
         <td style="white-space:nowrap"><input type="number" step="0.00001" value="${leg.current}" onchange="pfUpdateField('${leg.id}','current',this.value)" style="width:calc(100% - 16px)">${liveBadge}</td>
         <td><input type="number" step="1" value="${leg.mult}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот"></td>
         <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
+        <td style="color:var(--tm);font-size:11px" title="${daysTitle}">${carry.cal||0}к/${carry.trade||0}т</td>
+        <td class="hl" style="color:${carryColor}" title="${carryTitle}" ondblclick="pfEditSwapDaily('${leg.id}')">${fm(Math.round(carryRub))} ₽</td>
         <td class="hl" style="color:${pnlColor}">${fm(Math.round(pnlRub))} ₽</td>
-        <td class="hl" style="color:${pnlColor}">$${fm(Math.round(pnlUsd))}</td>
+        <td class="hl" style="color:${netColor}">${fm(Math.round(netRub))} ₽</td>
         <td><button class="pf-del-btn" onclick="pfDeleteLeg('${leg.id}')" title="Удалить ногу">✕</button></td>`;
       tb.appendChild(tr);
     }
+    totalCarry += stratCarry;
     // Sub-total per strategy
     const st = document.createElement('tr');
-    const stC = stratRub>=0?'var(--green)':'var(--red)';
-    st.innerHTML = `<td colspan="10" style="text-align:right;color:var(--tm);font-size:11px;background:rgba(139,92,246,.04)">Итого «${escapeHtml(strat)}»:</td><td class="hl" style="color:${stC};background:rgba(139,92,246,.04)">${fm(Math.round(stratRub))} ₽</td><td class="hl" style="color:${stC};background:rgba(139,92,246,.04)">$${fm(Math.round(stratRub/rub))}</td><td style="background:rgba(139,92,246,.04)"></td>`;
+    const stGrossC = stratRub>=0?'var(--green)':'var(--red)';
+    const stCarryC = stratCarry>=0?'var(--green)':'var(--red)';
+    const stNet = stratRub + stratCarry;
+    const stNetC = stNet>=0?'var(--green)':'var(--red)';
+    st.innerHTML = `<td colspan="11" style="text-align:right;color:var(--tm);font-size:11px;background:rgba(139,92,246,.04)">Итого «${escapeHtml(strat)}»:</td>
+      <td class="hl" style="color:${stCarryC};background:rgba(139,92,246,.04)">${fm(Math.round(stratCarry))} ₽</td>
+      <td class="hl" style="color:${stGrossC};background:rgba(139,92,246,.04)">${fm(Math.round(stratRub))} ₽</td>
+      <td class="hl" style="color:${stNetC};background:rgba(139,92,246,.04)">${fm(Math.round(stNet))} ₽</td>
+      <td style="background:rgba(139,92,246,.04)"></td>`;
     tb.appendChild(st);
   }
   // Summary
-  const totalUsd = totalRub / rub;
+  const totalNet = totalRub + totalCarry;
+  const totalNetUsd = totalNet / rub;
   $('pfCount').textContent = strategies.length;
   $('pfLegs').textContent = PF_LEGS.length;
-  $('pfPnlRub').textContent = (totalRub>=0?'+':'')+fm(Math.round(totalRub))+' ₽';
-  $('pfPnlRub').style.color = totalRub>=0?'var(--green)':'var(--red)';
-  $('pfPnlUsd').textContent = (totalUsd>=0?'+':'')+'$'+fm(Math.round(totalUsd));
-  $('pfPnlUsd').style.color = totalUsd>=0?'var(--green)':'var(--red)';
+  $('pfPnlRub').textContent = (totalNet>=0?'+':'')+fm(Math.round(totalNet))+' ₽';
+  $('pfPnlRub').style.color = totalNet>=0?'var(--green)':'var(--red)';
+  $('pfPnlUsd').textContent = (totalNetUsd>=0?'+':'')+'$'+fm(Math.round(totalNetUsd));
+  $('pfPnlUsd').style.color = totalNetUsd>=0?'var(--green)':'var(--red)';
   $('pfFootRub').textContent = (totalRub>=0?'+':'')+fm(Math.round(totalRub))+' ₽';
   $('pfFootRub').style.color = totalRub>=0?'var(--green)':'var(--red)';
-  $('pfFootUsd').textContent = (totalUsd>=0?'+':'')+'$'+fm(Math.round(totalUsd));
-  $('pfFootUsd').style.color = totalUsd>=0?'var(--green)':'var(--red)';
+  if($('pfFootCarry')){
+    $('pfFootCarry').textContent = (totalCarry>=0?'+':'')+fm(Math.round(totalCarry))+' ₽';
+    $('pfFootCarry').style.color = totalCarry>=0?'var(--green)':'var(--red)';
+  }
+  if($('pfFootNet')){
+    $('pfFootNet').textContent = (totalNet>=0?'+':'')+fm(Math.round(totalNet))+' ₽';
+    $('pfFootNet').style.color = totalNet>=0?'var(--green)':'var(--red)';
+  }
+  $('pfFootUsd').textContent = (totalNetUsd>=0?'+':'')+'$'+fm(Math.round(totalNetUsd));
+  $('pfFootUsd').style.color = totalNetUsd>=0?'var(--green)':'var(--red)';
 
   // v0.0.8.b: Portfolio-level σ & VaR
   const stats = pfCalcPortfolioStats();
@@ -4810,6 +4935,79 @@ function pfRender(){
       + '<div style="margin-top:4px"><b style="color:var(--tw)">Концентрация:</b> <b style="color:'+concClr+'">'+concPct.toFixed(0)+'%</b> (макс. вес в одной стратегии)</div>'
       + (topCorr?'<div style="margin-top:4px"><b style="color:var(--tw)">Связанные стратегии:</b> '+topCorr+'</div>':'')
       + '<div style="margin-top:6px;color:var(--tm);font-size:11px">VaR 1σ = ожидаемая просадка при движении спредов в 1 стандартное отклонение. VaR 2σ ≈ 95% квантиль. Расчёт по формуле σ²_порт = Σ wᵢwⱼσᵢσⱼρᵢⱼ с корреляционной матрицей по типам стратегий.</div>';
+  }
+
+  // v0.0.9: Portfolio-level REPO and GO summary
+  const repoEl = $('pfRepoSummary'); if(repoEl){
+    const mxOwnInput = nv('pfMxOwn') || nv('ovwRub') || 0;
+    const repoAnn = (+$('pfRepoAnn').value || 21) / 100;
+    let totalGoMx = 0, totalGoMxDaysW = 0;
+    for(const leg of PF_LEGS){
+      if(leg.venue !== 'MOEX') continue;
+      const go = pfGetGoRub(leg.ticker) * Math.abs(leg.lots);
+      totalGoMx += go;
+      const {cal} = pfCalcDaysHeld(leg);
+      totalGoMxDaysW += go * cal;
+    }
+    const avgDays = totalGoMx>0 ? totalGoMxDaysW/totalGoMx : 0;
+    const borrow = Math.max(0, totalGoMx - mxOwnInput);
+    const repoAccrued = borrow * repoAnn / 365 * avgDays;
+    const utilPct = mxOwnInput>0 ? (totalGoMx/mxOwnInput*100) : 0;
+    const utilClr = utilPct<70?'var(--green)':utilPct<90?'var(--yellow)':'var(--red)';
+    repoEl.innerHTML =
+       '<b style="color:var(--tw)">Суммарное ГО МОЕХ:</b> '+fm(Math.round(totalGoMx/1000))+' К₽'
+      +' · <b style="color:var(--tw)">Мой депозит:</b> '+fm(Math.round(mxOwnInput/1000))+' К₽'
+      +' · <b style="color:var(--tw)">Использование:</b> <b style="color:'+utilClr+'">'+utilPct.toFixed(0)+'%</b>'
+      +'<br><b style="color:var(--tw)">Заём:</b> <b style="color:'+(borrow>0?'var(--orange)':'var(--green)')+'">'+(borrow>0?fm(Math.round(borrow/1000))+' К₽':'нет')+'</b>'
+      +(borrow>0?' · <b style="color:var(--tw)">РЕПО накоплено</b> (ср. '+avgDays.toFixed(1)+' дн): <b style="color:var(--red)">−'+fm(Math.round(repoAccrued))+' ₽</b>':'')
+      +'<br><span style="color:var(--tm);font-size:11px">РЕПО считается по средневзвешенному времени держания ног × ставку × заём. Для точности обновляй даты входа в таблице.</span>';
+  }
+
+  // v0.0.9: Alerts panel — warnings about concentration, margin, carry drain
+  const alertsEl = $('pfAlerts'); if(alertsEl){
+    const out = [];
+    if(PF_LEGS.length===0){
+      alertsEl.innerHTML = '<span style="color:var(--tm)">Нет активных позиций.</span>';
+    } else {
+      // 1. Concentration
+      if(stats.concentration > 0.5){
+        out.push({lvl:'warn', text:`Концентрация ${(stats.concentration*100).toFixed(0)}% — больше половины нотионала в одной стратегии. Рассмотри диверсификацию.`});
+      }
+      // 2. MOEX leverage
+      const mxOwnInput = nv('pfMxOwn') || nv('ovwRub') || 0;
+      let totalGoMx = 0;
+      for(const leg of PF_LEGS){ if(leg.venue==='MOEX') totalGoMx += pfGetGoRub(leg.ticker)*Math.abs(leg.lots); }
+      const utilPct = mxOwnInput>0 ? (totalGoMx/mxOwnInput*100) : 0;
+      if(mxOwnInput>0 && utilPct > 90){
+        out.push({lvl:'crit', text:`ГО использовано на ${utilPct.toFixed(0)}% депозита МОЕХ. При любом движении против — быстрый стоп-аут. Снизь размер позиций.`});
+      } else if(mxOwnInput>0 && utilPct > 70){
+        out.push({lvl:'warn', text:`ГО использовано на ${utilPct.toFixed(0)}%. Комфортный уровень ≤70%.`});
+      }
+      // 3. VaR vs capital
+      if(stats.var2s10d > 0 && mxOwnInput>0 && stats.var2s10d > mxOwnInput*0.5){
+        out.push({lvl:'warn', text:`VaR 2σ (${fm(Math.round(stats.var2s10d/1000))} К₽) сопоставим с половиной депозита. При 95%-квантиле просадки ты в зоне стопа.`});
+      }
+      // 4. Per-strategy: carry drain
+      for(const stratName of strategies){
+        const gLegs = groups[stratName];
+        let sPnl=0, sCarry=0;
+        for(const leg of gLegs){ sPnl += pfCalcPnlRub(leg); sCarry += pfCalcCarryRub(leg).totalRub; }
+        if(sPnl > 0 && sCarry < -sPnl*0.5){
+          out.push({lvl:'warn', text:`«${stratName}» — carry (${fm(Math.round(sCarry))} ₽) съел больше половины gross (${fm(Math.round(sPnl))} ₽). Есть ли смысл продолжать держать?`});
+        }
+        const net = sPnl + sCarry;
+        if(net < 0){
+          out.push({lvl:'info', text:`«${stratName}» — сейчас в минусе по NET: ${fm(Math.round(net))} ₽ (PnL ${fm(Math.round(sPnl))}, carry ${fm(Math.round(sCarry))}).`});
+        }
+      }
+      // 5. Overall health
+      if(out.length===0){
+        out.push({lvl:'ok', text:'Портфель выглядит сбалансированным. Нет критичных сигналов.'});
+      }
+      const iconMap = {crit:'🔴', warn:'🟡', info:'🔵', ok:'🟢'};
+      const colorMap = {crit:'var(--red)', warn:'var(--orange)', info:'var(--cyan)', ok:'var(--green)'};
+      alertsEl.innerHTML = out.map(a => `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:${colorMap[a.lvl]}">${iconMap[a.lvl]}</span> ${a.text}</div>`).join('');
+    }
   }
 }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
