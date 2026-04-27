@@ -6,8 +6,31 @@
 <title>Калькулятор арбитража | Грамотный Трейдинг</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0F1B2D;--card:#162236;--border:#2A3A55;--cyan:#00B4D8;--green:#06D6A0;--red:#EF476F;--orange:#FF6B35;--yellow:#FFD166;--gold:#FFD700;--tw:#FFFFFF;--tl:#B0BEC5;--tm:#64748B;--inp:#0A1520}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tw);min-height:100vh}
+/* === v0.0.10: Theme system === */
+:root, html[data-theme="classic"]{
+  --bg:#0F1B2D;--card:#162236;--border:#2A3A55;--cyan:#00B4D8;--green:#06D6A0;--red:#EF476F;--orange:#FF6B35;--yellow:#FFD166;--gold:#FFD700;--tw:#FFFFFF;--tl:#B0BEC5;--tm:#64748B;--inp:#0A1520;
+  --bg-radial:none;
+  --table-head:#0A2540;
+  --shadow:0 4px 12px rgba(0,0,0,.3);
+  --mono:'Consolas','SF Mono',Menlo,monospace;
+}
+/* GT-dark — Грамотный трейдинг тёмная (по uploaded reference) */
+html[data-theme="gt-dark"]{
+  --bg:#0a0e17;--card:#151d2e;--border:#283349;--cyan:#3ea6ff;--green:#00d26a;--red:#ff4d4d;--orange:#ff8a3e;--yellow:#f5b82e;--gold:#f5b82e;--tw:#e6ecf5;--tl:#8b97ad;--tm:#5c6984;--inp:#111826;
+  --bg-radial:radial-gradient(1200px 600px at 10% -10%, rgba(0,210,106,0.08), transparent 60%), radial-gradient(1000px 500px at 110% 20%, rgba(255,77,77,0.06), transparent 60%), radial-gradient(900px 450px at 50% 60%, rgba(160,120,255,0.05), transparent 60%), radial-gradient(800px 400px at 50% 110%, rgba(62,166,255,0.06), transparent 60%);
+  --table-head:#1b2538;
+  --shadow:0 2px 8px rgba(0,0,0,.4);
+  --mono:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+}
+/* GT-light — светлая тема для дневного использования */
+html[data-theme="gt-light"]{
+  --bg:#f5f7fb;--card:#ffffff;--border:#d8dde7;--cyan:#1d76d6;--green:#00955a;--red:#d63838;--orange:#d97300;--yellow:#b88500;--gold:#b88500;--tw:#1a1f2e;--tl:#4a5163;--tm:#7c8497;--inp:#ffffff;
+  --bg-radial:radial-gradient(1200px 600px at 10% -10%, rgba(0,149,90,0.06), transparent 60%), radial-gradient(900px 450px at 90% 30%, rgba(29,118,214,0.05), transparent 60%);
+  --table-head:#e8edf5;
+  --shadow:0 2px 8px rgba(60,80,120,.08);
+  --mono:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-radial,none),var(--bg);color:var(--tw);min-height:100vh;transition:background .25s, color .25s}
 .wrap{max-width:1400px;margin:0 auto;padding:12px}
 .hdr{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap}
@@ -70,7 +93,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .reb p{font-size:13px;color:var(--tl);margin-bottom:3px;line-height:1.5}
 .reb b{font-weight:800}
 .sc-table{width:100%;border-collapse:collapse;font-size:12px}
-.sc-table th{background:#0A2540;color:var(--tw);padding:8px 4px;text-align:center;font-size:12px;border:1px solid var(--border)}
+.sc-table th{background:var(--table-head);color:var(--tw);padding:8px 4px;text-align:center;font-size:12px;border:1px solid var(--border)}
 .sc-table td{padding:7px 4px;text-align:center;border:1px solid var(--border);color:var(--tl);font-size:13px}
 .sc-table tr:hover{background:rgba(0,180,216,.06)}
 .sc-table tr.sel{background:rgba(0,180,216,.12)}
@@ -87,6 +110,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .capspin{display:inline-flex;flex-direction:column;gap:1px;margin-left:4px;vertical-align:middle}
 .capspin button{border:1px solid var(--border);background:var(--inp);color:var(--tl);width:18px;height:12px;font-size:9px;line-height:1;padding:0;cursor:pointer;font-family:inherit;border-radius:2px}
 .capspin button:hover{background:#0E3460;color:var(--cyan)}
+.theme-btn{background:var(--inp);border:1px solid var(--border);color:var(--tl);padding:5px 11px;border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--mono,inherit);transition:all .15s;letter-spacing:.05em;display:inline-flex;align-items:center;gap:6px}
+.theme-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.theme-btn .theme-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
 .cat-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
 .cat-tab{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid var(--border);color:var(--tm);background:transparent;transition:all .15s;font-family:inherit;text-transform:uppercase;letter-spacing:.3px}
 .cat-tab:hover{border-color:var(--cyan);color:var(--tl)}
@@ -107,7 +133,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .ovw-filter input[type=checkbox]{cursor:pointer;accent-color:var(--cyan);width:14px;height:14px}
 tr.ovw-row-hidden{display:none !important}
 .pf-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
-.pf-table th{background:#0A2540;color:var(--tw);padding:8px 6px;text-align:center;font-size:11px;border:1px solid var(--border);font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.pf-table th{background:var(--table-head);color:var(--tw);padding:8px 6px;text-align:center;font-size:11px;border:1px solid var(--border);font-weight:800;text-transform:uppercase;letter-spacing:.3px}
 .pf-table td{padding:6px 4px;text-align:center;border:1px solid var(--border);color:var(--tl);font-size:13px}
 .pf-table td input{width:100%;background:transparent;border:none;color:var(--tw);padding:2px 4px;font-size:12px;text-align:right;font-family:inherit;outline:none}
 .pf-table td input:focus{background:var(--inp);border-radius:3px}
@@ -177,9 +203,10 @@ tr.ovw-row-hidden{display:none !important}
     </div>
     </div>
     <div class="hdr-right">
+      <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.9.a</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.b</p>
     </div>
   </div>
 
@@ -1261,6 +1288,38 @@ tr.ovw-row-hidden{display:none !important}
 
 <script>
 const $=id=>document.getElementById(id);
+
+// === v0.0.10 === Theme system: classic / gt-dark / gt-light, persisted in localStorage
+const THEMES = ['classic', 'gt-dark', 'gt-light'];
+const THEME_LABELS = {classic:'⚙ CLASSIC', 'gt-dark':'🌙 GT DARK', 'gt-light':'☀ GT LIGHT'};
+const THEME_LS_KEY = 'arb_calc_theme';
+function applyTheme(name){
+  if(!THEMES.includes(name)) name = 'classic';
+  document.documentElement.dataset.theme = name;
+  try{localStorage.setItem(THEME_LS_KEY, name);}catch(e){}
+  const lbl = document.getElementById('themeBtnLabel');
+  if(lbl) lbl.textContent = THEME_LABELS[name];
+}
+function cycleTheme(){
+  const cur = document.documentElement.dataset.theme || 'classic';
+  const idx = THEMES.indexOf(cur);
+  applyTheme(THEMES[(idx+1) % THEMES.length]);
+}
+// Apply saved theme as soon as possible (before tables render)
+(function(){
+  try{
+    const saved = localStorage.getItem(THEME_LS_KEY);
+    if(saved && THEMES.includes(saved)){
+      document.documentElement.dataset.theme = saved;
+    } else {
+      document.documentElement.dataset.theme = 'classic';
+    }
+  }catch(e){document.documentElement.dataset.theme = 'classic';}
+})();
+// Once DOM is parsed, sync the button label
+document.addEventListener('DOMContentLoaded', ()=>{
+  applyTheme(document.documentElement.dataset.theme || 'classic');
+});
 const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.abs(n).toFixed(d);const[i,dc]=a.split('.');return s+i.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(dc?'.'+dc:'');};
 
 let mode='EURUSD';
@@ -1628,7 +1687,8 @@ function syncCap(srcId){
   else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
   else if(mode==='PERP_EU')calcPerp('PERP_EU');
   else if(mode==='PERP_GLD_MX')calcGldMx();
-  else if(mode!=='OVW')calc&&calc();
+  else if(mode==='PORTFOLIO')pfRender();
+  else if(MODES[mode])calc&&calc(); // only call calc() for known instrument modes
 }
 
 
@@ -5168,7 +5228,7 @@ document.querySelectorAll('input,select').forEach(el=>{
     else if(mode==='PERP_EU')calcPerp('PERP_EU');
     else if(mode==='PERP_GLD_MX')calcGldMx();
     else if(mode==='PORTFOLIO')pfRender();
-    else{autoLotMode=true;calc();}
+    else if(MODES[mode]){autoLotMode=true;calc();} // only run calc() for known instrument modes
   };
   el.addEventListener('input',h);el.addEventListener('change',h);
 });
@@ -5433,7 +5493,8 @@ async function fetchPrices(){
   else if(mode==='PERP_ECNH')calcPerp('PERP_ECNH');
   else if(mode==='PERP_EU')calcPerp('PERP_EU');
   else if(mode==='PERP_GLD_MX')calcGldMx();
-  else calc();
+  else if(mode==='PORTFOLIO'){pfRefreshCurrent();}
+  else if(MODES[mode])calc(); // only call calc() for standard instruments in MODES
 }
 
 // Init in overview mode
