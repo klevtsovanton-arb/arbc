@@ -132,12 +132,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-radial,none
 .ovw-filter label:hover{background:rgba(0,180,216,.08)}
 .ovw-filter input[type=checkbox]{cursor:pointer;accent-color:var(--cyan);width:14px;height:14px}
 tr.ovw-row-hidden{display:none !important}
-.pf-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
-.pf-table th{background:var(--table-head);color:var(--tw);padding:8px 6px;text-align:center;font-size:11px;border:1px solid var(--border);font-weight:800;text-transform:uppercase;letter-spacing:.3px}
-.pf-table td{padding:6px 4px;text-align:center;border:1px solid var(--border);color:var(--tl);font-size:13px}
-.pf-table td input{width:100%;background:transparent;border:none;color:var(--tw);padding:2px 4px;font-size:12px;text-align:right;font-family:inherit;outline:none}
+.pf-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;table-layout:auto}
+.pf-table th{background:var(--table-head);color:var(--tw);padding:6px 4px;text-align:center;font-size:10px;border:1px solid var(--border);font-weight:800;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.pf-table td{padding:4px 3px;text-align:center;border:1px solid var(--border);color:var(--tl);font-size:11px;white-space:nowrap}
+.pf-table td input{width:100%;background:transparent;border:none;color:var(--tw);padding:2px 3px;font-size:11px;text-align:right;font-family:inherit;outline:none;min-width:0}
 .pf-table td input:focus{background:var(--inp);border-radius:3px}
-.pf-table td select{width:100%;background:var(--inp);border:1px solid var(--border);color:var(--tw);padding:2px 4px;font-size:12px;font-family:inherit;border-radius:3px}
+.pf-table td select{width:100%;background:var(--inp);border:1px solid var(--border);color:var(--tw);padding:2px 3px;font-size:11px;font-family:inherit;border-radius:3px;min-width:0}
 .pf-table td.hl{font-weight:800}
 .pf-table tr.pf-group-hdr td{background:rgba(139,92,246,.12);color:#EC4899;font-weight:800;font-size:11px;text-align:left;padding:8px 10px;text-transform:uppercase;letter-spacing:.5px}
 .pf-table tr.pf-total td{background:rgba(6,214,160,.08);font-weight:800;font-size:14px;border-top:2px solid var(--green)}
@@ -206,7 +206,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.b</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.c</p>
     </div>
   </div>
 
@@ -1033,9 +1033,10 @@ tr.ovw-row-hidden{display:none !important}
       <div class="pf-stat"><div class="pf-lbl">Суммарный NET ($)</div><div class="pf-val" id="pfPnlUsd">$0</div></div>
     </div>
     <div class="card">
-      <div class="card-t" style="color:#EC4899">🏦 Портфельный капитал и РЕПО</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px">
-        <label style="color:var(--tl)">Мой депозит МОЕХ: <input id="pfMxOwn" type="text" inputmode="numeric" placeholder="25 000 000" oninput="fmtOnInput(this);pfRender()" onchange="pfRender()" style="width:130px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> ₽</label>
+      <div class="card-t" style="color:#EC4899">🏦 Портфельный капитал</div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px">
+        <label style="color:var(--tl)">Депозит МОЕХ: <input id="pfMxOwn" type="text" inputmode="numeric" placeholder="25 000 000" oninput="fmtOnInput(this);pfRender()" onchange="pfRender()" style="width:130px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> ₽</label>
+        <label style="color:var(--tl)">Депозит Forex: <input id="pfFxOwn" type="text" inputmode="numeric" placeholder="500 000" oninput="fmtOnInput(this);pfRender()" onchange="pfRender()" style="width:110px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> $</label>
         <label style="color:var(--tl)">РЕПО: <input id="pfRepoAnn" type="number" step="0.5" value="21" oninput="pfRender()" onchange="pfRender()" style="width:55px;background:var(--inp);border:1px solid var(--border);border-radius:4px;color:var(--tw);padding:4px 8px;font-size:12px;text-align:right;font-family:inherit"> %/год</label>
       </div>
       <div id="pfRepoSummary" style="margin-top:8px;font-size:12px;color:var(--tl);line-height:1.7"></div>
@@ -4514,29 +4515,37 @@ function pfRenameStrat(oldName, newName){
     pfSaveStrats();
   }
 }
-// Known MOEX/FX instruments with their default ₽/unit-price-per-lot multipliers.
-// User can override per row; this just prefills sensible defaults when a known ticker is picked.
+// v0.0.10.c: spec table — mult = sum of ₽ (or $ for Forex/Bitget) per 1.0 of price-unit movement on 1 lot
+// currency = native currency of PnL (RUB for MOEX, USD for Forex/Bitget). PnL is converted to ₽ via rub-rate.
 const PF_SPECS = {
-  // MOEX currency perpetuals (lot = 1000 of base currency, 1 ₽ price move = 1000 ₽/lot)
-  'USDRUBF': {venue:'MOEX', side:'short', mult:1000, hint:'1 лот = 1000 USD → 1 ₽ движения = 1000 ₽/лот'},
-  'EURRUBF': {venue:'MOEX', side:'long',  mult:1000, hint:'1 лот = 1000 EUR → 1 ₽ движения = 1000 ₽/лот'},
-  'CNYRUBF': {venue:'MOEX', side:'long',  mult:1000, hint:'1 лот = 1000 CNY → 1 ₽ движения = 1000 ₽/лот'},
-  'GLDRUBF': {venue:'MOEX', side:'short', mult:1,    hint:'1 лот = 1 грамм → 1 ₽ движения = 1 ₽/лот'},
-  // MOEX quarterly futures — use current USD/RUB to convert (user will adjust after fetch)
-  'Si':   {venue:'MOEX', mult:1,   hint:'Si: цена в ₽/1000$, шаг 1 ₽ ≈ 1 ₽/лот (stepPrice из ISS)'},
-  'Eu':   {venue:'MOEX', mult:1,   hint:'Eu: цена в ₽/1000€, шаг 1 ₽ ≈ 1 ₽/лот (stepPrice из ISS)'},
-  'CR':   {venue:'MOEX', mult:1000,hint:'CR (юань): цена в ₽/юань, 1 лот = 1000 юаней → 1 ₽ = 1000 ₽/лот'},
-  'ED':   {venue:'MOEX', mult:1000,hint:'ED (EUR/USD фьюч): 1 лот = 1000€, цена в $/€, 1 пункт цены = 1000$/лот → в ₽: mult×rub'},
-  'GD':   {venue:'MOEX', mult:1,   hint:'GD (золото МОЕХ): цена $/унц., контракт 1 унц., 1$ движения ≈ rub ₽/лот'},
-  'SV':   {venue:'MOEX', mult:1,   hint:'SV (серебро МОЕХ): уточни stepPrice'},
-  // Forex — standard lot 100K of base currency, 1 pip = 0.0001, pipValue = $10 for XXXUSD pairs
-  'EUR/USD': {venue:'Forex', mult:100000, hint:'Forex EUR/USD: 1 лот 100K€, 1.0 движение = $100 000/лот → в ₽: mult×rub'},
-  'USD/CNH': {venue:'Forex', mult:100000, hint:'Forex USD/CNH: 1 лот 100K$ → 1.0 CNH движения = 100 000 CNH/лот → в ₽: ×rub/usd-cnh'},
-  'EUR/CNH': {venue:'Forex', mult:100000, hint:'Forex EUR/CNH: 1 лот 100K€'},
-  'XAU/USD': {venue:'Forex', mult:10000,  hint:'Forex XAU/USD: 1 лот = 100 oz, 1$ = $100/лот → в ₽ ×rub'},
-  'XAG/USD': {venue:'Forex', mult:500000, hint:'Forex XAG/USD: 1 лот = 5000 oz, 1$ = $5000/лот → в ₽ ×rub'},
-  'BTCUSDT': {venue:'Bitget',mult:1,      hint:'Bitget BTC: 1 лот = 1 BTC, 1$ движения = 1$/лот'},
-  'ETHUSDT': {venue:'Bitget',mult:1,      hint:'Bitget ETH: 1 лот = 1 ETH, 1$ движения = 1$/лот'}
+  // MOEX perpetuals (lot = 1000 of base currency in RUB)
+  'USDRUBF': {venue:'MOEX',  side:'short', mult:1000, currency:'RUB'},
+  'EURRUBF': {venue:'MOEX',  side:'long',  mult:1000, currency:'RUB'},
+  'CNYRUBF': {venue:'MOEX',  side:'long',  mult:1000, currency:'RUB'},
+  'GLDRUBF': {venue:'MOEX',  side:'short', mult:1,    currency:'RUB'},
+  // MOEX quarterly — mult = stepPrice/stepSize from MODES (₽ per 1.0 of price unit per lot)
+  'Si': {venue:'MOEX', mult:1,     currency:'RUB'}, // 1₽/$/лот
+  'Eu': {venue:'MOEX', mult:1,     currency:'RUB'}, // 1₽/€/лот
+  'CR': {venue:'MOEX', mult:1000,  currency:'RUB'}, // 1₽/юань × 1000 юаней/лот
+  'ED': {venue:'MOEX', mult:77000, currency:'RUB'}, // EURUSD-фьюч на МОЕХ: 7.70/0.0001 = 77000 ₽ на 1.0 движения цены/лот
+  'UC': {venue:'MOEX', mult:11240, currency:'RUB'}, // USDCNH-фьюч: 11.24/0.001
+  'GD': {venue:'MOEX', mult:77,    currency:'RUB'}, // Gold: 7.70/0.1
+  'SV': {venue:'MOEX', mult:7700,  currency:'RUB'}, // Silver: 7.70/0.001
+  'PT': {venue:'MOEX', mult:77,    currency:'RUB'}, // Platinum
+  'PD': {venue:'MOEX', mult:77,    currency:'RUB'}, // Palladium
+  'BT': {venue:'MOEX', mult:0.07524,currency:'RUB'},// BTC fut: stepPr=0.07524 на step 1
+  'EH': {venue:'MOEX', mult:0.7524, currency:'RUB'},// ETH fut: stepPr=0.07524 на step 0.1
+  // Forex (PnL natively in USD; we'll multiply by rub-rate for ₽ display)
+  'EUR/USD': {venue:'Forex', mult:100000, currency:'USD'}, // 100K€ × 1$/€ per 1.0 price-unit
+  'USD/CNH': {venue:'Forex', mult:14600,  currency:'USD'}, // approx via CNH→$ at ~6.85 (100K$ / USDCNH)
+  'EUR/CNH': {venue:'Forex', mult:14600,  currency:'USD'},
+  'XAU/USD': {venue:'Forex', mult:100,    currency:'USD'}, // 100 oz × 1$/oz
+  'XAG/USD': {venue:'Forex', mult:5000,   currency:'USD'},
+  'XPT/USD': {venue:'Forex', mult:100,    currency:'USD'},
+  'XPD/USD': {venue:'Forex', mult:100,    currency:'USD'},
+  // Bitget perpetuals (PnL in USD)
+  'BTCUSDT': {venue:'Bitget',mult:1, currency:'USD'},
+  'ETHUSDT': {venue:'Bitget',mult:1, currency:'USD'}
 };
 function pfLoad(){
   try{const raw=localStorage.getItem(PF_LS_KEY);if(!raw)return [];const arr=JSON.parse(raw);return Array.isArray(arr)?arr:[];}catch(e){console.error('pfLoad',e);return [];}
@@ -4555,6 +4564,7 @@ function pfNewLeg(strategy){
     entry: 0,
     current: 0,
     mult: 1,
+    currency: 'RUB',  // v0.0.10.c: PnL native currency (RUB for MOEX, USD for Forex/Bitget)
     date: new Date().toISOString().slice(0,10),
     swapDaily: 0,     // ₽/сутки на всю позицию (ручной override; 0 = use auto)
     note: ''
@@ -4649,7 +4659,7 @@ function pfUpdateField(id, field, value){
   } else {
     leg[field] = value;
   }
-  // Auto-fill multiplier/venue when ticker matches a known spec + live current price
+  // Auto-fill multiplier/venue/currency when ticker matches a known spec + live current price
   if(field==='ticker'){
     // Try exact match first
     let spec = PF_SPECS[value];
@@ -4662,8 +4672,10 @@ function pfUpdateField(id, field, value){
       }
     }
     if(spec){
-      if(!leg.mult || leg.mult===1) leg.mult = spec.mult;
-      if(!leg.venue || leg.venue==='MOEX') leg.venue = spec.venue;
+      // Always update mult and currency on ticker change (was: only if mult===1)
+      leg.mult = spec.mult;
+      leg.venue = spec.venue;
+      leg.currency = spec.currency || 'RUB';
     }
     // Always pull the latest known price for this ticker
     const live = pfGetLivePrice(value);
@@ -4714,6 +4726,18 @@ function pfCalcPnlRub(leg){
   const dir = leg.side==='long' ? 1 : -1;
   // If leg.current is 0/empty and we know the ticker, use live price
   const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
+  const pnlNative = (cur - leg.entry) * dir * leg.lots * leg.mult;
+  // v0.0.10.c: convert from native currency to RUB
+  if(leg.currency === 'USD'){
+    const rub = +$('inRub').value || 76;
+    return pnlNative * rub;
+  }
+  return pnlNative; // RUB or unset
+}
+// Native PnL (in leg's currency, no conversion)
+function pfCalcPnlNative(leg){
+  const dir = leg.side==='long' ? 1 : -1;
+  const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
   return (cur - leg.entry) * dir * leg.lots * leg.mult;
 }
 // v0.0.9: days since entry (calendar + approx trading)
@@ -4745,30 +4769,31 @@ function pfGetGoRub(ticker){
   return 0;
 }
 // v0.0.9: calculate accrued carry since entry (swap / funding)
-// Returns {ratePerDay_rub, totalRub, source} — source: 'perp', 'fx_manual', 'zero'
+// Returns {ratePerDay (in leg currency), totalRub (converted), totalNative, source}
 function pfCalcCarryRub(leg){
-  if(!leg.date) return {ratePerDay:0, totalRub:0, source:'zero'};
+  if(!leg.date) return {ratePerDay:0, totalRub:0, totalNative:0, source:'zero', cal:0, trade:0};
   const {cal, trade} = pfCalcDaysHeld(leg);
   const dir = leg.side==='long' ? 1 : -1;
-  // Manual override takes precedence
+  const rub = +$('inRub').value || 76;
+  // Helper: convert native carry to RUB based on leg.currency
+  const toRub = (native)=> leg.currency==='USD' ? native*rub : native;
+  // Manual override (assume in RUB by default — user typed it for the position)
   if(leg.swapDaily != null && leg.swapDaily !== '' && +leg.swapDaily !== 0){
     const rate = +leg.swapDaily;
-    return {ratePerDay: rate, totalRub: rate * cal, source: 'manual', cal, trade};
+    return {ratePerDay: rate, totalRub: rate * cal, totalNative: rate * cal, source: 'manual', cal, trade};
   }
-  // MOEX perpetuals — SWAPRATE from state
+  // MOEX perpetuals — SWAPRATE from state (₽ already)
   if(PERP_STATE[leg.ticker] && PERP_STATE[leg.ticker].swapAvg != null){
     const swap = PERP_STATE[leg.ticker].swapAvg;
     const lotVol = PERP_STATE[leg.ticker].lotVol || 1;
-    // +SWAPRATE = long pays short. We: if long → pay; if short → receive.
-    // Our PnL daily (our side): -dir * swap * lotVol * lots
-    const ratePerDay = -dir * swap * lotVol * leg.lots;
-    return {ratePerDay, totalRub: ratePerDay * trade, source:'perp', cal, trade, swap};
+    const ratePerDay = -dir * swap * lotVol * leg.lots; // ₽/day
+    return {ratePerDay, totalRub: ratePerDay * trade, totalNative: ratePerDay * trade, source:'perp', cal, trade, swap};
   }
   // MOEX quarterly futures — carry is in contango, not charged daily
   const isMoexFut = /^([A-Za-z]{2})([JKMNUZ])(\d)$/.test(leg.ticker) && leg.venue === 'MOEX';
-  if(isMoexFut) return {ratePerDay:0, totalRub:0, source:'zero_fut', cal, trade};
+  if(isMoexFut) return {ratePerDay:0, totalRub:0, totalNative:0, source:'zero_fut', cal, trade};
   // Forex / Bitget — user must enter swapDaily manually; default to 0
-  return {ratePerDay:0, totalRub:0, source:'none', cal, trade};
+  return {ratePerDay:0, totalRub:0, totalNative:0, source:'none', cal, trade};
 }
 
 // v0.0.8.c: refresh leg.current from live data for known tickers
@@ -4997,30 +5022,51 @@ function pfRender(){
       + '<div style="margin-top:6px;color:var(--tm);font-size:11px">VaR 1σ = ожидаемая просадка при движении спредов в 1 стандартное отклонение. VaR 2σ ≈ 95% квантиль. Расчёт по формуле σ²_порт = Σ wᵢwⱼσᵢσⱼρᵢⱼ с корреляционной матрицей по типам стратегий.</div>';
   }
 
-  // v0.0.9: Portfolio-level REPO and GO summary
+  // v0.0.10.c: Portfolio-level capital summary — MOEX + Forex (PnL split by venue)
   const repoEl = $('pfRepoSummary'); if(repoEl){
     const mxOwnInput = nv('pfMxOwn') || nv('ovwRub') || 0;
+    const fxOwnInput = nv('pfFxOwn') || 0; // in USD
     const repoAnn = (+$('pfRepoAnn').value || 21) / 100;
     let totalGoMx = 0, totalGoMxDaysW = 0;
+    let pnlMxRub = 0, pnlFxUsd = 0, carryMxRub = 0, carryFxUsd = 0;
     for(const leg of PF_LEGS){
-      if(leg.venue !== 'MOEX') continue;
-      const go = pfGetGoRub(leg.ticker) * Math.abs(leg.lots);
-      totalGoMx += go;
-      const {cal} = pfCalcDaysHeld(leg);
-      totalGoMxDaysW += go * cal;
+      const pnlNative = pfCalcPnlNative(leg);
+      const carry = pfCalcCarryRub(leg);
+      if(leg.venue === 'MOEX'){
+        const go = pfGetGoRub(leg.ticker) * Math.abs(leg.lots);
+        totalGoMx += go;
+        const {cal} = pfCalcDaysHeld(leg);
+        totalGoMxDaysW += go * cal;
+        // PnL on MOEX is in RUB (currency=RUB)
+        pnlMxRub += pnlNative;
+        carryMxRub += carry.totalRub;
+      } else {
+        // Forex/Bitget — PnL in USD
+        pnlFxUsd += pnlNative;
+        carryFxUsd += carry.totalNative; // assume same currency
+      }
     }
     const avgDays = totalGoMx>0 ? totalGoMxDaysW/totalGoMx : 0;
     const borrow = Math.max(0, totalGoMx - mxOwnInput);
     const repoAccrued = borrow * repoAnn / 365 * avgDays;
     const utilPct = mxOwnInput>0 ? (totalGoMx/mxOwnInput*100) : 0;
     const utilClr = utilPct<70?'var(--green)':utilPct<90?'var(--yellow)':'var(--red)';
+    const fxNetUsd = pnlFxUsd + carryFxUsd;
+    const fxBalance = fxOwnInput + fxNetUsd;
+    const fxBalClr = fxBalance>=fxOwnInput ? 'var(--green)' : (fxBalance>=fxOwnInput*0.5 ? 'var(--yellow)' : 'var(--red)');
     repoEl.innerHTML =
-       '<b style="color:var(--tw)">Суммарное ГО МОЕХ:</b> '+fm(Math.round(totalGoMx/1000))+' К₽'
-      +' · <b style="color:var(--tw)">Мой депозит:</b> '+fm(Math.round(mxOwnInput/1000))+' К₽'
-      +' · <b style="color:var(--tw)">Использование:</b> <b style="color:'+utilClr+'">'+utilPct.toFixed(0)+'%</b>'
-      +'<br><b style="color:var(--tw)">Заём:</b> <b style="color:'+(borrow>0?'var(--orange)':'var(--green)')+'">'+(borrow>0?fm(Math.round(borrow/1000))+' К₽':'нет')+'</b>'
-      +(borrow>0?' · <b style="color:var(--tw)">РЕПО накоплено</b> (ср. '+avgDays.toFixed(1)+' дн): <b style="color:var(--red)">−'+fm(Math.round(repoAccrued))+' ₽</b>':'')
-      +'<br><span style="color:var(--tm);font-size:11px">РЕПО считается по средневзвешенному времени держания ног × ставку × заём. Для точности обновляй даты входа в таблице.</span>';
+       '<div><b style="color:var(--cyan)">МОЕХ:</b> Σ ГО '+fm(Math.round(totalGoMx/1000))+' К₽ · депозит '+fm(Math.round(mxOwnInput/1000))+' К₽ · использовано <b style="color:'+utilClr+'">'+utilPct.toFixed(0)+'%</b>'
+      +' · заём <b style="color:'+(borrow>0?'var(--orange)':'var(--green)')+'">'+(borrow>0?fm(Math.round(borrow/1000))+' К₽':'нет')+'</b>'
+      +(borrow>0?' · РЕПО (ср. '+avgDays.toFixed(1)+' дн): <b style="color:var(--red)">−'+fm(Math.round(repoAccrued))+' ₽</b>':'')+'</div>'
+      +'<div style="margin-top:6px"><b style="color:var(--cyan)">МОЕХ PnL:</b> <b style="color:'+(pnlMxRub>=0?'var(--green)':'var(--red)')+'">'+(pnlMxRub>=0?'+':'')+fm(Math.round(pnlMxRub))+' ₽</b>'
+      +' · Carry: <b style="color:'+(carryMxRub>=0?'var(--green)':'var(--red)')+'">'+(carryMxRub>=0?'+':'')+fm(Math.round(carryMxRub))+' ₽</b></div>'
+      +(fxOwnInput>0||pnlFxUsd!==0||carryFxUsd!==0?
+        '<div style="margin-top:6px"><b style="color:var(--orange)">Forex/Bitget:</b> депозит $'+fm(Math.round(fxOwnInput))
+        +' · PnL <b style="color:'+(pnlFxUsd>=0?'var(--green)':'var(--red)')+'">'+(pnlFxUsd>=0?'+':'')+'$'+fm(Math.round(pnlFxUsd))+'</b>'
+        +' · Carry: <b style="color:'+(carryFxUsd>=0?'var(--green)':'var(--red)')+'">'+(carryFxUsd>=0?'+':'')+'$'+fm(Math.round(carryFxUsd))+'</b>'
+        +' · баланс ≈ <b style="color:'+fxBalClr+'">$'+fm(Math.round(fxBalance))+'</b></div>'
+        :'')
+      +'<div style="color:var(--tm);font-size:11px;margin-top:4px">РЕПО на МОЕХ считается по средневзвешенному времени держания × заём × ставка. Forex PnL хранится в USD, в общий NET идёт по курсу из обзора.</div>';
   }
 
   // v0.0.9: Alerts panel — warnings about concentration, margin, carry drain
@@ -5205,7 +5251,10 @@ pfAddBundle = function(){
       if(m){const p=m[1][0].toUpperCase()+(m[1][1]||'').toLowerCase(); return PF_SPECS[p]||PF_SPECS[p.toUpperCase()];}
       return null;
     })();
-    if(spec) leg.mult = spec.mult;
+    if(spec){
+      leg.mult = spec.mult;
+      leg.currency = spec.currency || 'RUB';
+    }
     const live = pfGetLivePrice(ls.ticker);
     if(live != null && isFinite(live)){
       leg.current = live;
