@@ -196,7 +196,6 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpZ" onclick="switchContract('Z')">Дек 26</button>
     </div>
     <div class="contract-pills" id="contractPillsCrypto" style="display:none">
-      <button class="cpill"    id="cpJ"  onclick="switchContract('J')">Апр 26</button>
       <button class="cpill"    id="cpK"  onclick="switchContract('K')">Май 26</button>
       <button class="cpill on" id="cpCM" onclick="switchContract('M')">Июн 26</button>
       <button class="cpill"    id="cpN"  onclick="switchContract('N')">Июл 26</button>
@@ -206,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.c</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.e</p>
     </div>
   </div>
 
@@ -1066,8 +1065,7 @@ tr.ovw-row-hidden{display:none !important}
             <option value="Z">Дек 26 (Z)</option>
           </select>
           <select id="pfContractSelectCrypto" style="background:var(--inp);color:var(--tw);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;display:none">
-            <option value="J">Апр 26 (J)</option>
-            <option value="K">Май 26 (K)</option>
+            <option value="K" selected>Май 26 (K)</option>
             <option value="M">Июн 26 (M)</option>
             <option value="N">Июл 26 (N)</option>
           </select>
@@ -1092,8 +1090,8 @@ tr.ovw-row-hidden{display:none !important}
           <th>Дата входа</th>
           <th title="Дней с даты входа (календарных / торговых)">Дн</th>
           <th title="Накопленный carry в ₽ с даты входа. Форекс/Bitget — впиши daily swap в ₽ вручную в тултипе.">Carry ₽</th>
-          <th>PnL ₽</th>
-          <th>NET ₽</th>
+          <th title="PnL в нативной валюте: ₽ для МОЕХ, $ для форекса/Bitget">PnL</th>
+          <th title="PnL + Carry, конвертирован в ₽">NET ₽</th>
           <th style="width:28px"></th>
         </tr></thead>
         <tbody id="pfBody"></tbody>
@@ -1447,8 +1445,8 @@ function applyOvwFilter(){
   });
 }
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95};
-const CONTRACT_LABELS={J:'Апр 26',K:'Май 26',M:'Июн 26',N:'Июл 26',U:'Сен 26',Z:'Дек 26'};
-const CONTRACT_SHORT ={J:'4.26',K:'5.26',M:'6.26',N:'7.26',U:'9.26',Z:'12.26'};
+const CONTRACT_LABELS={K:'Май 26',M:'Июн 26',N:'Июл 26',U:'Сен 26',Z:'Дек 26'};
+const CONTRACT_SHORT ={K:'5.26',M:'6.26',N:'7.26',U:'9.26',Z:'12.26'};
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
@@ -1505,7 +1503,6 @@ const MODES={
   BTC:{label:'BTC',pipSz:1,pipVal:1,stepSz:1,stepPr:0.07524,lpc:1000,comm:122,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.01,lotMin:0.01,lotMax:20,fundingRate:-0.00007,repo:21,iv:40,spot:76137,fxSpread:0,fxSymbol:'BTCUSDT',cryptoSymbol:'BTCUSDT',isCrypto:true,
     contracts:{
-      J:{moexTicker:'BTJ6',exp:'2026-04-24',fut:76389,go:1663},
       K:{moexTicker:'BTK6',exp:'2026-05-29',fut:76851,go:1683},
       M:{moexTicker:'BTM6',exp:'2026-06-26',fut:77743,go:1696},
       N:{moexTicker:'BTN6',exp:'2026-07-31',fut:78301,go:1767}
@@ -1513,7 +1510,6 @@ const MODES={
   ETH:{label:'ETH',pipSz:0.1,pipVal:1,stepSz:0.1,stepPr:0.07524,lpc:100,comm:3,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.1,lotMin:0.1,lotMax:200,fundingRate:-0.00014,repo:21,iv:50,spot:2319.53,fxSpread:0,fxSymbol:'ETHUSDT',cryptoSymbol:'ETHUSDT',isCrypto:true,
     contracts:{
-      J:{moexTicker:'EHJ6',exp:'2026-04-24',fut:2321,go:710},
       K:{moexTicker:'EHK6',exp:'2026-05-29',fut:2353.9,go:717},
       M:{moexTicker:'EHM6',exp:'2026-06-26',fut:2379,go:722},
       N:{moexTicker:'EHN6',exp:'2026-07-31',fut:2447.3,go:751}
@@ -1979,8 +1975,8 @@ function updateContractPills(overrideColor){
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Crypto pills: J/K/M/N (id cpJ/cpK/cpCM/cpN — 'M' uses cpCM to not clash with standard cpM)
-  [['J','cpJ'],['K','cpK'],['M','cpCM'],['N','cpN']].forEach(([k,id])=>{
+  // Crypto pills: K/M/N (id cpK/cpCM/cpN — 'M' uses cpCM to not clash with standard cpM); J removed (expired)
+  [['K','cpK'],['M','cpCM'],['N','cpN']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -4480,7 +4476,7 @@ const TRADE_BUNDLES = {
       {ticker:'ETHUSDT',  side:'long',  venue:'Bitget'}
     ]}
 };
-const CONTRACT_LABEL = {M:'Июн26', U:'Сен26', Z:'Дек26', J:'Апр26', K:'Май26', N:'Июл26'};
+const CONTRACT_LABEL = {M:'Июн26', U:'Сен26', Z:'Дек26', K:'Май26', N:'Июл26'};
 
 let PF_STRATS = {};
 function pfLoadStrats(){try{const raw=localStorage.getItem(PF_STRAT_LS_KEY); return raw?JSON.parse(raw):{};}catch(e){return {};}}
@@ -4552,6 +4548,29 @@ function pfLoad(){
 }
 function pfSave(arr){try{localStorage.setItem(PF_LS_KEY,JSON.stringify(arr));}catch(e){console.error('pfSave',e);}}
 let PF_LEGS = pfLoad();
+// v0.0.10.e: migrate legacy legs (no `currency` field, or wrong `mult` for known ticker)
+(function pfMigrate(){
+  let changed = false;
+  for(const leg of PF_LEGS){
+    // Resolve spec from ticker (exact or futures-prefix)
+    let spec = PF_SPECS[leg.ticker];
+    if(!spec && leg.ticker){
+      const m = leg.ticker.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+      if(m){const p=m[1][0].toUpperCase()+(m[1][1]||'').toLowerCase(); spec = PF_SPECS[p]||PF_SPECS[p.toUpperCase()];}
+    }
+    if(spec){
+      // Update mult/currency/venue to match current PF_SPECS
+      if(leg.mult !== spec.mult){leg.mult = spec.mult; changed = true;}
+      if(leg.currency !== spec.currency){leg.currency = spec.currency || 'RUB'; changed = true;}
+      if(leg.venue !== spec.venue){leg.venue = spec.venue; changed = true;}
+    } else if(!leg.currency){
+      // Unknown ticker — guess by venue
+      leg.currency = (leg.venue==='Forex' || leg.venue==='Bitget') ? 'USD' : 'RUB';
+      changed = true;
+    }
+  }
+  if(changed) pfSave(PF_LEGS);
+})();
 
 function pfNewLeg(strategy){
   return {
@@ -4677,12 +4696,11 @@ function pfUpdateField(id, field, value){
       leg.venue = spec.venue;
       leg.currency = spec.currency || 'RUB';
     }
-    // Always pull the latest known price for this ticker
+    // v0.0.10.e: pull live price into current; entry left for user to fill manually
     const live = pfGetLivePrice(value);
     if(live != null && isFinite(live)){
       leg.current = live;
-      // If entry is empty, prefill it too (user can override)
-      if(!leg.entry || leg.entry === 0) leg.entry = live;
+      // entry intentionally NOT auto-filled — user enters their actual fill price
     }
   }
   pfSave(PF_LEGS); pfRender();
@@ -4895,6 +4913,7 @@ function pfRender(){
     for(const leg of gLegs){
       idx++;
       const pnlRub = pfCalcPnlRub(leg);
+      const pnlNative = pfCalcPnlNative(leg);  // v0.0.10.e: native currency PnL
       const carry = pfCalcCarryRub(leg);
       const carryRub = carry.totalRub;
       const netRub = pnlRub + carryRub;
@@ -4904,6 +4923,8 @@ function pfRender(){
       const pnlColor = pnlRub>=0 ? 'var(--green)' : 'var(--red)';
       const carryColor = carryRub>=0 ? 'var(--green)' : (carryRub<0 ? 'var(--red)' : 'var(--tm)');
       const netColor = netRub>=0 ? 'var(--green)' : 'var(--red)';
+      const isUsd = leg.currency === 'USD';
+      const pnlNativeStr = isUsd ? ((pnlNative>=0?'+$':'−$')+fm(Math.abs(Math.round(pnlNative)))) : (fm(Math.round(pnlNative))+' ₽');
       // Live price indicator
       const live = pfGetLivePrice(leg.ticker);
       const isLiveMatch = (live!=null && leg.current && Math.abs(leg.current - live) < 1e-6);
@@ -4935,8 +4956,8 @@ function pfRender(){
         <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
         <td style="color:var(--tm);font-size:11px" title="${daysTitle}">${carry.cal||0}к/${carry.trade||0}т</td>
         <td class="hl" style="color:${carryColor}" title="${carryTitle}" ondblclick="pfEditSwapDaily('${leg.id}')">${fm(Math.round(carryRub))} ₽</td>
-        <td class="hl" style="color:${pnlColor}">${fm(Math.round(pnlRub))} ₽</td>
-        <td class="hl" style="color:${netColor}">${fm(Math.round(netRub))} ₽</td>
+        <td class="hl" style="color:${pnlColor}" title="PnL в нативной валюте ноги">${pnlNativeStr}</td>
+        <td class="hl" style="color:${netColor}" title="PnL+carry, конвертированы в ₽">${fm(Math.round(netRub))} ₽</td>
         <td><button class="pf-del-btn" onclick="pfDeleteLeg('${leg.id}')" title="Удалить ногу">✕</button></td>`;
       tb.appendChild(tr);
     }
@@ -5255,10 +5276,11 @@ pfAddBundle = function(){
       leg.mult = spec.mult;
       leg.currency = spec.currency || 'RUB';
     }
+    // v0.0.10.e: only fill current (live), keep entry=0 so user enters real fill price
     const live = pfGetLivePrice(ls.ticker);
     if(live != null && isFinite(live)){
       leg.current = live;
-      leg.entry = live;
+      // entry intentionally left at 0 — user must fill from broker
     }
     PF_LEGS.push(leg);
   }
