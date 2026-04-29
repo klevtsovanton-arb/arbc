@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.e</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.f</p>
     </div>
   </div>
 
@@ -4740,23 +4740,35 @@ function pfGetLivePrice(ticker){
   return null;
 }
 
+// v0.0.10.f: dynamic multiplier for CNH-quoted Forex pairs.
+// USD/CNH, EUR/CNH: 1.0 price-unit movement on 1 standard lot = 100 000 CNH.
+// Convert CNH→USD via current USD/CNH rate (from MODES.UCNY.spot or user input).
+// Fallback to leg.mult if no live USD/CNH available.
+function pfEffectiveMult(leg){
+  const t = leg.ticker;
+  if(t === 'USD/CNH' || t === 'EUR/CNH'){
+    const usdcnh = (typeof MODES!=='undefined' && MODES.UCNY && MODES.UCNY.spot) || 0;
+    if(usdcnh > 0) return 100000 / usdcnh;
+  }
+  return leg.mult;
+}
 function pfCalcPnlRub(leg){
   const dir = leg.side==='long' ? 1 : -1;
-  // If leg.current is 0/empty and we know the ticker, use live price
   const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
-  const pnlNative = (cur - leg.entry) * dir * leg.lots * leg.mult;
-  // v0.0.10.c: convert from native currency to RUB
+  const mult = pfEffectiveMult(leg);
+  const pnlNative = (cur - leg.entry) * dir * leg.lots * mult;
   if(leg.currency === 'USD'){
     const rub = +$('inRub').value || 76;
     return pnlNative * rub;
   }
-  return pnlNative; // RUB or unset
+  return pnlNative;
 }
 // Native PnL (in leg's currency, no conversion)
 function pfCalcPnlNative(leg){
   const dir = leg.side==='long' ? 1 : -1;
   const cur = (leg.current && leg.current !== 0) ? leg.current : (pfGetLivePrice(leg.ticker) || 0);
-  return (cur - leg.entry) * dir * leg.lots * leg.mult;
+  const mult = pfEffectiveMult(leg);
+  return (cur - leg.entry) * dir * leg.lots * mult;
 }
 // v0.0.9: days since entry (calendar + approx trading)
 function pfCalcDaysHeld(leg){
@@ -4952,7 +4964,7 @@ function pfRender(){
         <td><input type="number" step="0.01" value="${leg.lots}" onchange="pfUpdateField('${leg.id}','lots',this.value)"></td>
         <td><input type="number" step="0.00001" value="${leg.entry}" onchange="pfUpdateField('${leg.id}','entry',this.value)"></td>
         <td style="white-space:nowrap"><input type="number" step="0.00001" value="${leg.current}" onchange="pfUpdateField('${leg.id}','current',this.value)" style="width:calc(100% - 16px)">${liveBadge}</td>
-        <td><input type="number" step="1" value="${leg.mult}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот"></td>
+        <td><input type="number" step="1" value="${pfEffectiveMult(leg)}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="${leg.ticker==='USD/CNH'||leg.ticker==='EUR/CNH'?'Динамический множитель: 100000 / USDCNH ('+(MODES.UCNY.spot||'?').toFixed(4)+') = '+pfEffectiveMult(leg).toFixed(0)+' $/единицу/лот':'Сколько $ или ₽ даёт 1.0 единицы движения цены на 1 лот'}"></td>
         <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
         <td style="color:var(--tm);font-size:11px" title="${daysTitle}">${carry.cal||0}к/${carry.trade||0}т</td>
         <td class="hl" style="color:${carryColor}" title="${carryTitle}" ondblclick="pfEditSwapDaily('${leg.id}')">${fm(Math.round(carryRub))} ₽</td>
