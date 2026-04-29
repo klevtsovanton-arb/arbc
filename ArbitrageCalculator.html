@@ -185,7 +185,7 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPall"      data-cat="METAL"  onclick="switchTo('PALL')">Palladium</button>
       <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
       <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
-      <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="showStub('BRENT')" style="font-size:12px">🛢 Brent</button>
+      <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="switchTo('BRENT')" style="font-size:12px">🛢 Brent</button>
       <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
       <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.f</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.g</p>
     </div>
   </div>
 
@@ -1323,14 +1323,15 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 
 let mode='EURUSD';
 let currentContract='M'; // M=Июн, U=Сен, Z=Дек
-const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25};
-const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
+const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
+const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',BRENT:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
   EURUSD:'currency', UCNY:'currency',
   GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
   BTC:'crypto', ETH:'crypto',
+  BRENT:'commodity',
   TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple',
   PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple',
   PERP_GLD_MX:'gold_triple'
@@ -1447,6 +1448,11 @@ function applyOvwFilter(){
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95};
 const CONTRACT_LABELS={K:'Май 26',M:'Июн 26',N:'Июл 26',U:'Сен 26',Z:'Дек 26'};
 const CONTRACT_SHORT ={K:'5.26',M:'6.26',N:'7.26',U:'9.26',Z:'12.26'};
+// v0.0.10.g: cTrader-broker quote свопы в "пипах", значение которых = торговый пип × этот коэффициент.
+// Для нашего брокера: торговый пип Brent = $10/лот, свап-пип = $2/лот → отношение 0.2 (≈ 1/5).
+// По наблюдениям пользователя это соотношение применимо ко всем Forex-парам у этого брокера.
+// Если для какой-то пары окажется другое — задай в MODES поле `swapPipRatio` индивидуально.
+const FOREX_SWAP_PIP_RATIO = 0.2;
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
@@ -1513,6 +1519,17 @@ const MODES={
       K:{moexTicker:'EHK6',exp:'2026-05-29',fut:2353.9,go:717},
       M:{moexTicker:'EHM6',exp:'2026-06-26',fut:2379,go:722},
       N:{moexTicker:'EHN6',exp:'2026-07-31',fut:2447.3,go:751}
+    }},
+  // === Brent oil: cTrader BRNUSD (1000 bbl/lot) vs MOEX BR (10 bbl/contract) ===
+  // 1 cTrader-лот = 1000 bbl = 100 MOEX-контрактов BR. Шаг МОЕХ 0.01 USD = $0.10/контр ≈ 8₽ при курсе ~80.
+  // pipSz/stepSz=0.01 USD; pipVal=1000×0.01=$10 на лот за 1 пипс. Контанго на МОЕХ vs форекс-спот → SHORT MOEX × LONG cTrader.
+  // swap (long получает на cTrader) = +17.38 пипов/день. Знак положительный — это carry в нашу пользу.
+  BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'cont',
+    lotStep:.1,lotMin:.1,lotMax:5,swap:17.38,repo:21,iv:30,spot:115.50,fxSpread:0.036,fxSymbol:'BRN/USD',
+    contracts:{
+      K:{moexTicker:'BRK6',exp:'2026-04-30',fut:115.80,go:11000},
+      M:{moexTicker:'BRM6',exp:'2026-05-29',fut:116.73,go:11000},
+      N:{moexTicker:'BRN6',exp:'2026-06-30',fut:117.20,go:11000}
     }}
 };
 
@@ -1871,7 +1888,7 @@ function switchTo(m){
     $('contractPills').style.display='';
     const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';
   }
-  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH'};
+  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH',BRENT:'tabBrent'};
   $(tabMap[m]).className='tab on';$(tabMap[m]).style.background=colMap[m];
   $('inSpot').value=p.spot;$('inFut').value=p.fut;$('inDays').value=daysToExp(p.exp);$('inIV').value=p.iv;
   $('inSwap').value=p.isCrypto?((p.fundingRate||0)*100).toFixed(4):p.swap;
@@ -1967,7 +1984,7 @@ function switchContract(c){
 }
 
 function updateContractPills(overrideColor){
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#D97706'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
   ['M','U','Z'].forEach(k=>{
@@ -2123,7 +2140,7 @@ function calc(){
   const isFxPair=(mode==='EURUSD'||mode==='UCNY');
   const isCrypto=!!p.isCrypto;
   const isOz=!isFxPair&&!isCrypto;
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
   const ac=colMap[mode]||'var(--cyan)';
 
   // Spread
@@ -2191,15 +2208,20 @@ function calc(){
   const repoT=repoN*days/rub;
   // Swap/funding term: crypto reads % per 8h from input, converts to decimal × 3 × days × notional
   // Negative FR → LONG perp получает carry → swT положительный (складываем с гросс)
+  // v0.0.10.g: для Forex свап-пип ≠ торговому пипу — применяем FOREX_SWAP_PIP_RATIO (можно переопределить через p.swapPipRatio)
+  const swPipRatio = (p.swapPipRatio!=null) ? p.swapPipRatio : FOREX_SWAP_PIP_RATIO;
+  const swPipVal = pipVal * swPipRatio;
   const swT=p.isCrypto
     ? (-(+$('inSwap').value/100)*3*days*lots*p.cSize*spot)
-    : (swapPips*pipVal*lots*days);
+    : (swapPips*swPipVal*lots*days);
   const grossRaw=p.dir==='back'?spPips*tpv:spread*lots*p.cSize;
   const gross=p.pipValForeign&&p.dir!=='back'?grossRaw/spot:grossRaw;
   const fxSpreadRaw=fxSpread*lots*p.cSize;
   const fxSpreadCost=p.pipValForeign?fxSpreadRaw/spot:fxSpreadRaw;
   const cm=lots*p.comm;
-  const net=p.isCrypto?(gross+swT-repoT-cm-fxSpreadCost):(p.dir==='back'?gross+swT-repoT-cm-fxSpreadCost:gross-Math.abs(swT)-repoT-cm-fxSpreadCost);
+  // v0.0.10.g: swT уже несёт правильный знак (>0 если carry в нашу пользу, <0 если мы платим).
+  // Раньше для dir='cont' принудительно вычитали |swT|, что ломало нефть (long получает carry).
+  const net=gross+swT-repoT-cm-fxSpreadCost;
   const totCap=fxCap+mxOwn/rub;
   const roi=net/totCap*100;
 
@@ -2212,7 +2234,8 @@ function calc(){
 
   // Worst P&L: all on MOEX + payout
   const payW=gross>0?gross*(+$('inPayout').value/100):0;
-  const swCost=p.isCrypto?swT:(p.dir==='back'?swT:-Math.abs(swT));
+  // v0.0.10.g: swT с правильным знаком — никаких dir-специфичных перекосов.
+  const swCost=swT;
   const costsW=swCost-repoT-cm-fxSpreadCost;
   const netW=gross+costsW-payW;
   $('plGrossW').textContent='+$'+fm(gross,0);$('plGrossW').style.color='var(--green)';
@@ -2237,7 +2260,7 @@ function calc(){
     const rSig=sigP>0?rFxPct/100/sigP:0;
     const rSc=rSig>=1?'var(--green)':rSig>=.5?'var(--yellow)':'var(--red)';
     const rGoT=cn*go,rBor=Math.max(0,rGoT-nMx),rRepoN=rBor*repoAnn/365,rRepoT=rRepoN*days/rub;
-    const rNet=p.dir==='back'?gross+swT-rRepoT-cm:gross-Math.abs(swT)-rRepoT-cm;
+    const rNet=gross+swT-rRepoT-cm;
     const rTot=nFx+nMx/rub,rRoi=rNet/rTot*100;
     const repoSave=repoT-rRepoT;
     $('rebTitle').textContent='⚖ РЕБАЛАНС → докинуть на МОЕХ';
@@ -2259,7 +2282,7 @@ function calc(){
     const rSig=sigP>0?rMinPct/100/sigP:0;
     const rSc=rSig>=1?'var(--green)':rSig>=.5?'var(--yellow)':'var(--red)';
     const rGoT=cn*go,rBor=Math.max(0,rGoT-nMx),rRepoN=rBor*repoAnn/365,rRepoT=rRepoN*days/rub;
-    const rNet=p.dir==='back'?gross+swT-rRepoT-cm:gross-Math.abs(swT)-rRepoT-cm;
+    const rNet=gross+swT-rRepoT-cm;
     const rTot=nFx+nMx/rub,rRoi=rNet/rTot*100;
     const repoPenalty=rRepoT-repoT;
     $('rebTitle').textContent='⚖ РЕБАЛАНС → вывести с МОЕХ';
@@ -2274,7 +2297,7 @@ function calc(){
   }
 
   // Capital usage block
-  const swDaily=p.isCrypto?(-(+$('inSwap').value/100)*3*lots*p.cSize*spot):(swapPips*pipVal*lots);
+  const swDaily=p.isCrypto?(-(+$('inSwap').value/100)*3*lots*p.cSize*spot):(swapPips*swPipVal*lots);
   const swPctCap=(Math.abs(swT)/totCap*100);
   // Live swap readout under input
   const swLiveSign=swDaily>=0?'+':'−';
@@ -2427,7 +2450,7 @@ function calc(){
       const sGoT=scn*go;
       const sBor=Math.max(0,sGoT-mxOwn);
       const sRepoT=sBor*repoAnn/365*days/rub;
-      const sSwT=swapPips*pipVal*sl*days;
+      const sSwT=swapPips*swPipVal*sl*days; // v0.0.10.g: swPipVal учитывает FOREX_SWAP_PIP_RATIO
       const sCm=sl*p.comm;
       const sFxSCRaw=fxSpread*sl*p.cSize;
       const sFxSC=p.pipValForeign?sFxSCRaw/spot:sFxSCRaw;
@@ -2539,7 +2562,7 @@ function calcOvw(){
   const totalUsd=totalRub/rub;
 
   const tb=$('ovwBody');tb.innerHTML='';
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
   const ovwRows=[];
 
   for(const[key,base] of Object.entries(MODES)){
@@ -2613,14 +2636,16 @@ function calcOvw(){
       const spPips=Math.round(spread/p.pipSz);
       const grossBest=p.dir==='back'?spPips*tpv:spread*sl*p.cSize;
       const grossBestUsd=p.pipValForeign&&p.dir!=='back'?grossBest/spot:grossBest;
+      const swPipRatio = (p.swapPipRatio!=null) ? p.swapPipRatio : FOREX_SWAP_PIP_RATIO;
+      const swPipVal = pipVal * swPipRatio;
       const swT=p.isCrypto
         ? (-(p.fundingRate||0)*3*sl*p.cSize*spot*days)
-        : (p.swap*pipVal*sl*days);
+        : (p.swap*swPipVal*sl*days);
       const bor=Math.max(0,goT-mxOwn);
       const repoT=bor*repoAnn/365*days/rub;
       const cm=sl*p.comm;
       const fxSC=p.pipValForeign?p.fxSpread*sl*p.cSize/spot:p.fxSpread*sl*p.cSize;
-      const swCost=p.isCrypto?swT:(p.dir==='back'?swT:-Math.abs(swT));
+      const swCost=swT; // v0.0.10.g: swT уже с правильным знаком
       const netBest=grossBestUsd+swCost-repoT-cm-fxSC;
 
       // P&L: Worst scenario (drawdown + payout)
@@ -2743,7 +2768,7 @@ function calcOvw(){
       if(sigT<1.2)break;
       const gross=absSpread/100*notional;
       const fxPipVal=100/fx;
-      const swT=swapPips*fxPipVal*fxLots*days;
+      const swT=swapPips*fxPipVal*FOREX_SWAP_PIP_RATIO*fxLots*days; // v0.0.10.g
       const borT=Math.max(0,mxGoT-mxOwnT);
       const repoTT=borT*repoAnn/365*days/rub;
       const cmT=Math.max(1,Math.round(fxLots))*5;
@@ -3054,7 +3079,7 @@ function calcOvw(){
       if(sigP<1.2)break;
       const grossP=absSp/100*notUsd;
       const fxPipValU=pc.fxPipValMode==='usd'?10:(100*s2.price/rub); // CNY leg drives CNH pip value
-      const fxSwT=fxSwap*fxPipValU*fxLotsP*days;
+      const fxSwT=fxSwap*fxPipValU*FOREX_SWAP_PIP_RATIO*fxLotsP*days; // v0.0.10.g
       const dir1=isN?+1:-1;const dir2=-dir1;
       const fundRub=(-dir1*swL1*LOT1*n1-dir2*swL2*LOT2*n2C)*days;
       const fundT=fundRub/rub;
@@ -3338,7 +3363,7 @@ function calcTriple(){
   // P&L
   const gross=Math.abs(spreadPct)/100*notional;
   const swapPips=isNegative?swapS:swapL;
-  const swT=swapPips*(100/fx)*fxLots*days; // pip value × lots × days
+  const swT=swapPips*(100/fx)*FOREX_SWAP_PIP_RATIO*fxLots*days; // v0.0.10.g: pip value × ratio × lots × days
   const bor=Math.max(0,mxGoTotal-mxOwn);
   const repoT=bor*repoAnn/365*days/rub;
   const cm=Math.max(1,Math.round(fxLots))*comm; // min 1 lot commission
@@ -3372,7 +3397,7 @@ function calcTriple(){
 
   // Capital usage
   const freeFx=fxCap-fxMarg;
-  const swDaily=swapPips*(100/fx)*fxLots;
+  const swDaily=swapPips*(100/fx)*FOREX_SWAP_PIP_RATIO*fxLots; // v0.0.10.g
   const repoN=bor*repoAnn/365;
   const repoNusd=repoN/rub;
   const swPctCap=Math.abs(swT)/totCap*100;
@@ -3556,7 +3581,7 @@ function calcTripleEu(){
   // P&L
   const gross=Math.abs(spreadPct)/100*notional;
   const swapPips=isNegative?swapS:swapL;
-  const swT=swapPips*fxPipValPerLot*fxLots*days;
+  const swT=swapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots*days; // v0.0.10.g
   const bor=Math.max(0,mxGoTotal-mxOwn);
   const repoT=bor*repoAnn/365*days/rub;
   const cm=Math.max(1,Math.round(fxLots))*comm;
@@ -3584,7 +3609,7 @@ function calcTripleEu(){
 
   // Capital usage + costs
   const freeFx=fxCap-fxMarg;
-  const swDaily=swapPips*fxPipValPerLot*fxLots;
+  const swDaily=swapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots; // v0.0.10.g
   const repoN=bor*repoAnn/365;
   const swPctCap=Math.abs(swT)/totCap*100;
   // Live swap hint
@@ -3761,7 +3786,7 @@ function calcTripleU(){
   // P&L
   const gross=Math.abs(spreadPct)/100*notional;
   const swapPips=isNegative?swapS:swapL;
-  const swT=swapPips*fxPipValPerLot*fxLots*days;
+  const swT=swapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots*days; // v0.0.10.g
   const bor=Math.max(0,mxGoTotal-mxOwn);
   const repoT=bor*repoAnn/365*days/rub;
   const cm=Math.max(1,Math.round(fxLots))*comm;
@@ -3789,7 +3814,7 @@ function calcTripleU(){
 
   // Capital usage + costs
   const freeFx=fxCap-fxMarg;
-  const swDaily=swapPips*fxPipValPerLot*fxLots;
+  const swDaily=swapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots; // v0.0.10.g
   const repoN=bor*repoAnn/365;
   const swPctCap=Math.abs(swT)/totCap*100;
   const tuSwSign=swDaily>=0?'+':'−';
@@ -4012,9 +4037,9 @@ function calcPerp(key){
   const fundL2_rub=-dir2*swL2*LOT2*n2*days;
   const fundT=(fundL1_rub+fundL2_rub)/rub; // USD
 
-  // FX swap
+  // FX swap — v0.0.10.g: с учётом FOREX_SWAP_PIP_RATIO (cTrader-broker свап-пип ≠ торговому)
   const fxSwapPips=isNegative?fxSwS:fxSwL;
-  const swT=fxSwapPips*fxPipValPerLot*fxLots*days;
+  const swT=fxSwapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots*days;
 
   const bor=Math.max(0,mxGoTotal-mxOwn);
   const repoT=bor*repoAnn/365*days/rub;
@@ -4078,7 +4103,7 @@ function calcPerp(key){
     +'<div style="font-size:12px;color:var(--tl)">Заём: <b style="color:'+(bor>0?'var(--orange)':'var(--green)')+'">'+( bor>0?fm(Math.round(bor/1000))+'К₽':'нет')+'</b></div></div></div>'
     +'<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">'
     +'<div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--red)">ИЗДЕРЖКИ</b></div>'
-    +'<div style="font-size:12px;color:var(--tl)">Своп FX/ночь: <b style="color:'+(fxSwapPips*fxPipValPerLot*fxLots>=0?'var(--green)':'var(--red)')+'">'+(fxSwapPips*fxPipValPerLot*fxLots>=0?'+':'')+'$'+fm(fxSwapPips*fxPipValPerLot*fxLots,2)+'</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)">Своп FX/ночь: <b style="color:'+(fxSwapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots>=0?'var(--green)':'var(--red)')+'">'+(fxSwapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots>=0?'+':'')+'$'+fm(fxSwapPips*fxPipValPerLot*FOREX_SWAP_PIP_RATIO*fxLots,2)+'</b></div>'
     +'<div style="font-size:12px;color:var(--tl)">Фандинг вечников/день: <b style="color:'+(fundDailyUsd>=0?'var(--green)':'var(--red)')+'">'+(fundDailyUsd>=0?'+':'')+'$'+fm(fundDailyUsd,2)+'</b> ('+(fundDailyRub>=0?'+':'')+fm(Math.round(fundDailyRub))+'₽)</div>'
     +'<div style="font-size:12px;color:var(--tl)">Суммарно свопы+фандинг за '+days+' дн: <b style="color:'+((swT+fundT)>=0?'var(--green)':'var(--red)')+'">'+((swT+fundT)>=0?'+':'')+'$'+fm(swT+fundT,0)+'</b></div>'
     +'<div style="font-size:12px;color:var(--tl)">РЕПО/ночь: <b style="color:'+(repoN>0?'var(--red)':'var(--green)')+'">'+(repoN>0?fm(repoN,0)+'₽':'0₽')+'</b></div>'
@@ -4531,6 +4556,7 @@ const PF_SPECS = {
   'PD': {venue:'MOEX', mult:77,    currency:'RUB'}, // Palladium
   'BT': {venue:'MOEX', mult:0.07524,currency:'RUB'},// BTC fut: stepPr=0.07524 на step 1
   'EH': {venue:'MOEX', mult:0.7524, currency:'RUB'},// ETH fut: stepPr=0.07524 на step 0.1
+  'BR': {venue:'MOEX', mult:8,      currency:'RUB'},// Brent: 1 контракт=10 bbl, шаг 0.01$ ≈ 8₽ при курсе ~80
   // Forex (PnL natively in USD; we'll multiply by rub-rate for ₽ display)
   'EUR/USD': {venue:'Forex', mult:100000, currency:'USD'}, // 100K€ × 1$/€ per 1.0 price-unit
   'USD/CNH': {venue:'Forex', mult:14600,  currency:'USD'}, // approx via CNH→$ at ~6.85 (100K$ / USDCNH)
@@ -4539,6 +4565,7 @@ const PF_SPECS = {
   'XAG/USD': {venue:'Forex', mult:5000,   currency:'USD'},
   'XPT/USD': {venue:'Forex', mult:100,    currency:'USD'},
   'XPD/USD': {venue:'Forex', mult:100,    currency:'USD'},
+  'BRN/USD': {venue:'Forex', mult:1000,   currency:'USD'}, // 1000 bbl/lot × $1/bbl per 1.0 price-unit
   // Bitget perpetuals (PnL in USD)
   'BTCUSDT': {venue:'Bitget',mult:1, currency:'USD'},
   'ETHUSDT': {venue:'Bitget',mult:1, currency:'USD'}
@@ -4720,6 +4747,7 @@ function pfGetLivePrice(ticker){
     'XAG/USD': ()=>MODES.SILVER && MODES.SILVER.spot,
     'XPT/USD': ()=>MODES.PLAT && MODES.PLAT.spot,
     'XPD/USD': ()=>MODES.PALL && MODES.PALL.spot,
+    'BRN/USD': ()=>MODES.BRENT && MODES.BRENT.spot,
     'BTCUSDT': ()=>MODES.BTC && MODES.BTC.spot,
     'ETHUSDT': ()=>MODES.ETH && MODES.ETH.spot
   };
@@ -4731,7 +4759,7 @@ function pfGetLivePrice(ticker){
     if(prefix==='SI')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).si||null;
     if(prefix==='CR')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).cr||null;
     if(prefix==='EU')return (TRIPLE_DATA.TRIPLE_EU.contracts[c]||{}).eu||null;
-    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH',BR:'BRENT'};
     const k = modeMap[prefix];
     if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
       return MODES[k].contracts[c].fut;
@@ -4790,7 +4818,7 @@ function pfGetGoRub(ticker){
     if(prefix==='SI'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.siGo:0;}
     if(prefix==='CR'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.crGo:0;}
     if(prefix==='EU'){const t=TRIPLE_DATA.TRIPLE_EU.contracts[c]; return t?t.euGo:0;}
-    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH',BR:'BRENT'};
     const k = modeMap[prefix];
     if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
       return MODES[k].contracts[c].go || 0;
