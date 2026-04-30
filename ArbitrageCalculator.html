@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.h</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.i</p>
     </div>
   </div>
 
@@ -5346,7 +5346,32 @@ function setFetchUI(msg,color,disabled){
 
 async function fetchPrices(){
   setFetchUI('⏳ МОЕХ...','var(--yellow)',true);
-  let mxOk=0,fxOk=0,details=[];
+  let mxOk=0,details=[];
+
+  // === v0.0.10.h: cTrader запускаем СРАЗУ параллельно с MOEX/FX (это самый медленный источник) ===
+  const CTRADER_MAP={EURUSD:'EURUSD_xp',UCNY:'USDCNH_xp',GOLD:'XAUUSD_xp',SILVER:'XAGUSD_xp',PLAT:'XPTUSD_xp',PALL:'XPDUSD_xp'};
+  const CT_BASE='https://arb-moex-proxy.klevtsov-anton.workers.dev';
+  const ctPromise=(async()=>{
+    let symbols=null,prices=null;
+    // Spec: пробуем localStorage кэш на 1 час — если свежий, не ходим в воркер вообще.
+    try{
+      const cached=JSON.parse(localStorage.getItem('ctSymbolsCache')||'null');
+      if(cached&&cached.fetchedAt&&(Date.now()-cached.fetchedAt<3600000)){
+        symbols=cached.data;
+      }
+    }catch(_){}
+    // Fetches: spec и prices параллельно (если spec нет в кэше)
+    const symPromise=symbols ? Promise.resolve({ok:true,symbols}) : fetch(CT_BASE+'/ctrader-symbols').then(r=>r.json()).catch(e=>({ok:false,error:String(e.message||e)}));
+    const want=Object.values(CTRADER_MAP).concat(['EURCNH_xp','BRNUSD_xp']).join(',');
+    const pricePromise=fetch(CT_BASE+'/ctrader-prices?symbols='+encodeURIComponent(want)).then(r=>r.json()).catch(e=>({ok:false,error:String(e.message||e)}));
+    const [symRes,priceRes]=await Promise.all([symPromise,pricePromise]);
+    if(symRes&&symRes.ok&&symRes.symbols){
+      symbols=symRes.symbols;
+      try{localStorage.setItem('ctSymbolsCache',JSON.stringify({fetchedAt:Date.now(),data:symbols}));}catch(_){}
+    }
+    if(priceRes&&priceRes.ok) prices=priceRes.prices;
+    return {symbols,prices,symErr:symRes&&symRes.error,priceErr:priceRes&&priceRes.error};
+  })();
 
   // MOEX ISS (free, no key)
   try{
@@ -5469,57 +5494,12 @@ async function fetchPrices(){
     setFetchUI('✅ МОЕХ ('+mxOk+'). Forex...','var(--green)',true);
   }catch(e){setFetchUI('❌ МОЕХ: '+e.message,'var(--red)',true);}
 
-  // FX via Cloudflare worker (TD key server-side, 15s edge cache)
-  try{
-    const syms=Object.values(MODES).filter(m=>!m.isCrypto).map(m=>m.fxSymbol).join(',');
-    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/fx?symbols='+encodeURIComponent(syms));
-    if(r.status===429)throw new Error('лимит (подожди минуту)');
-    const d=await r.json();
-    if(d.code&&d.status==='error')throw new Error(d.message);
-    if(d.error)throw new Error(d.error);
-    for(const[sym,val] of Object.entries(d)){
-      if(val&&val.price){
-        const pr=parseFloat(val.price);
-        for(const v of Object.values(MODES)){if(v.fxSymbol===sym&&!v.isCrypto)v.spot=pr;}
-        if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'&&MODES[mode]&&!MODES[mode].isCrypto&&MODES[mode].fxSymbol===sym)$('inSpot').value=pr;
-        if(sym==='USD/CNH')$('trFx').value=pr;
-        if(sym==='EUR/USD')$('tuFx').value=pr;
-        fxOk++;
-      }
-      if(val&&val.code)details.push(sym+':⚠'+val.message?.slice(0,20));
-    }
-  }catch(e){setFetchUI((mxOk?'✅ МОЕХ. ':'')+'❌ FX: '+e.message,'var(--orange)',true);}
-
-  // === v0.0.10.h: cTrader Open API — реальные котировки и свопы твоего брокера (xpbee) ===
-  // Маппинг наш MODE-key → cTrader symbol name. Эти значения переопределяют TwelveData (более точные).
-  const CTRADER_MAP={EURUSD:'EURUSD_xp',UCNY:'USDCNH_xp',GOLD:'XAUUSD_xp',SILVER:'XAGUSD_xp',PLAT:'XPTUSD_xp',PALL:'XPDUSD_xp'};
-  const CT_BASE='https://arb-moex-proxy.klevtsov-anton.workers.dev';
-  let ctSymbols=null,ctOk=0;
-  try{
-    // Спецификации (lotSize, pipPosition, swapLong/Short) — кэшируем в localStorage на 1 час
-    let cached=null; try{cached=JSON.parse(localStorage.getItem('ctSymbolsCache'));}catch(_){}
-    if(cached&&cached.fetchedAt&&(Date.now()-cached.fetchedAt<3600000)){
-      ctSymbols=cached.data;
-    }else{
-      const r=await fetch(CT_BASE+'/ctrader-symbols');
-      const d=await r.json();
-      if(d.ok&&d.symbols){
-        ctSymbols=d.symbols;
-        localStorage.setItem('ctSymbolsCache',JSON.stringify({fetchedAt:Date.now(),data:d.symbols}));
-      } else if(d.error){throw new Error(d.error);}
-    }
-  }catch(e){details.push('cT-spec:⚠'+String(e.message||e).slice(0,30));}
-
-  let ctPrices=null;
-  if(ctSymbols){
-    try{
-      const want=Object.values(CTRADER_MAP).concat(['EURCNH_xp','BRNUSD_xp']).join(',');
-      const r=await fetch(CT_BASE+'/ctrader-prices?symbols='+encodeURIComponent(want));
-      const d=await r.json();
-      if(d.ok&&d.prices){ctPrices=d.prices;}
-      else if(d.error){throw new Error(d.error);}
-    }catch(e){details.push('cT-prices:⚠'+String(e.message||e).slice(0,30));}
-  }
+  // === Ждём cTrader-промис (запущенный в начале параллельно с MOEX) ===
+  // FX/metals/oil идут через cTrader Open API (см. ctPromise в начале функции). TwelveData выпилен в v0.0.10.i.
+  let ctOk=0;
+  const {symbols:ctSymbols,prices:ctPrices,symErr:ctSymErr,priceErr:ctPriceErr}=await ctPromise;
+  if(ctSymErr) details.push('cT-spec:⚠'+ctSymErr.slice(0,30));
+  if(ctPriceErr) details.push('cT-prices:⚠'+ctPriceErr.slice(0,30));
 
   if(ctSymbols){
     // Применяем к MODES. Свопы: для dir='back' (short Forex) берём swapShort, для 'cont' (long Forex) — swapLong.
@@ -5633,8 +5613,8 @@ async function fetchPrices(){
     }catch(e){details.push(sym+':⚠'+String(e.message||e).slice(0,30));}
   }
   const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  if(mxOk&&fxOk)setFetchUI('✅ '+t+' | МОЕХ:'+mxOk+' FX:'+fxOk+' BG:'+cryptoOk+'/2','var(--green)',false);
-  else if(mxOk&&fxOk===0)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2. ⚠ FX: 0 ('+t+')','var(--orange)',false);
+  if(mxOk&&ctOk)setFetchUI('✅ '+t+' | МОЕХ:'+mxOk+' cT:'+ctOk+' BG:'+cryptoOk+'/2','var(--green)',false);
+  else if(mxOk&&!ctOk)setFetchUI('✅ МОЕХ + Bitget:'+cryptoOk+'/2. ⚠ cT: 0 ('+t+')','var(--orange)',false);
     else setFetchUI('Готово ('+t+')','var(--tm)',false);
   console.log('Fetch details:',details.join(' | '));
   // Sync rate everywhere
