@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.f</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.h</p>
     </div>
   </div>
 
@@ -5489,6 +5489,86 @@ async function fetchPrices(){
       if(val&&val.code)details.push(sym+':⚠'+val.message?.slice(0,20));
     }
   }catch(e){setFetchUI((mxOk?'✅ МОЕХ. ':'')+'❌ FX: '+e.message,'var(--orange)',true);}
+
+  // === v0.0.10.h: cTrader Open API — реальные котировки и свопы твоего брокера (xpbee) ===
+  // Маппинг наш MODE-key → cTrader symbol name. Эти значения переопределяют TwelveData (более точные).
+  const CTRADER_MAP={EURUSD:'EURUSD_xp',UCNY:'USDCNH_xp',GOLD:'XAUUSD_xp',SILVER:'XAGUSD_xp',PLAT:'XPTUSD_xp',PALL:'XPDUSD_xp'};
+  const CT_BASE='https://arb-moex-proxy.klevtsov-anton.workers.dev';
+  let ctSymbols=null,ctOk=0;
+  try{
+    // Спецификации (lotSize, pipPosition, swapLong/Short) — кэшируем в localStorage на 1 час
+    let cached=null; try{cached=JSON.parse(localStorage.getItem('ctSymbolsCache'));}catch(_){}
+    if(cached&&cached.fetchedAt&&(Date.now()-cached.fetchedAt<3600000)){
+      ctSymbols=cached.data;
+    }else{
+      const r=await fetch(CT_BASE+'/ctrader-symbols');
+      const d=await r.json();
+      if(d.ok&&d.symbols){
+        ctSymbols=d.symbols;
+        localStorage.setItem('ctSymbolsCache',JSON.stringify({fetchedAt:Date.now(),data:d.symbols}));
+      } else if(d.error){throw new Error(d.error);}
+    }
+  }catch(e){details.push('cT-spec:⚠'+String(e.message||e).slice(0,30));}
+
+  let ctPrices=null;
+  if(ctSymbols){
+    try{
+      const want=Object.values(CTRADER_MAP).concat(['EURCNH_xp','BRNUSD_xp']).join(',');
+      const r=await fetch(CT_BASE+'/ctrader-prices?symbols='+encodeURIComponent(want));
+      const d=await r.json();
+      if(d.ok&&d.prices){ctPrices=d.prices;}
+      else if(d.error){throw new Error(d.error);}
+    }catch(e){details.push('cT-prices:⚠'+String(e.message||e).slice(0,30));}
+  }
+
+  if(ctSymbols){
+    // Применяем к MODES. Свопы: для dir='back' (short Forex) берём swapShort, для 'cont' (long Forex) — swapLong.
+    for(const[modeKey,ctName] of Object.entries(CTRADER_MAP)){
+      const sym=ctSymbols.find(s=>s.name===ctName);
+      if(!sym) continue;
+      const m=MODES[modeKey]; if(!m) continue;
+      // Swap (нативный знак из cTrader, в пипах/день)
+      if(m.dir==='back'&&sym.swapShort!=null) m.swap=sym.swapShort;
+      else if(m.dir==='cont'&&sym.swapLong!=null) m.swap=sym.swapLong;
+      // Lot size и pip position
+      if(sym.lotSize) m.cSize=+sym.lotSize;
+      if(sym.pipPosition!=null){
+        m.pipSz=Math.pow(10,-sym.pipPosition);
+        m.stepSz=m.pipSz; // shag MOEX обычно совпадает
+      }
+      // pipVal: для обычных пар = cSize × pipSz; для quote≠USD (CNH-пары) — pipValForeign:true и pipVal/spot.
+      // Не трогаем pipVal если уже задано pipValForeign — старая логика работает.
+      if(!m.pipValForeign) m.pipVal=m.cSize*m.pipSz;
+      // Цены
+      if(ctPrices&&ctPrices[ctName]){
+        const p=ctPrices[ctName];
+        if(p.bid!=null&&p.ask!=null){
+          m.spot=(p.bid+p.ask)/2;
+          m.fxSpread=+(p.ask-p.bid).toFixed(8);
+        }
+      }
+      ctOk++;
+    }
+    // Обновляем UI текущей вкладки если она в маппинге
+    if(mode!=='OVW'&&CTRADER_MAP[mode]){
+      const m=MODES[mode];
+      if(m.spot) $('inSpot').value=m.spot;
+      if(m.swap!=null) $('inSwap').value=m.swap;
+      if(m.fxSpread!=null) $('inFxSpread').value=m.fxSpread;
+    }
+    // Тройнички: USDCNH spot → trFx; EURUSD spot → tuFx; EURCNH spot → teFx,peFx
+    if(MODES.UCNY.spot){$('trFx').value=(+MODES.UCNY.spot).toFixed(4);$('puFx').value=(+MODES.UCNY.spot).toFixed(4);}
+    if(MODES.EURUSD.spot){$('tuFx').value=(+MODES.EURUSD.spot).toFixed(5);$('prFx').value=(+MODES.EURUSD.spot).toFixed(5);}
+    if(ctPrices&&ctPrices['EURCNH_xp']){
+      const p=ctPrices['EURCNH_xp'];
+      if(p.bid&&p.ask){
+        const mid=((p.bid+p.ask)/2);
+        $('teFx').value=mid.toFixed(4);
+        $('peFx').value=mid.toFixed(4);
+      }
+    }
+    details.push('cT:'+ctOk+'/'+Object.keys(CTRADER_MAP).length);
+  }
 
   // Calculate EUR/CNH = EUR/USD × USD/CNH (not available directly on TwelveData)
   if(MODES.EURUSD.spot&&MODES.UCNY.spot){
