@@ -1526,11 +1526,12 @@ const MODES={
   //   подмена cSize/pipVal через cTrader API для BRENT отключена.
   // Сейчас на МОЕХ беквордация (фьюч 111 < спот 116) → dir:'back' (SHORT Forex × LONG MOEX).
   // Если развернётся в контанго — переключи dir:'cont' вручную в этом MODES.
-  // swapPipVal: $/swap-pip/lot, отдельный множитель для свопов нефти.
-  // У xpbee для commodity-свопов «пип», видимо, = 2 минимальных шага (0.002 USD/bbl × 1000 bbl = $2/лот),
-  // а не торговый пип $10/лот. Гипотеза: на 0.1 лот тройной свап в пятницу = -25.587 × 3 × $2 × 0.1 ≈ -$15.4.
-  // В понедельник user проверит на живой позиции; если факт другой — подкрутим коэффициент.
-  BRENT:{label:'Brent',pipSz:.01,pipVal:10,swapPipVal:2,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
+  // По подсказке cTrader (значок i у "Своп позиции на покупку" в спеке):
+  // "Свопы в пипах = сумма в валюте котировки на одну единицу объёма".
+  // То есть: swap_per_lot_per_day = swap_pips × pip_size × lot_size_in_base_units
+  // Для BRENT: 25.587 × 0.01 × 1000 = $256/день/лот short. Это стандартная формула,
+  // никаких отдельных множителей для свопа не нужно (как и для золота).
+  BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
     lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:114.7,fxSpread:0.036,fxSymbol:'BRN/USD',
     contracts:{
       K:{moexTicker:'BRK6',exp:'2026-04-30',fut:114.8,go:11000},
