@@ -41,6 +41,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-radial,none
 .cpill.on{color:#000;border-color:transparent;background:var(--cyan)}
 .tab{padding:10px 24px;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--border);color:var(--tl);background:none;transition:all .2s}
 .tab.on{color:#000;border-color:transparent}
+/* v0.0.10.k: на тёмной теме эмодзи 🛢 и dim-цвет текста делали "Brent" почти невидимым.
+   Делаем текст оранжевым в неактивном состоянии; активное состояние (.tab.on) остаётся чёрный-на-оранжевом. */
+#tabBrent:not(.on){color:#FB923C;border-color:rgba(251,146,60,.4)}
 .hdr-right{text-align:right}
 .hdr-right h1{font-size:20px;font-weight:900}
 .hdr-right p{font-size:12px;color:var(--tm)}
@@ -186,8 +189,6 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
       <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
       <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="switchTo('BRENT')" style="font-size:12px">🛢 Brent</button>
-      <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
-      <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
     <div class="contract-pills" id="contractPills" style="display:none">
@@ -1351,7 +1352,7 @@ const CATEGORY_MAP={
   PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx'],
   METAL:     ['tabGold','tabSilver','tabPlat','tabPall'],
   CRYPTO:    ['tabBTC','tabETH'],
-  COMM:      ['tabBrent','tabGas','tabCopper'],
+  COMM:      ['tabBrent'],
   PORTFOLIO: ['tabPortfolio']
 };
 const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR_TRI:'var(--orange)',PERP_TRI:'#9333EA',METAL:'var(--gold)',CRYPTO:'#F7931A',COMM:'#D97706',PORTFOLIO:'#EC4899'};
@@ -1360,12 +1361,6 @@ const CATEGORY_COLOR={ALL:'var(--cyan)',OVW:'var(--green)',CUR:'var(--cyan)',CUR
 const STUB_CONTENT={
   BRENT:{icon:'🛢',title:'Brent — сырая нефть',
     plan:'<b>Ноги:</b> фьюч BR на МОЕХ (в $/баррель) vs форексный UKOIL / CL.<br><b>Особенности:</b> баррели вместо унций/пипсов, ежемесячная экспирация, контанго/бэквордация сильно зависят от запасов.',
-    ver:'Движок — <b>v0.0.5</b>.'},
-  GAS:{icon:'🔥',title:'Natural Gas — природный газ',
-    plan:'<b>Ноги:</b> фьюч NG на МОЕХ vs форексный NGAS.<br><b>Особенности:</b> бешеная волатильность, сезонность, контракты MMBtu.',
-    ver:'Движок — <b>v0.0.5</b>.'},
-  COPPER:{icon:'🟠',title:'Copper — медь',
-    plan:'<b>Ноги:</b> фьюч CU на МОЕХ vs форексный Copper / HG (CME).<br><b>Особенности:</b> тонны/фунты, индустриальный спрос, коррелирует с металлами.',
     ver:'Движок — <b>v0.0.5</b>.'},
 };
 
@@ -1424,7 +1419,7 @@ function showStub(key){
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
-  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU',BRENT:'tabBrent',GAS:'tabGas',COPPER:'tabCopper'};
+  const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU'};
   document.querySelectorAll('.tabs .tab').forEach(t=>{t.classList.remove('on');t.style.background='';});
   const activeTab=stubTabMap[key];
   if(activeTab){const el=$(activeTab);if(el){el.classList.add('on');const catCol=CATEGORY_COLOR[el.dataset.cat]||'var(--cyan)';el.style.background=catCol;}}
@@ -1747,7 +1742,7 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabGas','tabCopper','tabPortfolio'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabPortfolio'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',OVW:'var(--green)'};
@@ -2024,7 +2019,7 @@ function switchContract(c){
 }
 
 function updateContractPills(overrideColor){
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#D97706'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#FB923C'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
   ['M','U','Z'].forEach(k=>{
@@ -2238,7 +2233,7 @@ function calc(){
   const isFxPair=(mode==='EURUSD'||mode==='UCNY');
   const isCrypto=!!p.isCrypto;
   const isOz=!isFxPair&&!isCrypto;
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#FB923C'};
   const ac=colMap[mode]||'var(--cyan)';
 
   // Spread
@@ -2657,7 +2652,7 @@ function calcOvw(){
   const totalUsd=totalRub/rub;
 
   const tb=$('ovwBody');tb.innerHTML='';
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#FB923C'};
   const ovwRows=[];
 
   for(const[key,base] of Object.entries(MODES)){
