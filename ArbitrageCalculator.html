@@ -1089,16 +1089,18 @@ tr.ovw-row-hidden{display:none !important}
           <th title="Сколько ₽ даёт 1.0 единицы движения цены на 1 лот. Для USDRUBF=1000, GLDRUBF=1, EUR/USD форекс=1000000 (1 пункт × 100K€ × rub/$) и т.п.">₽/пункт × лот</th>
           <th>Дата входа</th>
           <th title="Дней с даты входа (календарных / торговых)">Дн</th>
-          <th title="Накопленный carry в ₽ с даты входа. Форекс/Bitget — впиши daily swap в ₽ вручную в тултипе.">Carry ₽</th>
+          <th title="Маржа этой ноги: USD для Forex/Bitget (notional ÷ leverage), ₽ для МОЕХ (ГО × лоты).">Маржа</th>
+          <th title="σ-buffer этой ноги с учётом ВАРИАНТА А — общий капитал портфеля минус маржа остальных ног. Зелёный ≥2σ, жёлтый ≥1σ, красный <0.5σ.">σ</th>
+          <th title="Накопленный carry в ₽ с даты входа. Включает свопы Forex/Bitget и для MOEX-ног — пропорциональную долю портфельного РЕПО (v0.0.10.j).">Carry ₽</th>
           <th title="PnL в нативной валюте: ₽ для МОЕХ, $ для форекса/Bitget">PnL</th>
-          <th title="PnL + Carry, конвертирован в ₽">NET ₽</th>
+          <th title="PnL + Carry (с учётом доли РЕПО), конвертирован в ₽">NET ₽</th>
           <th style="width:28px"></th>
         </tr></thead>
         <tbody id="pfBody"></tbody>
         <tfoot>
-          <tr class="pf-total"><td colspan="11" style="text-align:right">Gross PnL:</td><td></td><td id="pfFootRub" style="color:var(--green)">0 ₽</td><td></td><td></td></tr>
-          <tr class="pf-total"><td colspan="11" style="text-align:right">Carry:</td><td id="pfFootCarry" style="color:var(--red)">0 ₽</td><td></td><td></td><td></td></tr>
-          <tr class="pf-total"><td colspan="11" style="text-align:right">NET ₽ / $:</td><td></td><td></td><td id="pfFootNet" style="color:var(--green)">0 ₽</td><td id="pfFootUsd" style="color:var(--green)">$0</td></tr>
+          <tr class="pf-total"><td colspan="13" style="text-align:right">Gross PnL:</td><td></td><td id="pfFootRub" style="color:var(--green)">0 ₽</td><td></td><td></td></tr>
+          <tr class="pf-total"><td colspan="13" style="text-align:right">Carry:</td><td id="pfFootCarry" style="color:var(--red)">0 ₽</td><td></td><td></td><td></td></tr>
+          <tr class="pf-total"><td colspan="13" style="text-align:right">NET ₽ / $:</td><td></td><td></td><td id="pfFootNet" style="color:var(--green)">0 ₽</td><td id="pfFootUsd" style="color:var(--green)">$0</td></tr>
         </tfoot>
       </table>
       <div class="pf-export">
@@ -4806,6 +4808,120 @@ function pfCalcPnlNative(leg){
   const mult = pfEffectiveMult(leg);
   return (cur - leg.entry) * dir * leg.lots * mult;
 }
+// v0.0.10.j: маппинг ноги портфеля на запись MODES (для получения IV, dir, fxLev, etc.)
+function pfFindModeForLeg(leg){
+  if(!leg||!leg.ticker) return null;
+  const t = leg.ticker;
+  // Прямой match по fxSymbol
+  for(const k in MODES){if(MODES[k].fxSymbol===t) return MODES[k];}
+  // _xp вариант → strip suffix и нормализуем "EURUSD_xp" → "EURUSD" → MODES где fxSymbol="EUR/USD"
+  const stripped = t.replace(/_xp$/i,'').toUpperCase();
+  for(const k in MODES){
+    const sym = (MODES[k].fxSymbol||'').replace(/\//g,'').toUpperCase();
+    if(sym===stripped) return MODES[k];
+  }
+  // МОЕХ-фьюч: префикс из 2 букв
+  const m = t.match(/^([A-Za-z]{2})([JKMNUZ])(\d)$/);
+  if(m){
+    const prefix = m[1].toUpperCase();
+    const map = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH',BR:'BRENT'};
+    if(map[prefix]) return MODES[map[prefix]];
+  }
+  // Crypto perpetuals
+  if(/USDT$/i.test(t)){
+    if(/BTC/i.test(t)) return MODES.BTC;
+    if(/ETH/i.test(t)) return MODES.ETH;
+  }
+  return null;
+}
+
+// v0.0.10.j: per-leg Forex/Bitget margin in USD.
+// notional USD = lots × mult × price (универсальная формула — проверено на EUR/USD, USD/CNH, EUR/CNH, XAU/USD, BRN/USD, BTC).
+// margin = notional / leverage. Default leverage: 100 для Forex, 20 для Bitget.
+function pfCalcMarginUsd(leg){
+  if(!leg || (leg.venue!=='Forex' && leg.venue!=='Bitget')) return 0;
+  const lots = Math.abs(+leg.lots || 0);
+  if(!lots) return 0;
+  const price = (leg.current && leg.current>0) ? +leg.current : (leg.entry>0 ? +leg.entry : 1);
+  const mult = pfEffectiveMult(leg);
+  const fxLev = (leg.venue==='Bitget') ? 20 : 100;
+  return lots * mult * price / fxLev;
+}
+
+// v0.0.10.j: per-leg buffer + σ (с учётом ВАРИАНТА А — общий капитал портфеля делится между ногами).
+// ctx — { pfFxOwn, pfMxOwn, totalMarginFx, totalGoMx, propLev, mxRisk, stopout, days }
+function pfCalcLegBuffer(leg, ctx){
+  if(!leg) return null;
+  const lots = Math.abs(+leg.lots || 0);
+  if(!lots) return null;
+  const mode = pfFindModeForLeg(leg);
+  // IV дефолты по типу инструмента, если не нашли в MODES
+  const fallbackIv = leg.venue==='Bitget' ? 40 : (mode && mode.iv) || 10;
+  const iv = (mode && mode.iv) ? mode.iv : fallbackIv;
+  const days = ctx.days || 30;
+  const sigPeriod = iv/100 * Math.sqrt(days/365); // decimal
+  if(leg.venue !== 'MOEX'){
+    // Forex/Bitget: buffer считается от ОСТАТОЧНОГО депозита после остальных Forex-ног
+    const ownMargin = pfCalcMarginUsd(leg);
+    const otherMargins = Math.max(0, (ctx.totalMarginFx||0) - ownMargin);
+    const stopout = (ctx.stopout!=null) ? ctx.stopout : (leg.venue==='Bitget' ? 0.95 : 0.5);
+    const available = Math.max(0, (ctx.pfFxOwn||0) - otherMargins);
+    const stopMargin = ownMargin * stopout;
+    const buffer = available - stopMargin;
+    const price = (leg.current && leg.current>0) ? +leg.current : (leg.entry>0 ? +leg.entry : 1);
+    const mult = pfEffectiveMult(leg);
+    const notional = lots * mult * price;
+    if(notional<=0) return null;
+    const bufferPct = buffer / notional * 100;
+    const sigma = sigPeriod>0 ? bufferPct/100 / sigPeriod : 0;
+    return {
+      marginValue: ownMargin, marginUnit:'$',
+      buffer: buffer, bufferUnit:'$',
+      bufferPct, sigma,
+      noMargin: available < ownMargin,
+      iv
+    };
+  } else {
+    // MOEX: pro rata доля общего mxBuffer
+    const ownGo = pfGetGoRub(leg.ticker) * lots;
+    const otherGos = Math.max(0, (ctx.totalGoMx||0) - ownGo);
+    const propLev = ctx.propLev || 5;
+    const mxRisk = (ctx.mxRisk!=null) ? ctx.mxRisk : 0.5;
+    const psk = (ctx.pfMxOwn||0) * propLev;
+    const availablePsk = psk - otherGos;
+    // Pro rata buffer: эта нога получает долю от mxBuffer пропорционально своей марже
+    const totalMxBufferRub = (ctx.pfMxOwn||0) * mxRisk;
+    const legShare = (ctx.totalGoMx||0)>0 ? ownGo / ctx.totalGoMx : 1;
+    const legBufferRub = totalMxBufferRub * legShare;
+    const price = (leg.current && leg.current>0) ? +leg.current : (leg.entry>0 ? +leg.entry : 1);
+    const mult = pfEffectiveMult(leg);
+    const notional = lots * mult * price; // RUB
+    if(notional<=0) return null;
+    const bufferPct = legBufferRub / notional * 100;
+    const sigma = sigPeriod>0 ? bufferPct/100 / sigPeriod : 0;
+    return {
+      marginValue: ownGo, marginUnit:'₽',
+      buffer: legBufferRub, bufferUnit:'₽',
+      bufferPct, sigma,
+      noMargin: availablePsk < ownGo,
+      iv
+    };
+  }
+}
+
+// v0.0.10.j: распределение портфельного РЕПО между MOEX-ногами пропорционально (legGo × legCalDays).
+// repoTotal — общая сумма РЕПО в рублях за период.
+// totalGoMxDaysW — Σ (legGo × legCalDays) по всем MOEX-ногам.
+function pfCalcLegRepoShare(leg, totalGoMxDaysW, repoTotal){
+  if(!leg || leg.venue!=='MOEX' || !repoTotal || !totalGoMxDaysW) return 0;
+  const lots = Math.abs(+leg.lots || 0);
+  if(!lots) return 0;
+  const legGo = pfGetGoRub(leg.ticker) * lots;
+  const {cal} = pfCalcDaysHeld(leg);
+  const weight = legGo * cal;
+  return weight / totalGoMxDaysW * repoTotal;
+}
+
 // v0.0.9: days since entry (calendar + approx trading)
 function pfCalcDaysHeld(leg){
   if(!leg.date) return {cal:0, trade:0};
@@ -4936,6 +5052,35 @@ function pfRender(){
   PF_LEGS.forEach(l=>{(groups[l.strategy]=groups[l.strategy]||[]).push(l);});
   let idx=0, totalRub=0, totalCarry=0;
   const strategies = Object.keys(groups);
+
+  // === v0.0.10.j: pre-pass — собираем общие totals для ВАРИАНТА А (общий капитал) ===
+  const pfMxOwnInput = nv('pfMxOwn') || nv('ovwRub') || 0;
+  const pfFxOwnInput = nv('pfFxOwn') || 0;
+  const pfRepoAnnVal = (+$('pfRepoAnn').value || 21) / 100;
+  // Берём propLev/mxRisk/stopout из общих синхронизированных полей (или дефолты)
+  const ctxPropLev = (+$('inPropLev').value) || 5;
+  const ctxMxRisk = ((+$('inMxRisk').value) || 50) / 100;
+  const ctxStopout = ((+$('inStopout').value) || 50) / 100;
+  let totalMarginFxAll = 0, totalGoMxAll = 0, totalGoMxDaysWAll = 0;
+  for(const leg of PF_LEGS){
+    if(leg.venue==='MOEX'){
+      const go = pfGetGoRub(leg.ticker) * Math.abs(+leg.lots||0);
+      totalGoMxAll += go;
+      const {cal} = pfCalcDaysHeld(leg);
+      totalGoMxDaysWAll += go * cal;
+    } else {
+      totalMarginFxAll += pfCalcMarginUsd(leg);
+    }
+  }
+  const borrowAll = Math.max(0, totalGoMxAll - pfMxOwnInput);
+  const avgDaysAll = totalGoMxAll>0 ? totalGoMxDaysWAll/totalGoMxAll : 0;
+  const repoAccruedTotal = borrowAll * pfRepoAnnVal / 365 * avgDaysAll; // в ₽
+  const ctxBuffer = {
+    pfFxOwn: pfFxOwnInput, pfMxOwn: pfMxOwnInput,
+    totalMarginFx: totalMarginFxAll, totalGoMx: totalGoMxAll,
+    propLev: ctxPropLev, mxRisk: ctxMxRisk, stopout: ctxStopout,
+    days: 30
+  };
   for(const strat of strategies){
     const gLegs = groups[strat];
     let stratRub = 0;
@@ -4946,7 +5091,7 @@ function pfRender(){
     // Group header with editable type/sigma
     const gh = document.createElement('tr');
     gh.className='pf-group-hdr';
-    gh.innerHTML = `<td colspan="13" style="text-transform:none">
+    gh.innerHTML = `<td colspan="15" style="text-transform:none">
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span style="font-size:13px">📂 <b>${escapeHtml(strat)}</b></span>
         <span style="color:var(--tm);font-size:11px">${gLegs.length} ног</span>
@@ -4963,7 +5108,9 @@ function pfRender(){
       const pnlRub = pfCalcPnlRub(leg);
       const pnlNative = pfCalcPnlNative(leg);  // v0.0.10.e: native currency PnL
       const carry = pfCalcCarryRub(leg);
-      const carryRub = carry.totalRub;
+      // v0.0.10.j: для МОЕХ ноги вычитаем её долю портфельного РЕПО из carry
+      const legRepoShare = pfCalcLegRepoShare(leg, totalGoMxDaysWAll, repoAccruedTotal);
+      const carryRub = carry.totalRub - legRepoShare;
       const netRub = pnlRub + carryRub;
       stratRub += pnlRub;
       stratCarry += carryRub;
@@ -4983,6 +5130,36 @@ function pfRender(){
       else if(carry.source === 'manual') carryTitle += '\nРучной swapDaily × '+carry.cal+' дн';
       else if(carry.source === 'zero_fut') carryTitle += '\nКвартальный фьюч — carry в контанго (не вычисляется)';
       else if(carry.source === 'none') carryTitle += '\nНет SWAPRATE — впиши swapDaily вручную (двойной клик на ячейку Carry)';
+      // v0.0.10.j: разбивка carry для МОЕХ
+      if(legRepoShare>1){
+        carryTitle += '\n\n— Базовый swap-carry: '+fm(Math.round(carry.totalRub))+' ₽\n— Доля портфельного РЕПО: −'+fm(Math.round(legRepoShare))+' ₽\n= Итого с РЕПО: '+fm(Math.round(carryRub))+' ₽';
+      }
+      // === v0.0.10.j: Per-leg margin + σ-buffer ===
+      const buf = pfCalcLegBuffer(leg, ctxBuffer);
+      let margStr = '—', sigStr = '—', margColor='var(--tm)', sigColor='var(--tm)', margTitle='';
+      if(buf){
+        const mvK = buf.marginUnit==='₽' ? Math.round(buf.marginValue/1000)+' К₽' : '$'+fm(Math.round(buf.marginValue));
+        margStr = mvK;
+        margColor = buf.noMargin ? 'var(--red)' : 'var(--tw)';
+        margTitle = buf.noMargin
+          ? 'НЕТ ДОСТУПНОЙ МАРЖИ — общий капитал портфеля уже занят остальными ногами!'
+          : (buf.marginUnit==='$'
+              ? 'Forex/Bitget маржа: lots × mult × price ÷ leverage'
+              : 'МОЕХ ГО: pfGetGoRub × lots');
+        const sNum = buf.sigma;
+        sigStr = (sNum>=0?'':'−')+Math.abs(sNum).toFixed(2)+'σ';
+        sigColor = buf.noMargin ? 'var(--red)'
+          : sNum>=2 ? 'var(--green)'
+          : sNum>=1 ? 'var(--yellow)'
+          : sNum>=0.5 ? 'var(--orange)'
+          : 'var(--red)';
+      }
+      const sigTitle = buf
+        ? 'σ-buffer (30 дн): IV='+(buf.iv||0)+'% годовых.\n'
+          +'Buffer = '+(buf.bufferUnit==='$'?'$':'')+fm(Math.round(buf.buffer))+(buf.bufferUnit==='₽'?' ₽':'')
+          +' ('+buf.bufferPct.toFixed(1)+'% от нотионала)\n'
+          +'Депозит распределяется между всеми ногами портфеля (Вариант А).'
+        : 'σ не считается (нет данных)';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="color:var(--tm)">${idx}</td>
@@ -5003,9 +5180,11 @@ function pfRender(){
         <td><input type="number" step="1" value="${pfEffectiveMult(leg)}" onchange="pfUpdateField('${leg.id}','mult',this.value)" title="${leg.ticker==='USD/CNH'||leg.ticker==='EUR/CNH'?'Динамический множитель: 100000 / USDCNH ('+(MODES.UCNY.spot||'?').toFixed(4)+') = '+pfEffectiveMult(leg).toFixed(0)+' $/единицу/лот':'Сколько $ или ₽ даёт 1.0 единицы движения цены на 1 лот'}"></td>
         <td><input type="date" value="${leg.date}" onchange="pfUpdateField('${leg.id}','date',this.value)" style="text-align:center"></td>
         <td style="color:var(--tm);font-size:11px" title="${daysTitle}">${carry.cal||0}к/${carry.trade||0}т</td>
+        <td class="hl" style="color:${margColor};font-size:11px" title="${margTitle}">${margStr}</td>
+        <td class="hl" style="color:${sigColor};font-size:11px" title="${sigTitle}">${sigStr}</td>
         <td class="hl" style="color:${carryColor}" title="${carryTitle}" ondblclick="pfEditSwapDaily('${leg.id}')">${fm(Math.round(carryRub))} ₽</td>
         <td class="hl" style="color:${pnlColor}" title="PnL в нативной валюте ноги">${pnlNativeStr}</td>
-        <td class="hl" style="color:${netColor}" title="PnL+carry, конвертированы в ₽">${fm(Math.round(netRub))} ₽</td>
+        <td class="hl" style="color:${netColor}" title="PnL+carry+доля РЕПО (для МОЕХ), конвертированы в ₽">${fm(Math.round(netRub))} ₽</td>
         <td><button class="pf-del-btn" onclick="pfDeleteLeg('${leg.id}')" title="Удалить ногу">✕</button></td>`;
       tb.appendChild(tr);
     }
@@ -5016,7 +5195,7 @@ function pfRender(){
     const stCarryC = stratCarry>=0?'var(--green)':'var(--red)';
     const stNet = stratRub + stratCarry;
     const stNetC = stNet>=0?'var(--green)':'var(--red)';
-    st.innerHTML = `<td colspan="11" style="text-align:right;color:var(--tm);font-size:11px;background:rgba(139,92,246,.04)">Итого «${escapeHtml(strat)}»:</td>
+    st.innerHTML = `<td colspan="13" style="text-align:right;color:var(--tm);font-size:11px;background:rgba(139,92,246,.04)">Итого «${escapeHtml(strat)}»:</td>
       <td class="hl" style="color:${stCarryC};background:rgba(139,92,246,.04)">${fm(Math.round(stratCarry))} ₽</td>
       <td class="hl" style="color:${stGrossC};background:rgba(139,92,246,.04)">${fm(Math.round(stratRub))} ₽</td>
       <td class="hl" style="color:${stNetC};background:rgba(139,92,246,.04)">${fm(Math.round(stNet))} ₽</td>
@@ -5092,11 +5271,12 @@ function pfRender(){
   }
 
   // v0.0.10.c: Portfolio-level capital summary — MOEX + Forex (PnL split by venue)
+  // v0.0.10.j: + суммарная Forex маржа со всех ног, утилизация vs депозита Forex (ВАРИАНТ А — общий капитал)
   const repoEl = $('pfRepoSummary'); if(repoEl){
     const mxOwnInput = nv('pfMxOwn') || nv('ovwRub') || 0;
     const fxOwnInput = nv('pfFxOwn') || 0; // in USD
     const repoAnn = (+$('pfRepoAnn').value || 21) / 100;
-    let totalGoMx = 0, totalGoMxDaysW = 0;
+    let totalGoMx = 0, totalGoMxDaysW = 0, totalMarginFx = 0;
     let pnlMxRub = 0, pnlFxUsd = 0, carryMxRub = 0, carryFxUsd = 0;
     for(const leg of PF_LEGS){
       const pnlNative = pfCalcPnlNative(leg);
@@ -5106,20 +5286,25 @@ function pfRender(){
         totalGoMx += go;
         const {cal} = pfCalcDaysHeld(leg);
         totalGoMxDaysW += go * cal;
-        // PnL on MOEX is in RUB (currency=RUB)
         pnlMxRub += pnlNative;
         carryMxRub += carry.totalRub;
       } else {
-        // Forex/Bitget — PnL in USD
+        // Forex/Bitget — PnL в USD, плюс суммируем маржу
+        totalMarginFx += pfCalcMarginUsd(leg);
         pnlFxUsd += pnlNative;
-        carryFxUsd += carry.totalNative; // assume same currency
+        carryFxUsd += carry.totalNative;
       }
     }
+    // MOEX (ПСки = mxOwn × propLev; пользователь обычно играет с ПС-кредитом)
     const avgDays = totalGoMx>0 ? totalGoMxDaysW/totalGoMx : 0;
     const borrow = Math.max(0, totalGoMx - mxOwnInput);
     const repoAccrued = borrow * repoAnn / 365 * avgDays;
     const utilPct = mxOwnInput>0 ? (totalGoMx/mxOwnInput*100) : 0;
     const utilClr = utilPct<70?'var(--green)':utilPct<90?'var(--yellow)':'var(--red)';
+    // Forex utilization
+    const fxUtilPct = fxOwnInput>0 ? (totalMarginFx/fxOwnInput*100) : 0;
+    const fxUtilClr = fxUtilPct<50?'var(--green)':fxUtilPct<80?'var(--yellow)':'var(--red)';
+    const fxFreeMargin = Math.max(0, fxOwnInput - totalMarginFx);
     const fxNetUsd = pnlFxUsd + carryFxUsd;
     const fxBalance = fxOwnInput + fxNetUsd;
     const fxBalClr = fxBalance>=fxOwnInput ? 'var(--green)' : (fxBalance>=fxOwnInput*0.5 ? 'var(--yellow)' : 'var(--red)');
@@ -5129,13 +5314,18 @@ function pfRender(){
       +(borrow>0?' · РЕПО (ср. '+avgDays.toFixed(1)+' дн): <b style="color:var(--red)">−'+fm(Math.round(repoAccrued))+' ₽</b>':'')+'</div>'
       +'<div style="margin-top:6px"><b style="color:var(--cyan)">МОЕХ PnL:</b> <b style="color:'+(pnlMxRub>=0?'var(--green)':'var(--red)')+'">'+(pnlMxRub>=0?'+':'')+fm(Math.round(pnlMxRub))+' ₽</b>'
       +' · Carry: <b style="color:'+(carryMxRub>=0?'var(--green)':'var(--red)')+'">'+(carryMxRub>=0?'+':'')+fm(Math.round(carryMxRub))+' ₽</b></div>'
-      +(fxOwnInput>0||pnlFxUsd!==0||carryFxUsd!==0?
-        '<div style="margin-top:6px"><b style="color:var(--orange)">Forex/Bitget:</b> депозит $'+fm(Math.round(fxOwnInput))
-        +' · PnL <b style="color:'+(pnlFxUsd>=0?'var(--green)':'var(--red)')+'">'+(pnlFxUsd>=0?'+':'')+'$'+fm(Math.round(pnlFxUsd))+'</b>'
+      +(fxOwnInput>0||totalMarginFx>0||pnlFxUsd!==0||carryFxUsd!==0?
+        '<div style="margin-top:6px"><b style="color:var(--orange)">Forex/Bitget:</b> Σ маржа $'+fm(Math.round(totalMarginFx))
+        +' · депозит $'+fm(Math.round(fxOwnInput))
+        +(fxOwnInput>0?' · использовано <b style="color:'+fxUtilClr+'">'+fxUtilPct.toFixed(0)+'%</b>':'')
+        +(fxOwnInput>0?' · свободно <b style="color:'+(fxFreeMargin>fxOwnInput*0.2?'var(--green)':'var(--orange)')+'">$'+fm(Math.round(fxFreeMargin))+'</b>':'')
+        +'</div>'
+        +'<div style="margin-top:4px;padding-left:14px"><b style="color:var(--orange)">PnL:</b> <b style="color:'+(pnlFxUsd>=0?'var(--green)':'var(--red)')+'">'+(pnlFxUsd>=0?'+':'')+'$'+fm(Math.round(pnlFxUsd))+'</b>'
         +' · Carry: <b style="color:'+(carryFxUsd>=0?'var(--green)':'var(--red)')+'">'+(carryFxUsd>=0?'+':'')+'$'+fm(Math.round(carryFxUsd))+'</b>'
-        +' · баланс ≈ <b style="color:'+fxBalClr+'">$'+fm(Math.round(fxBalance))+'</b></div>'
+        +(fxOwnInput>0?' · баланс ≈ <b style="color:'+fxBalClr+'">$'+fm(Math.round(fxBalance))+'</b>':'')
+        +'</div>'
         :'')
-      +'<div style="color:var(--tm);font-size:11px;margin-top:4px">РЕПО на МОЕХ считается по средневзвешенному времени держания × заём × ставка. Forex PnL хранится в USD, в общий NET идёт по курсу из обзора.</div>';
+      +'<div style="color:var(--tm);font-size:11px;margin-top:4px">Σ маржа Forex = Σ (lots × mult × price / leverage). При утилизации >80% доступного депозита — нет места под новые ноги без увеличения плеча или капитала.</div>';
   }
 
   // v0.0.9: Alerts panel — warnings about concentration, margin, carry drain
@@ -5157,6 +5347,16 @@ function pfRender(){
         out.push({lvl:'crit', text:`ГО использовано на ${utilPct.toFixed(0)}% депозита МОЕХ. При любом движении против — быстрый стоп-аут. Снизь размер позиций.`});
       } else if(mxOwnInput>0 && utilPct > 70){
         out.push({lvl:'warn', text:`ГО использовано на ${utilPct.toFixed(0)}%. Комфортный уровень ≤70%.`});
+      }
+      // 2b. Forex leverage (v0.0.10.j)
+      const fxOwnInput = nv('pfFxOwn') || 0;
+      let totalMarginFx = 0;
+      for(const leg of PF_LEGS){ if(leg.venue!=='MOEX') totalMarginFx += pfCalcMarginUsd(leg); }
+      const fxUtilPct = fxOwnInput>0 ? (totalMarginFx/fxOwnInput*100) : 0;
+      if(fxOwnInput>0 && fxUtilPct > 80){
+        out.push({lvl:'crit', text:`Маржа Forex использована на ${fxUtilPct.toFixed(0)}% депозита ($${fm(Math.round(totalMarginFx))} из $${fm(Math.round(fxOwnInput))}). Нового места почти нет, малейшее движение — margin call.`});
+      } else if(fxOwnInput>0 && fxUtilPct > 50){
+        out.push({lvl:'warn', text:`Маржа Forex ${fxUtilPct.toFixed(0)}% депозита. Помни про общий пул — это сумма по всем форексным ногам, не по одной.`});
       }
       // 3. VaR vs capital
       if(stats.var2s10d > 0 && mxOwnInput>0 && stats.var2s10d > mxOwnInput*0.5){
