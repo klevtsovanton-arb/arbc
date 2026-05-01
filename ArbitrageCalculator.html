@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.j</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.k</p>
     </div>
   </div>
 
@@ -1372,10 +1372,9 @@ const OVW_PRESET={};
 function applyOvwPresetToTab(presetKey, prefix, lotsFieldId){
   const p=OVW_PRESET[presetKey];
   if(!p)return;
-  const fxCapId = (prefix==='in')?'inFxCap':(prefix+'FxCap');
-  const mxOwnId = (prefix==='in')?'inMxOwn':(prefix+'MxOwn');
-  if($(fxCapId))setNum(fxCapId, p.fxCap);
-  if($(mxOwnId))setNum(mxOwnId, p.mxOwn);
+  // ⚠ v0.0.10.k: НЕ перезаписываем fxCap/mxOwn пресетом из обзора —
+  // это ломало общий синхронизированный капитал между вкладками. Подменяем только лоты,
+  // pay/stopout (это специфика инструмента, не общий капитал).
   // Pull pay/stopout from overview settings
   const ovwPay = +$('ovwPay').value;
   const ovwStop = +$('ovwStop').value;
@@ -1517,10 +1516,13 @@ const MODES={
       M:{moexTicker:'EHM6',exp:'2026-06-26',fut:2379,go:722},
       N:{moexTicker:'EHN6',exp:'2026-07-31',fut:2447.3,go:751}
     }},
-  // Brent: cTrader BRNUSD_xp (1 lot = 10000 bbl per cTrader API) vs MOEX BR (10 bbl/contract).
-  // Все числовые поля (lotSize, pipPosition, swap, spot, fxSpread) подтягиваются live из cTrader,
-  // дефолты ниже — только пока кэш не прогрет / нет связи. ГО/цены фьючей подтянутся из MOEX ISS.
-  BRENT:{label:'Brent',pipSz:.01,pipVal:100,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:10000,fxLev:20,dir:'cont',
+  // Brent: cTrader BRNUSD_xp UI = 1000 bbl/lot, $9.94/pip (НЕ 10000 как возвращает API!).
+  // ⚠ cTrader API для нефти у xpbee возвращает lotSize=10000 (видимо в "0.1-bbl" единицах) —
+  //   мы это значение НЕ принимаем, используем правильное 1000. См. fetchPrices ниже:
+  //   подмена cSize/pipVal через cTrader API для BRENT отключена.
+  // Сейчас на МОЕХ беквордация (фьюч 111 < спот 116) → dir:'back' (SHORT Forex × LONG MOEX).
+  // Если развернётся в контанго — переключи dir:'cont' вручную в этом MODES.
+  BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
     lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:114.7,fxSpread:0.036,fxSymbol:'BRN/USD',
     contracts:{
       K:{moexTicker:'BRK6',exp:'2026-04-30',fut:114.8,go:11000},
@@ -1930,6 +1932,8 @@ function switchTo(m){
   // v0.0.6: apply overview preset (capital, days, lots) for this instrument+contract
   applyOvwPresetToTab(m+'_'+currentContract, 'in', 'inLots');
   autoLotMode=false; // respect the preset lot size
+  // v0.0.10.k: после любых подмен — восстанавливаем синхронизированный капитал из localStorage
+  if(typeof loadSharedCap==='function') loadSharedCap();
   adaptSlider();
   calc();
 }
@@ -5746,15 +5750,10 @@ async function fetchPrices(){
       // Swap (нативный знак из cTrader, в пипах/день)
       if(m.dir==='back'&&sym.swapShort!=null) m.swap=sym.swapShort;
       else if(m.dir==='cont'&&sym.swapLong!=null) m.swap=sym.swapLong;
-      // Lot size и pip position
-      if(sym.lotSize) m.cSize=+sym.lotSize;
-      if(sym.pipPosition!=null){
-        m.pipSz=Math.pow(10,-sym.pipPosition);
-        m.stepSz=m.pipSz; // shag MOEX обычно совпадает
-      }
-      // pipVal: для обычных пар = cSize × pipSz; для quote≠USD (CNH-пары) — pipValForeign:true и pipVal/spot.
-      // Не трогаем pipVal если уже задано pipValForeign — старая логика работает.
-      if(!m.pipValForeign) m.pipVal=m.cSize*m.pipSz;
+      // ⚠ v0.0.10.k: lotSize/pipPosition/pipVal через API НЕ подменяем.
+      // Причина: для нефти у xpbee API возвращает lotSize=10000 (хотя UI говорит 1000),
+      // что раздувало cSize и pipVal в 10×. Захардкоженные значения в MODES уже корректны
+      // для всех пар. Если позже надо — добавим whitelist, какие инструменты можно подменять.
       // Цены
       if(ctPrices&&ctPrices[ctName]){
         const p=ctPrices[ctName];
