@@ -185,7 +185,7 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPall"      data-cat="METAL"  onclick="switchTo('PALL')">Palladium</button>
       <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
       <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
-      <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="showStub('BRENT')" style="font-size:12px">🛢 Brent</button>
+      <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="switchTo('BRENT')" style="font-size:12px">🛢 Brent</button>
       <button class="tab" id="tabGas"       data-cat="COMM"   onclick="showStub('GAS')" style="font-size:12px">🔥 Gas</button>
       <button class="tab" id="tabCopper"    data-cat="COMM"   onclick="showStub('COPPER')" style="font-size:12px">🟠 Copper</button>
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
@@ -205,7 +205,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.i</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.j</p>
     </div>
   </div>
 
@@ -1323,14 +1323,15 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 
 let mode='EURUSD';
 let currentContract='M'; // M=Июн, U=Сен, Z=Дек
-const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25};
-const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
+const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
+const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',BRENT:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
   EURUSD:'currency', UCNY:'currency',
   GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
   BTC:'crypto', ETH:'crypto',
+  BRENT:'commodity',
   TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple',
   PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple',
   PERP_GLD_MX:'gold_triple'
@@ -1513,6 +1514,16 @@ const MODES={
       K:{moexTicker:'EHK6',exp:'2026-05-29',fut:2353.9,go:717},
       M:{moexTicker:'EHM6',exp:'2026-06-26',fut:2379,go:722},
       N:{moexTicker:'EHN6',exp:'2026-07-31',fut:2447.3,go:751}
+    }},
+  // Brent: cTrader BRNUSD_xp (1 lot = 10000 bbl per cTrader API) vs MOEX BR (10 bbl/contract).
+  // Все числовые поля (lotSize, pipPosition, swap, spot, fxSpread) подтягиваются live из cTrader,
+  // дефолты ниже — только пока кэш не прогрет / нет связи. ГО/цены фьючей подтянутся из MOEX ISS.
+  BRENT:{label:'Brent',pipSz:.01,pipVal:100,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:10000,fxLev:20,dir:'cont',
+    lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:114.7,fxSpread:0.036,fxSymbol:'BRN/USD',
+    contracts:{
+      K:{moexTicker:'BRK6',exp:'2026-04-30',fut:114.8,go:11000},
+      M:{moexTicker:'BRM6',exp:'2026-05-29',fut:115.5,go:11000},
+      N:{moexTicker:'BRN6',exp:'2026-06-30',fut:116.0,go:11000}
     }}
 };
 
@@ -1651,18 +1662,35 @@ document.addEventListener('DOMContentLoaded', injectCapSpins);
 // Also try immediately in case DOMContentLoaded already fired
 if(document.readyState!=='loading') injectCapSpins();
 
-// === Shared capital across ALL tabs ===
-// NOTE: ovwRub/ovwUsd intentionally NOT in sync groups — those are "total capital"
-// in Overview (explore hypothetical totals), while inFxCap/inMxOwn are actual per-side
-// capital that IS shared across instrument+triple tabs.
+// v0.0.10.j: загрузить сохранённый капитал из localStorage и подставить во все синхронизированные поля
+function loadSharedCap(){
+  let stored={};
+  try{stored=JSON.parse(localStorage.getItem(CAP_LS_KEY)||'{}');}catch(_){return;}
+  for(const key in SHARED_CAP_GROUPS){
+    if(stored[key]==null)continue;
+    const val=+stored[key]; if(!isFinite(val))continue;
+    for(const tid of SHARED_CAP_GROUPS[key]){
+      const el=$(tid); if(!el)continue;
+      el.value=CAP_FORMATTED.has(tid)?fmtInt(val):val;
+    }
+  }
+}
+document.addEventListener('DOMContentLoaded', loadSharedCap);
+if(document.readyState!=='loading') loadSharedCap();
+
+// === Shared capital across ALL instrument tabs ===
+// v0.0.10.j: Обзор (ovw*) и Мои позиции (pf*) ИСКЛЮЧЕНЫ из синхронизации — у них своя семантика.
+// Все остальные вкладки (инструменты + тройнички + перпы + золотой триплет) делят одни поля капитала.
+// Значения персистятся в localStorage и подтягиваются при загрузке страницы.
 const SHARED_CAP_GROUPS={
   fxCap:  ['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap'],
   mxOwn:  ['inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','gmMxOwn'],
-  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','puPropLev','pePropLev','prPropLev','gmPropLev','ovwProp'],
-  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','puMxRisk','peMxRisk','prMxRisk','gmMxRisk','ovwRisk'],
+  propLev:['inPropLev','trPropLev','tePropLev','tuPropLev','puPropLev','pePropLev','prPropLev','gmPropLev'],
+  mxRisk: ['inMxRisk','trMxRisk','teMxRisk','tuMxRisk','puMxRisk','peMxRisk','prMxRisk','gmMxRisk'],
   // stopout intentionally NOT synced (crypto vs forex semantics differ)
-  repoAnn:['inRepo','trRepo','teRepo','tuRepo','puRepo','peRepo','prRepo','gmRepo','ovwRepo']
+  repoAnn:['inRepo','trRepo','teRepo','tuRepo','puRepo','peRepo','prRepo','gmRepo']
 };
+const CAP_LS_KEY='sharedCapValues';
 const CAP_FORMATTED=new Set(['inFxCap','trFxCap','teFxCap','tuFxCap','puFxCap','peFxCap','prFxCap','inMxOwn','trMxOwn','teMxOwn','tuMxOwn','puMxOwn','peMxOwn','prMxOwn','gmMxOwn','inGO','ovwRub','trGoSi','trGoCr','teGoEu','teGoCr','tuGoEu','tuGoSi','puGoL1','puGoL2','peGoL1','peGoL2','prGoL1','prGoL2','gmGoGold','gmGoSi','gmGoGd']);
 function syncCap(srcId){
   let key=null;
@@ -1675,6 +1703,12 @@ function syncCap(srcId){
     if(CAP_FORMATTED.has(tid))tel.value=fmtInt(val);
     else tel.value=val;
   }
+  // v0.0.10.j: persist в localStorage чтобы значение пережило перезагрузку страницы
+  try{
+    const stored=JSON.parse(localStorage.getItem(CAP_LS_KEY)||'{}');
+    stored[key]=val;
+    localStorage.setItem(CAP_LS_KEY,JSON.stringify(stored));
+  }catch(_){}
   // After sync, re-render any dependent calc on the currently-visible tab
   if(mode==='OVW')calcOvw();
   else if(mode==='TRIPLE')calcTriple();
@@ -1871,7 +1905,7 @@ function switchTo(m){
     $('contractPills').style.display='';
     const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';
   }
-  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH'};
+  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH',BRENT:'tabBrent'};
   $(tabMap[m]).className='tab on';$(tabMap[m]).style.background=colMap[m];
   $('inSpot').value=p.spot;$('inFut').value=p.fut;$('inDays').value=daysToExp(p.exp);$('inIV').value=p.iv;
   $('inSwap').value=p.isCrypto?((p.fundingRate||0)*100).toFixed(4):p.swap;
@@ -1967,7 +2001,7 @@ function switchContract(c){
 }
 
 function updateContractPills(overrideColor){
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#D97706'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
   ['M','U','Z'].forEach(k=>{
@@ -2123,7 +2157,7 @@ function calc(){
   const isFxPair=(mode==='EURUSD'||mode==='UCNY');
   const isCrypto=!!p.isCrypto;
   const isOz=!isFxPair&&!isCrypto;
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
   const ac=colMap[mode]||'var(--cyan)';
 
   // Spread
@@ -2539,7 +2573,7 @@ function calcOvw(){
   const totalUsd=totalRub/rub;
 
   const tb=$('ovwBody');tb.innerHTML='';
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BRENT:'#D97706'};
   const ovwRows=[];
 
   for(const[key,base] of Object.entries(MODES)){
@@ -4531,6 +4565,7 @@ const PF_SPECS = {
   'PD': {venue:'MOEX', mult:77,    currency:'RUB'}, // Palladium
   'BT': {venue:'MOEX', mult:0.07524,currency:'RUB'},// BTC fut: stepPr=0.07524 на step 1
   'EH': {venue:'MOEX', mult:0.7524, currency:'RUB'},// ETH fut: stepPr=0.07524 на step 0.1
+  'BR': {venue:'MOEX', mult:8,      currency:'RUB'},// Brent: 1 контракт=10 bbl, шаг 0.01$ ≈ 8₽ (stepPr подтягивается из ISS)
   // Forex (PnL natively in USD; we'll multiply by rub-rate for ₽ display)
   'EUR/USD': {venue:'Forex', mult:100000, currency:'USD'}, // 100K€ × 1$/€ per 1.0 price-unit
   'USD/CNH': {venue:'Forex', mult:14600,  currency:'USD'}, // approx via CNH→$ at ~6.85 (100K$ / USDCNH)
@@ -4539,6 +4574,7 @@ const PF_SPECS = {
   'XAG/USD': {venue:'Forex', mult:5000,   currency:'USD'},
   'XPT/USD': {venue:'Forex', mult:100,    currency:'USD'},
   'XPD/USD': {venue:'Forex', mult:100,    currency:'USD'},
+  'BRN/USD': {venue:'Forex', mult:10000,  currency:'USD'}, // Brent на cTrader: lotSize 10000 × pip 0.01 = $100/pip-of-price/lot
   // Bitget perpetuals (PnL in USD)
   'BTCUSDT': {venue:'Bitget',mult:1, currency:'USD'},
   'ETHUSDT': {venue:'Bitget',mult:1, currency:'USD'}
@@ -4731,7 +4767,7 @@ function pfGetLivePrice(ticker){
     if(prefix==='SI')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).si||null;
     if(prefix==='CR')return (TRIPLE_DATA.TRIPLE.contracts[c]||{}).cr||null;
     if(prefix==='EU')return (TRIPLE_DATA.TRIPLE_EU.contracts[c]||{}).eu||null;
-    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH',BR:'BRENT'};
     const k = modeMap[prefix];
     if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
       return MODES[k].contracts[c].fut;
@@ -4790,7 +4826,7 @@ function pfGetGoRub(ticker){
     if(prefix==='SI'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.siGo:0;}
     if(prefix==='CR'){const t=TRIPLE_DATA.TRIPLE.contracts[c]; return t?t.crGo:0;}
     if(prefix==='EU'){const t=TRIPLE_DATA.TRIPLE_EU.contracts[c]; return t?t.euGo:0;}
-    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH'};
+    const modeMap = {ED:'EURUSD',UC:'UCNY',GD:'GOLD',SV:'SILVER',PT:'PLAT',PD:'PALL',BT:'BTC',EH:'ETH',BR:'BRENT'};
     const k = modeMap[prefix];
     if(k && MODES[k] && MODES[k].contracts && MODES[k].contracts[c]){
       return MODES[k].contracts[c].go || 0;
@@ -5349,7 +5385,7 @@ async function fetchPrices(){
   let mxOk=0,details=[];
 
   // === v0.0.10.h: cTrader запускаем СРАЗУ параллельно с MOEX/FX (это самый медленный источник) ===
-  const CTRADER_MAP={EURUSD:'EURUSD_xp',UCNY:'USDCNH_xp',GOLD:'XAUUSD_xp',SILVER:'XAGUSD_xp',PLAT:'XPTUSD_xp',PALL:'XPDUSD_xp'};
+  const CTRADER_MAP={EURUSD:'EURUSD_xp',UCNY:'USDCNH_xp',GOLD:'XAUUSD_xp',SILVER:'XAGUSD_xp',PLAT:'XPTUSD_xp',PALL:'XPDUSD_xp',BRENT:'BRNUSD_xp'};
   const CT_BASE='https://arb-moex-proxy.klevtsov-anton.workers.dev';
   const ctPromise=(async()=>{
     let symbols=null,prices=null;
