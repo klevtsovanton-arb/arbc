@@ -1533,8 +1533,9 @@ const MODES={
   // никаких отдельных множителей для свопа не нужно (как и для золота).
   BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
     lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:114.7,fxSpread:0.036,fxSymbol:'BRN/USD',
+    // BRK6 (май-26) экспирировался — убран. Если появится новый ближний контракт (например, BRN6),
+    // добавь сюда K-ключ заново.
     contracts:{
-      K:{moexTicker:'BRK6',exp:'2026-04-30',fut:114.8,go:11000},
       M:{moexTicker:'BRM6',exp:'2026-05-29',fut:115.5,go:11000},
       N:{moexTicker:'BRN6',exp:'2026-06-30',fut:116.0,go:11000}
     }}
