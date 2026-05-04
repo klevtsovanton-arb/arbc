@@ -1746,6 +1746,8 @@ function switchTo(m){
 
   if(m==='OVW'){
     mode='OVW';
+    // v0.0.10.k: если пользователь явно не кликал сортировку — всегда показываем по «Год.» (annBest desc)
+    if(!ovwSortUserChosen){ ovwSortKey='annBest'; ovwSortDir='desc'; }
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
     $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
     $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
@@ -2600,8 +2602,9 @@ function ovwSyncFromRub(){
 }
 
 // === Обзор sort state ===
-let ovwSortKey='annBest', ovwSortDir='desc';
+let ovwSortKey='annBest', ovwSortDir='desc', ovwSortUserChosen=false;
 function sortOvw(key){
+  ovwSortUserChosen=true;
   if(ovwSortKey===key) ovwSortDir = ovwSortDir==='desc' ? 'asc' : 'desc';
   else { ovwSortKey=key; ovwSortDir='desc'; }
   renderOvwSort();
