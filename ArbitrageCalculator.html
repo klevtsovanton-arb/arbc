@@ -2600,7 +2600,7 @@ function ovwSyncFromRub(){
 }
 
 // === Обзор sort state ===
-let ovwSortKey='netBest', ovwSortDir='desc';
+let ovwSortKey='annBest', ovwSortDir='desc';
 function sortOvw(key){
   if(ovwSortKey===key) ovwSortDir = ovwSortDir==='desc' ? 'asc' : 'desc';
   else { ovwSortKey=key; ovwSortDir='desc'; }
