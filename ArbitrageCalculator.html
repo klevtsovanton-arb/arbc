@@ -203,7 +203,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.k</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.l</p>
     </div>
   </div>
 
@@ -2311,7 +2311,9 @@ function calc(){
   const fxSpreadRaw=fxSpread*lots*p.cSize;
   const fxSpreadCost=p.pipValForeign?fxSpreadRaw/spot:fxSpreadRaw;
   const cm=lots*p.comm;
-  const net=p.isCrypto?(gross+swT-repoT-cm-fxSpreadCost):(p.dir==='back'?gross+swT-repoT-cm-fxSpreadCost:gross-Math.abs(swT)-repoT-cm-fxSpreadCost);
+  // v0.0.10.l: swT уже несёт правильный знак (swapLong/swapShort выбран по dir на 2186-2196).
+  // Раньше для контанго делали -Math.abs(swT) — превращало carry в расход, даже когда форекс платил нам. Баг.
+  const net=p.isCrypto?(gross+swT-repoT-cm-fxSpreadCost):(gross+swT-repoT-cm-fxSpreadCost);
   const totCap=fxCap+mxOwn/rub;
   const roi=net/totCap*100;
 
@@ -2324,7 +2326,8 @@ function calc(){
 
   // Worst P&L: all on MOEX + payout
   const payW=gross>0?gross*(+$('inPayout').value/100):0;
-  const swCost=p.isCrypto?swT:(p.dir==='back'?swT:-Math.abs(swT));
+  // v0.0.10.l: swT уже со знаком (carry по активной стороне). НЕ инвертируем.
+  const swCost=swT;
   const costsW=swCost-repoT-cm-fxSpreadCost;
   const netW=gross+costsW-payW;
   $('plGrossW').textContent='+$'+fm(gross,0);$('plGrossW').style.color='var(--green)';
@@ -2349,7 +2352,8 @@ function calc(){
     const rSig=sigP>0?rFxPct/100/sigP:0;
     const rSc=rSig>=1?'var(--green)':rSig>=.5?'var(--yellow)':'var(--red)';
     const rGoT=cn*go,rBor=Math.max(0,rGoT-nMx),rRepoN=rBor*repoAnn/365,rRepoT=rRepoN*days/rub;
-    const rNet=p.dir==='back'?gross+swT-rRepoT-cm:gross-Math.abs(swT)-rRepoT-cm;
+    // v0.0.10.l: swT — co-signed carry; всегда складываем.
+    const rNet=gross+swT-rRepoT-cm;
     const rTot=nFx+nMx/rub,rRoi=rNet/rTot*100;
     const repoSave=repoT-rRepoT;
     $('rebTitle').textContent='⚖ РЕБАЛАНС → докинуть на МОЕХ';
@@ -2371,7 +2375,8 @@ function calc(){
     const rSig=sigP>0?rMinPct/100/sigP:0;
     const rSc=rSig>=1?'var(--green)':rSig>=.5?'var(--yellow)':'var(--red)';
     const rGoT=cn*go,rBor=Math.max(0,rGoT-nMx),rRepoN=rBor*repoAnn/365,rRepoT=rRepoN*days/rub;
-    const rNet=p.dir==='back'?gross+swT-rRepoT-cm:gross-Math.abs(swT)-rRepoT-cm;
+    // v0.0.10.l: swT — co-signed carry; всегда складываем.
+    const rNet=gross+swT-rRepoT-cm;
     const rTot=nFx+nMx/rub,rRoi=rNet/rTot*100;
     const repoPenalty=rRepoT-repoT;
     $('rebTitle').textContent='⚖ РЕБАЛАНС → вывести с МОЕХ';
@@ -2554,7 +2559,8 @@ function calc(){
       // Net with payout
       const sMxRub=sc.mxPnl*rub;
       const sPayUsd=sc.mxPnl>0?sMxRub*payoutPct/rub:0;
-      const sCosts=p.dir==='back'?sSwT:(-Math.abs(sSwT));
+      // v0.0.10.l: sSwT уже со знаком (carry). НЕ инвертируем.
+      const sCosts=sSwT;
       const sNet=sc.fxPnl+sc.mxPnl+sCosts-sRepoT-sCm-sFxSC-sPayUsd;
       const sRoi=sNet/totCap*100;
 
@@ -2733,7 +2739,8 @@ function calcOvw(){
       const repoT=bor*repoAnn/365*days/rub;
       const cm=sl*p.comm;
       const fxSC=p.pipValForeign?p.fxSpread*sl*p.cSize/spot:p.fxSpread*sl*p.cSize;
-      const swCost=p.isCrypto?swT:(p.dir==='back'?swT:-Math.abs(swT));
+      // v0.0.10.l: swT — co-signed carry, всегда складываем.
+      const swCost=swT;
       const netBest=grossBestUsd+swCost-repoT-cm-fxSC;
 
       // P&L: Worst scenario (drawdown + payout)
