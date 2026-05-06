@@ -203,7 +203,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.l</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.n</p>
     </div>
   </div>
 
@@ -255,7 +255,6 @@ tr.ovw-row-hidden{display:none !important}
         <label><input type="checkbox" data-cat="gold_triple"     checked onchange="applyOvwFilter()"> 🥇 Золото-тройничок</label>
         <label><input type="checkbox" data-cat="metal"           checked onchange="applyOvwFilter()"> 🥇 Металлы</label>
         <label><input type="checkbox" data-cat="crypto"          checked onchange="applyOvwFilter()"> ₿ Крипта</label>
-        <label><input type="checkbox" data-cat="commodity"       checked onchange="applyOvwFilter()"> 🛢 Сырьё</label>
       </div>
       <div style="font-size:11px;color:var(--tm);margin-bottom:8px;line-height:1.5;">
         <span style="color:var(--green);font-weight:800">✓ NET</span> — все колонки «Лучший/Худший NET», «ROI», «Год.» уже <b>за вычетом свопов, РЕПО, комиссий и FX-спреда</b>. Наведи курсор на NET-ячейку → покажет расклад затрат.
@@ -2111,23 +2110,27 @@ function adaptSlider(){
   mx=Math.max(mx,0.1);
   mx=Math.min(mx,5000);
   // Instrument-specific step
+  // v0.0.10.m: low-bank friendly — расширили 0.01-зону для всех инструментов,
+  // чтоб с маленькими депозитами можно было крутить ползунок крошками.
   let step;
   if(mode==='BTC'||mode==='ETH'){
     if(mode==='BTC'){
       // Для BTC даже 0.01 BTC ≈ $760 notional — заметный размер
       if(mx<=0.3)step=0.01;else if(mx<=1)step=0.02;else if(mx<=3)step=0.05;else if(mx<=10)step=0.1;else step=0.25;
     } else {
-      // ETH: 0.1 ETH ≈ $230 — очень чувствительно
-      if(mx<=2)step=0.1;else if(mx<=10)step=0.25;else if(mx<=30)step=0.5;else if(mx<=100)step=1;else step=2;
+      // ETH: 0.01 ETH ≈ $23 — для совсем мелких депо
+      if(mx<=0.5)step=0.01;else if(mx<=2)step=0.05;else if(mx<=10)step=0.1;else if(mx<=30)step=0.5;else if(mx<=100)step=1;else step=2;
     }
   } else if(mode==='GOLD'){
-    if(mx<=3)step=0.01;else if(mx<=10)step=0.1;else if(mx<=20)step=0.5;else if(mx<=50)step=1;else if(mx<=200)step=5;else step=10;
+    // v0.0.10.m: 0.01 для mx≤2 (раньше было mx≤3 c шагом 0.01 — но дальше резко 0.1, теперь плавнее)
+    if(mx<=2)step=0.01;else if(mx<=10)step=0.05;else if(mx<=30)step=0.1;else if(mx<=100)step=0.5;else if(mx<=300)step=1;else step=5;
   } else if(mode==='PLAT'||mode==='PALL'){
-    if(mx<=1)step=0.01;else if(mx<=5)step=0.1;else if(mx<=20)step=0.5;else if(mx<=50)step=1;else if(mx<=200)step=5;else step=10;
+    if(mx<=2)step=0.01;else if(mx<=10)step=0.05;else if(mx<=30)step=0.1;else if(mx<=100)step=0.5;else if(mx<=300)step=1;else step=5;
   } else if(mode==='SILVER'){
-    if(mx<=0.5)step=0.01;else if(mx<=2)step=0.05;else if(mx<=10)step=0.5;else if(mx<=50)step=1;else step=5;
+    if(mx<=2)step=0.01;else if(mx<=10)step=0.05;else if(mx<=30)step=0.1;else if(mx<=100)step=0.5;else if(mx<=300)step=1;else step=5;
   } else {
-    if(mx<=10)step=0.1;else if(mx<=30)step=0.5;else if(mx<=100)step=1;else if(mx<=300)step=5;else step=10;
+    // Валюты/Brent — тоже пускаем 0.01 для крошек
+    if(mx<=2)step=0.01;else if(mx<=10)step=0.05;else if(mx<=30)step=0.1;else if(mx<=100)step=0.5;else if(mx<=300)step=1;else step=5;
   }
   mx=Math.round(mx/step)*step;
   if(mx<step)mx=step;
