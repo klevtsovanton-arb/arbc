@@ -927,6 +927,8 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>Дней в квартале</label><input id="gmQdays" type="number" step="1" value="92" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
           <div class="row"><label>Ставка ЦБ</label><input id="gmCbr" type="number" step="0.5" value="16" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
           <div class="row"><label>Дней удержания</label><input id="gmDays" type="number" step="1" value="5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
+          <div class="row"><label title="Множитель скорости схождения базиса. 1.0 = чистая теоретическая time-decay (медленно). Реальное схождение обычно быстрее за счёт mean-reversion: ставь 1.5-2.0.">Коэф. схождения</label><input id="gmDriftK" type="number" step="0.1" value="1.5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">×</div></div>
+          <div class="row"><label title="Доля торг. дней в которые реально начисляется фандинг (учёт пропусков, тройных пятниц, праздников). По умолчанию 0.65 = слегка консервативно.">Доля fund-дней</label><input id="gmFundK" type="number" step="0.05" value="0.65" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">×</div></div>
           <div class="row"><label>IV спреда</label><input id="gmIV" type="number" step="0.5" value="7.5" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
           <div class="sep"></div>
           <button onclick="fetchPrices()" id="btnFetchGm" style="width:100%;padding:10px;border-radius:8px;border:2px solid var(--cyan);background:rgba(0,180,216,.1);color:var(--cyan);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:4px">🔄 ОБНОВИТЬ ЦЕНЫ</button>
@@ -2272,16 +2274,24 @@ function calc(){
   const minPct=Math.min(fxPct,mxPct);
   const bind=fxPct<mxPct?(isCrypto?'Bitget':'Forex'):'МОЕХ';
 
+  // v0.0.10.l: показываем буфер в $/oz (или пипсах для FX) + общую сумму потерь до margin call в $.
+  // Это убирает иллюзию «28% запас при $5300 = много» — на самом деле потеря ДО margin call ~$5206
+  // (т.е. почти весь капитал) при микро-позиции.
+  const fxBufTotalUsd = fxB$;
+  const mxBufTotalRub = mxBR;
+  const mxBufTotalUsd = mxBufTotalRub / rub;
   if(isCrypto){
-    // For crypto: buffer = $ price move per 1 BTC/ETH until liquidation. No "/oz" confusion.
     $('bFx').textContent='$'+fm(Math.round(fxB$/(lots*p.cSize)));
     $('bMx').textContent='$'+fm(Math.round(mxBR/rub/(lots*p.cSize)));
   } else {
     $('bFx').textContent=isOz?'$'+fm(Math.round(fxB$/(lots*p.cSize)))+'/oz':fm(fxPips)+' п.';
     $('bMx').textContent=isOz?'$'+fm(Math.round(mxBR/rub/(lots*p.cSize)))+'/oz':fm(mxPips)+' п.';
   }
-  $('bFxP').textContent=fxPct.toFixed(1)+'%';
-  $('bMxP').textContent=mxPct.toFixed(1)+'%';
+  // % от капитала Forex, чтобы было ясно сколько от $ депозита под угрозой
+  const fxPctOfCap = fxCap>0 ? (fxBufTotalUsd/fxCap*100) : 0;
+  const mxPctOfCap = mxOwn>0 ? (mxBufTotalRub/mxOwn*100) : 0;
+  $('bFxP').textContent = fxPct.toFixed(1)+'% движ. · ' + fxPctOfCap.toFixed(0) + '% капитала ($'+fm(Math.round(fxBufTotalUsd))+')';
+  $('bMxP').textContent = mxPct.toFixed(1)+'% движ. · ' + mxPctOfCap.toFixed(0) + '% капитала ('+fm(Math.round(mxBufTotalRub/1000))+'К₽)';
   $('outBind').textContent=bind;
 
   // Sigma
@@ -4288,15 +4298,23 @@ function calcGldMx(){
   const repoAnn=+$('gmRepo').value/100, payoutPct=+$('gmPayout').value/100;
   const comm=+$('gmComm').value;
 
+  // v0.0.10.l: drift и fund-days настраиваются пользователем
+  const driftK = Math.max(0.1, +$('gmDriftK').value || 1.5);
+  const fundK  = Math.max(0,   +$('gmFundK').value  || 0.65);
+
   // v0.0.7.e: two days metrics — calendar (for fair drift and REPO) and trading (for SWAPRATE funding)
   const daysCalendar = days;
-  const daysTrading  = Math.max(1, Math.round(days * 5/7));
+  // Учёт fund-days через коэффициент пользователя (default 0.65 — мягче чем 5/7=0.71)
+  const daysTrading  = Math.max(1, Math.round(daysCalendar * fundK));
 
   // Current spread, fair today and fair at the end of holding period
   const spread = GOLD * 31.1 * 100000 / (Si * GD);
   const fair   = 100 / (1 + (cbr/4) * daysToExp / qdays);
   const daysToExpAtClose = Math.max(0, daysToExp - daysCalendar);
-  const fairAtClose = 100 / (1 + (cbr/4) * daysToExpAtClose / qdays);
+  const fairAtCloseBase = 100 / (1 + (cbr/4) * daysToExpAtClose / qdays);
+  // v0.0.10.l: amplify drift via driftK — реальное mean-reversion обычно быстрее теоретической time-decay.
+  // fair (база на «сегодня») оставляем как есть; усиливаем только дрейф к экспирации.
+  const fairAtClose = fair + (fairAtCloseBase - fair) * driftK;
   const alpha = spread - fair; // nominal alpha at entry (what tradingview shows)
   // Realized alpha — actual profit fraction if spread returns exactly to fair_at_close
   const realizedAlpha = spread - fairAtClose;
@@ -4332,13 +4350,24 @@ function calcGldMx(){
   $('gmSpreadCur').style.color = alpha>=0 ? 'var(--green)' : 'var(--orange)';
 
   // Sizing — ползунок выбирает n1 (GLDRUBF в граммах). n3 и n2 считаются пропорционально.
-  // Max lots: сколько влезет в проп-капитал (mxOwn × propLev) с учётом ГО всех трёх ног
+  // v0.0.10.l: верхний предел ползунка теперь — min(maxByCapital × 5, maxBySigma=0.5).
+  // Это позволяет залезть в займ (REPO растёт) если по риску ещё есть запас.
   const pska = mxOwn * propLev;
-  const n3PerN1 = 1/31.1; // 1 GD per 31.1 GLDRUBF
-  const n2PerN1 = (GD / (1000 * 31.1)); // n2 = n3 × GD / 1000 = (n1/31.1) × GD / 1000
+  const n3PerN1 = 1/31.1;
+  const n2PerN1 = (GD / (1000 * 31.1));
   const goPerN1 = goGold + n2PerN1 * goSi + n3PerN1 * goGd;
-  const maxN1 = Math.floor(pska / goPerN1);
-  let mx = Math.max(1, Math.min(500000, maxN1));
+  const maxN1ByGo = Math.floor(pska / goPerN1);
+  // maxN1BySigma: при каком n1 σ упадёт до 0.5? Решаем аналитически.
+  // sig = mxBufRub / (notionalRub/100) / 100 / sigP
+  // notionalRub = (n1/31.1) × GD × rub
+  // n1 = mxBufRub × 31.1 / (GD × rub × sig × sigP)
+  const sigPLimit = iv/100 * Math.sqrt(daysCalendar/365);
+  const maxN1BySigma = (sigPLimit > 0)
+    ? Math.floor(mxOwn * mxRisk * 31.1 / (GD * rub * 0.5 * sigPLimit))
+    : maxN1ByGo * 5;
+  // Берём min из (capital×5, sigma_limit) — что наступит раньше.
+  const maxN1 = Math.min(maxN1ByGo * 5, maxN1BySigma, 500000);
+  let mx = Math.max(1, maxN1);
   let step;
   if(mx<=100)step=1;else if(mx<=500)step=5;else if(mx<=2000)step=10;
   else if(mx<=10000)step=50;else if(mx<=50000)step=100;else step=500;
