@@ -3263,17 +3263,22 @@ function calcOvw(){
       const gmCbr=+$('gmCbr')?.value||16; const cbr=gmCbr/100;
       const gmQdays=+$('gmQdays')?.value||92;
       const gmIV=+$('gmIV')?.value||7.5;
+      // v0.0.10.l: пользовательские коэффициенты (drift × fund-days)
+      const gmDriftKOvw=+$('gmDriftK')?.value||1.5;
+      const gmFundKOvw =+$('gmFundK')?.value ||0.65;
 
       const spread=GOLD*31.1*100000/(Si*GD);
       const fair=100/(1+(cbr/4)*gmDaysToExp/gmQdays);
       const alpha=spread-fair;
       const absAlpha=Math.abs(alpha);
       const isShort=alpha>=0;
-      // v0.0.7.e: fair drifts during holding period
+      const dirSignOvw = isShort ? +1 : -1;
+      // v0.0.7.e: fair drifts during holding period (с амплификацией пользователя)
       const daysCalendarOvw = days;
-      const daysTradingOvw  = Math.max(1, Math.round(days * 5/7));
+      const daysTradingOvw  = Math.max(1, Math.round(days * gmFundKOvw));
       const daysToExpAtCloseOvw = Math.max(0, gmDaysToExp - daysCalendarOvw);
-      const fairAtCloseOvw = 100/(1+(cbr/4)*daysToExpAtCloseOvw/gmQdays);
+      const fairAtCloseBaseOvw = 100/(1+(cbr/4)*daysToExpAtCloseOvw/gmQdays);
+      const fairAtCloseOvw = fair + (fairAtCloseBaseOvw - fair) * gmDriftKOvw;
       const realizedAlphaOvw = spread - fairAtCloseOvw;
       const realizedAbsOvw = Math.abs(realizedAlphaOvw);
 
@@ -3300,8 +3305,8 @@ function calcOvw(){
         const sigPT=gmIV/100*Math.sqrt(days/365);
         const sigT=sigPT>0?mxBufPct/100/sigPT:0;
         if(sigT<1.2)break;
-        // gross uses REALIZED alpha (after fair drift over calendar days)
-        const grossRub=realizedAbsOvw/100*notionalRub;
+        // v0.0.10.l: gross со знаком (учитывает overshoot fair drift)
+        const grossRub=dirSignOvw*realizedAlphaOvw/100*notionalRub;
         const dirGold=isShort?-1:+1;
         // funding — only on trading days
         const fundRub=-dirGold*swap*n1*daysTradingOvw;
@@ -3311,8 +3316,8 @@ function calcOvw(){
         const netBeforeRub=grossRub+fundRub-repoRub-commRub;
         const payRub=netBeforeRub>0?netBeforeRub*payoutPct:0;
         const netRub=netBeforeRub-payRub;
-        // Worst = spread went further by |realizedAlpha| → gross negative
-        const grossWRub=-realizedAbsOvw/100*notionalRub;
+        // Worst = ушёл ещё на |α| дальше — теряем grossRub дополнительно
+        const grossWRub=grossRub - 2*Math.abs(realizedAlphaOvw)/100*notionalRub;
         const netWBeforeRub=grossWRub+fundRub-repoRub-commRub;
         const payWRub=netWBeforeRub>0?netWBeforeRub*payoutPct:0;
         const netWRub=netWBeforeRub-payWRub;
@@ -4413,9 +4418,13 @@ function calcGldMx(){
   $('gmGSub').textContent = 'Шанс моржа: ~'+bp+'%';
 
   // P&L in RUBLES — all three legs on MOEX
-  // v0.0.7.e: gross is realized alpha (current − fair_at_close), not nominal alpha
-  // Fair drifts up toward 100 as daysToExp decreases, so holding shrinks our captured α
-  const grossRub = realizedAbs/100 * notionalRub;
+  // v0.0.10.l: gross со ЗНАКОМ. Если α > 0 (entry signal short) и realizedAlpha < 0
+  // (fair drift overshoot — fair улетел выше нашего entry за период удержания) —
+  // мы реально теряем. Раньше было grossRub = abs() — это всегда давало плюс, бажная логика.
+  // Direction: при α > 0 шортим спред → profit = entry − close = realizedAlpha;
+  //            при α < 0 лонгуем спред → profit = close − entry = −realizedAlpha.
+  const dirSign = alpha >= 0 ? +1 : -1;
+  const grossRub = dirSign * realizedAlpha / 100 * notionalRub;
 
   // Funding on GLDRUBF — only accrues on trading days (Sat/Sun skipped)
   const dirGold = alpha>=0 ? -1 : +1; // -1 = short GLDRUBF
@@ -4437,7 +4446,8 @@ function calcGldMx(){
     return fm(Math.round(v))+' ₽';
   };
 
-  $('gmPlGross').textContent = '+'+fmtRub(grossRub);
+  $('gmPlGross').textContent = (grossRub>=0?'+':'−')+fmtRub(Math.abs(grossRub));
+  $('gmPlGross').style.color = grossRub>=0 ? 'var(--green)' : 'var(--red)';
   $('gmPlFund').textContent  = (fundRub>=0?'+':'−')+fmtRub(Math.abs(fundRub));
   $('gmPlFund').style.color  = fundRub>=0 ? 'var(--green)' : 'var(--red)';
   $('gmPlRepo').textContent  = '−'+fmtRub(repoRub);
@@ -4482,10 +4492,11 @@ function calcGldMx(){
     + '</div>'
     + '</div>';
 
-  // 4 scenarios — all in rubles, based on realized alpha (post fair-drift)
+  // 4 scenarios — все с правильным знаком от dirSign × realizedAlpha
   function gmCard(title, emoji, spreadMove, desc){
-    const realizedPct = realizedAbs * spreadMove; // uses post-drift α (not nominal)
-    const gr = realizedPct/100 * notionalRub;   // ₽
+    // v0.0.10.l: учитываем знак realizedAlpha. spreadMove: 1 = полный возврат к fair_close,
+    // 0.5 = половина пути, 0 = не вернулся, -1 = ушёл ещё дальше на |realizedAlpha|.
+    const gr = dirSign * realizedAlpha * spreadMove / 100 * notionalRub;
     const before = gr + fundRub - repoRub - commRub;
     const pay = before > 0 ? before * payoutPct : 0;
     const final = before - pay;
@@ -4505,11 +4516,14 @@ function calcGldMx(){
       + '<div style="font-size:11px;color:var(--tm)">ROI: '+roiP.toFixed(2)+'% (~'+annP.toFixed(0)+'% год.)</div>'
       + '</div></div>';
   }
+  // v0.0.10.l: при overshoot drift'а realizedAlpha может быть отрицательной — тогда "полный возврат к fair"
+  //  это уже LOSS, не gain. Названия отражают физику движения, цвет — фактический знак gross.
+  const overshoot = (dirSign * realizedAlpha) < 0;  // entry проиграл в направлении drift'а
   $('gmScenConv').innerHTML =
-      gmCard('Лучший: полный возврат к fair','🟢',1,'Спред сошёлся к fair_close='+fairAtClose.toFixed(2)+' за '+daysCalendar+' дн. Захвачена вся реальная α ('+realizedAlpha.toFixed(2)+'%).')
-    + gmCard('Средний: половина возврата','🟡',0.5,'Спред прошёл половину пути к fair_close. Половина реальной α.')
-    + gmCard('Плохой: не вернулся','🟠',0,'Спред застрял там же, но fair уплыл наверх. Живём только на carry (фандинг − РЕПО).')
-    + gmCard('Худший: ушёл дальше','🔴',-1,'Спред улетел ещё на |α| в обратную сторону. Минус реальная α сверху.');
+      gmCard((overshoot?'⚠':'🟢') + ' 1.0 возврат к fair','',1,'Спред сошёлся к fair_close='+fairAtClose.toFixed(2)+' за '+daysCalendar+' дн.'+(overshoot?' Drift fair оверштутил наш entry — позиция в LOSS даже при идеальном схождении.':' Захвачен полный realized α = '+(realizedAlpha>=0?'+':'')+realizedAlpha.toFixed(3)+'%.'))
+    + gmCard('🟡 0.5 возврат','',0.5,'Спред прошёл половину пути к fair_close.')
+    + gmCard('🟠 не вернулся','',0,'Спред застрял на entry. Живём только на carry (фандинг − РЕПО).')
+    + gmCard('🔴 ушёл дальше','',-1,'Спред улетел ещё на |α| против нас. Минус realized α сверху.');
 }
 
 // === v0.0.8 === PORTFOLIO — my positions, persisted in localStorage
