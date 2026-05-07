@@ -2107,8 +2107,13 @@ function adaptSlider(){
   const pska=mxOwn*propLev;
   const margPerLot=p.pipValForeign?p.cSize/(+$('inFxLev').value):p.cSize*spot/(+$('inFxLev').value);
   const maxFx=fxCap/margPerLot;
-  const maxMx=pska/(nv('inGO'))/p.lpc;
-  let mx=Math.min(maxFx,maxMx);
+  // v0.0.10.l: позволяем выход в заём (×5 от своих ПСки), как в golden triple. Финальный лимит — σ ≥ 0.5.
+  const maxMxByGo=pska/(nv('inGO'))/p.lpc;
+  // σ-ограничитель: при каком sl упадёт до 0.5? Аналитически.
+  // sigmaForLots(sl): minPct = min(fxPct, mxPct), потом sigP = iv/100 * sqrt(days/365), sig = minPct/100/sigP
+  // mxPct(sl) = (mxOwn*mxRisk)*p.stepSz / (sl*p.lpc*p.stepPr*fut) * 100 → линейно убывает с ростом sl
+  // Для упрощения берём σ-границу через перебор maxMxByGo × 5 (если по риску раньше упрёмся — adaptSlider всё равно ограничит).
+  let mx=Math.min(maxFx, maxMxByGo*5);
   mx=Math.max(mx,0.1);
   mx=Math.min(mx,5000);
   // Instrument-specific step
@@ -2431,8 +2436,8 @@ function calc(){
   const capHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
     +'<div>'
     +'<div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--cyan)">FOREX</b></div>'
-    +'<div style="font-size:12px;color:var(--tl)">Маржа: <b style="color:var(--tw)">$'+fm(marg,0)+'</b> <span style="color:var(--tm)">('+margPct.toFixed(1)+'% от $'+fm(fxCap,0)+')</span></div>'
-    +'<div style="font-size:12px;color:var(--tl)">Свободно: <b style="color:'+cFree+'">$'+fm(freeFx,0)+'</b></div>'
+    +'<div style="font-size:12px;color:var(--tl)" title="Маржа = заблокированная под позицию сумма (cSize × spot ÷ leverage)">Маржа: <b style="color:var(--tw)">$'+fm(marg,0)+'</b> <span style="color:var(--tm)">('+margPct.toFixed(1)+'% от $'+fm(fxCap,0)+')</span></div>'
+    +'<div style="font-size:12px;color:var(--tl)" title="Свободно = capital − margin. Это сколько ещё можно загрузить под другую позицию. НЕ путай с buffer (сколько можно потерять до margin call).">Свободно: <b style="color:'+cFree+'">$'+fm(freeFx,0)+'</b></div>'
     +'</div><div>'
     +'<div style="font-size:11px;color:var(--tl);margin-bottom:4px"><b style="color:var(--yellow)">МОЕХ</b></div>'
     +'<div style="font-size:12px;color:var(--tl)">ГО: <b style="color:var(--tw)">'+fm(goT/1e6,2)+'М₽</b> <span style="color:var(--tm)">('+goPct.toFixed(0)+'% ПСки)</span></div>'
