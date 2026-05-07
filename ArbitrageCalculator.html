@@ -5781,8 +5781,12 @@ async function fetchPrices(){
         if(m.go)ct.go=Math.round(m.go);
       }
       // stepPr shared at instrument level — take from front month
+      // v0.0.10.l: ВАЖНО — обновляем И stepPr, И stepSz из MOEX ISS, иначе формула
+      // mxPct = mxPips × stepSz / fut получает несогласованные данные (cTrader stepSz vs MOEX stepPr).
+      // Без этого buffer на металлах показывал в 10× больше реального → σ казалась комфортной при опасной позиции.
       const mf=mx[v.contracts.M&&v.contracts.M.moexTicker];
       if(mf&&mf.stepPrice)v.stepPr=mf.stepPrice;
+      if(mf&&mf.minStep)   v.stepSz=mf.minStep;
     }
     // Update current instrument tab UI (only when mode is a standard futures instrument in MODES)
     if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'&&MODES[mode]){
