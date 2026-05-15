@@ -203,7 +203,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.p</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.q</p>
     </div>
   </div>
 
@@ -2687,6 +2687,14 @@ function calcOvw(){
     // (например, золото ушло в бэквордацию) показывал бы "конт." с отрицательным NET.
     if(!p.isCrypto && typeof p.spot==='number' && typeof p.fut==='number' && p.spot>0 && p.fut>0){
       p.dir = (p.fut > p.spot) ? 'cont' : 'back';
+    }
+    // v0.0.10.q: после автодетекта направления — выбрать АКТИВНУЮ сторону свопа
+    // (swapLong для контанго, swapShort для бэквордации). Иначе p.swap остаётся
+    // тем что cTrader-парсер положил по СТАРОМУ хардкоднутому m.dir, и Обзор
+    // считает carry противоположной нашей фактической сделке (минусит вместо плюса).
+    if(!p.isCrypto){
+      if(p.dir==='back' && p.swapShort!=null) p.swap = p.swapShort;
+      else if(p.dir==='cont' && p.swapLong!=null) p.swap = p.swapLong;
     }
     const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(p.exp);
     const spot=p.spot,fut=p.fut;
@@ -5891,9 +5899,17 @@ async function fetchPrices(){
       // v0.0.10.k: оба свопа как есть из cTrader (нативный знак, в пипах/день)
       if(sym.swapLong!=null) m.swapLong = sym.swapLong;
       if(sym.swapShort!=null) m.swapShort = sym.swapShort;
-      // Backward-compat: m.swap для старого кода — выбираем по dir (но calc уже работает по spread)
-      if(m.dir==='back'&&sym.swapShort!=null) m.swap=sym.swapShort;
-      else if(m.dir==='cont'&&sym.swapLong!=null) m.swap=sym.swapLong;
+      // v0.0.10.q: m.swap для старого кода — выбираем по ФАКТИЧЕСКОЙ раздвижке,
+      // а не по хардкоду m.dir. Иначе при перевороте рынка (например, золото
+      // ушло в бэквордацию из контанго) m.swap остаётся на проигрышной стороне.
+      const _ctFut = (m.contracts && m.contracts.M && m.contracts.M.fut) || null;
+      const _ctSpot = m.spot || null;
+      let _activeDir = m.dir;
+      if(!m.isCrypto && typeof _ctSpot==='number' && typeof _ctFut==='number' && _ctSpot>0 && _ctFut>0){
+        _activeDir = (_ctFut > _ctSpot) ? 'cont' : 'back';
+      }
+      if(_activeDir==='back'&&sym.swapShort!=null) m.swap=sym.swapShort;
+      else if(_activeDir==='cont'&&sym.swapLong!=null) m.swap=sym.swapLong;
       // ⚠ lotSize/pipPosition/pipVal через API НЕ подменяем (см. комментарий в MODES.BRENT).
       if(ctPrices&&ctPrices[ctName]){
         const p=ctPrices[ctName];
