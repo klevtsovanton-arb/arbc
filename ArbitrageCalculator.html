@@ -5931,6 +5931,26 @@ async function fetchPrices(){
     // Тройнички: USDCNH spot → trFx; EURUSD spot → tuFx; EURCNH spot → teFx,peFx
     if(MODES.UCNY.spot){$('trFx').value=(+MODES.UCNY.spot).toFixed(4);$('puFx').value=(+MODES.UCNY.spot).toFixed(4);}
     if(MODES.EURUSD.spot){$('tuFx').value=(+MODES.EURUSD.spot).toFixed(5);$('prFx').value=(+MODES.EURUSD.spot).toFixed(5);}
+    // v0.0.10.q: синкаем свопы из cTrader в тройнички. USDCNH → Si/Cr и PERP_UCNH;
+    // EURUSD → Eu/Si и PERP_EU. EURCNH (нет cTrader-symbol-fetch) остаётся ручным.
+    // Без этого Обзор читал захардкоженные дефолты (-0.717/+0.245 и т.п.) и
+    // мог считать carry мимо реальности.
+    if(MODES.UCNY.swapLong!=null){
+      const v=(+MODES.UCNY.swapLong).toFixed(3);
+      $('trSwapL').value=v; $('puFxSwapL').value=v;
+    }
+    if(MODES.UCNY.swapShort!=null){
+      const v=(+MODES.UCNY.swapShort).toFixed(3);
+      $('trSwapS').value=v; $('puFxSwapS').value=v;
+    }
+    if(MODES.EURUSD.swapLong!=null){
+      const v=(+MODES.EURUSD.swapLong).toFixed(3);
+      $('tuSwapL').value=v; $('prFxSwapL').value=v;
+    }
+    if(MODES.EURUSD.swapShort!=null){
+      const v=(+MODES.EURUSD.swapShort).toFixed(3);
+      $('tuSwapS').value=v; $('prFxSwapS').value=v;
+    }
     if(ctPrices&&ctPrices['EURCNH_xp']){
       const p=ctPrices['EURCNH_xp'];
       if(p.bid&&p.ask){
