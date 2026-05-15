@@ -203,7 +203,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.o</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.p</p>
     </div>
   </div>
 
@@ -2682,6 +2682,12 @@ function calcOvw(){
   for(const[key,base] of Object.entries(MODES)){
     for(const[ckey,ct] of Object.entries(base.contracts)){
     const p=Object.assign({},base,ct);
+    // v0.0.10.p: auto-detect dir from live prices (как в calc() v0.0.10.k).
+    // Без этого Обзор брал хардкод dir из MODES.* и при инверсии раздвижки
+    // (например, золото ушло в бэквордацию) показывал бы "конт." с отрицательным NET.
+    if(!p.isCrypto && typeof p.spot==='number' && typeof p.fut==='number' && p.spot>0 && p.fut>0){
+      p.dir = (p.fut > p.spot) ? 'cont' : 'back';
+    }
     const days=ovwDaysOverride!=null?ovwDaysOverride:daysToExp(p.exp);
     const spot=p.spot,fut=p.fut;
     const pipVal=p.pipValForeign?p.pipVal/spot:p.pipVal;
