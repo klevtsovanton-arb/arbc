@@ -189,9 +189,9 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
     <div class="contract-pills" id="contractPills" style="display:none">
-      <button class="cpill on" id="cpM" onclick="switchContract('M')">Июн 26</button>
-      <button class="cpill"    id="cpU" onclick="switchContract('U')">Сен 26</button>
+      <button class="cpill on" id="cpU" onclick="switchContract('U')">Сен 26</button>
       <button class="cpill"    id="cpZ" onclick="switchContract('Z')">Дек 26</button>
+      <button class="cpill"    id="cpH" onclick="switchContract('H')">Мар 27</button>
     </div>
     <div class="contract-pills" id="contractPillsCrypto" style="display:none">
       <button class="cpill on" id="cpCM" onclick="switchContract('M')">Июн 26</button>
@@ -203,7 +203,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.r</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.s</p>
     </div>
   </div>
 
@@ -1327,9 +1327,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.abs(n).toFixed(d);const[i,dc]=a.split('.');return s+i.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(dc?'.'+dc:'');};
 
 let mode='EURUSD';
-let currentContract='M'; // M=Июн, U=Сен, Z=Дек
+let currentContract='U'; // U=Сен, Z=Дек, H=Мар (M=Июн удалён 18.06.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'M',UCNY:'M',GOLD:'M',SILVER:'M',PLAT:'M',PALL:'M',BTC:'M',ETH:'M',BRENT:'M',TRIPLE:'M',TRIPLE_EU:'M',TRIPLE_USD:'M'};
+const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'M',ETH:'M',BRENT:'N',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
@@ -1444,50 +1444,50 @@ function applyOvwFilter(){
   });
 }
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95};
-const CONTRACT_LABELS={M:'Июн 26',N:'Июл 26',Q:'Авг 26',U:'Сен 26',Z:'Дек 26'};
-const CONTRACT_SHORT ={K:'5.26',M:'6.26',N:'7.26',U:'9.26',Z:'12.26'};
+const CONTRACT_LABELS={N:'Июл 26',Q:'Авг 26',U:'Сен 26',Z:'Дек 26',H:'Мар 27'};
+const CONTRACT_SHORT ={N:'7.26',Q:'8.26',U:'9.26',Z:'12.26',H:'3.27'};
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
     contracts:{
-      M:{moexTicker:'EDM6',exp:'2026-06-18',fut:1.1702,go:5835},
-      U:{moexTicker:'EDU6',exp:'2026-09-17',fut:1.1670,go:6320},
-      Z:{moexTicker:'EDZ6',exp:'2026-12-17',fut:1.1649,go:6920}
+      U:{moexTicker:'EDU6',exp:'2026-09-17',fut:1.1591,go:5610},
+      Z:{moexTicker:'EDZ6',exp:'2026-12-17',fut:1.1545,go:6115},
+      H:{moexTicker:'EDH7',exp:'2027-03-18',fut:1.1561,go:6755}
     }},
   UCNY:{label:'USD/CNH',pipSz:.001,pipVal:100,stepSz:.001,stepPr:11.24,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',pipValForeign:true,
     lotStep:.5,lotMin:.5,lotMax:5,swap:-.717,repo:21,iv:5,spot:6.8305,fxSpread:0,fxSymbol:'USD/CNH',
     contracts:{
-      M:{moexTicker:'UCM6',exp:'2026-06-18',fut:6.808,go:7561},
-      U:{moexTicker:'UCU6',exp:'2026-09-17',fut:6.809,go:7988},
-      Z:{moexTicker:'UCZ6',exp:'2026-12-17',fut:6.831,go:8526}
+      U:{moexTicker:'UCU6',exp:'2026-09-17',fut:6.754,go:7318},
+      Z:{moexTicker:'UCZ6',exp:'2026-12-17',fut:6.746,go:7771},
+      H:{moexTicker:'UCH7',exp:'2027-03-18',fut:6.690,go:8326}
     }},
   GOLD:{label:'Gold',pipSz:.01,pipVal:1,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:100,dir:'cont',
     lotStep:.1,lotMin:.1,lotMax:2,swap:-6.841,repo:21,iv:15,spot:4795.93,fxSpread:0,fxSymbol:'XAU/USD',
     contracts:{
-      M:{moexTicker:'GDM6',exp:'2026-06-19',fut:4833.5,go:34517},
-      U:{moexTicker:'GDU6',exp:'2026-09-18',fut:4880.5,go:35092},
-      Z:{moexTicker:'GDZ6',exp:'2026-12-18',fut:4951.0,go:37794}
+      U:{moexTicker:'GDU6',exp:'2026-09-18',fut:4356.0,go:28245},
+      Z:{moexTicker:'GDZ6',exp:'2026-12-18',fut:4421.7,go:30267},
+      H:{moexTicker:'GDH7',exp:'2027-03-19',fut:4477.6,go:32838}
     }},
   SILVER:{label:'Silver',pipSz:.001,pipVal:5,stepSz:.01,stepPr:7.70,lpc:500,comm:5,cSize:5000,fxLev:100,dir:'cont',
     lotStep:.05,lotMin:.01,lotMax:2,swap:-9.415,repo:21,iv:25,spot:79.52,fxSpread:0,fxSymbol:'XAG/USD',
     contracts:{
-      M:{moexTicker:'SVM6',exp:'2026-06-19',fut:80.71,go:13958},
-      U:{moexTicker:'SVU6',exp:'2026-09-18',fut:82.78,go:15243},
-      Z:{moexTicker:'SVZ6',exp:'2026-12-18',fut:85.71,go:15316}
+      U:{moexTicker:'SVU6',exp:'2026-09-18',fut:72.43,go:11981},
+      Z:{moexTicker:'SVZ6',exp:'2026-12-18',fut:74.93,go:12026},
+      H:{moexTicker:'SVH7',exp:'2027-03-19',fut:77.15,go:12515}
     }},
   PLAT:{label:'Platinum',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
     lotStep:.1,lotMin:.05,lotMax:2,swap:-3.847,repo:21,iv:20,spot:2083.98,fxSpread:7.09,fxSymbol:'XPT/USD',
     contracts:{
-      M:{moexTicker:'PTM6',exp:'2026-06-19',fut:2105.8,go:32256},
-      U:{moexTicker:'PTU6',exp:'2026-09-18',fut:2175.3,go:35722},
-      Z:{moexTicker:'PTZ6',exp:'2026-12-18',fut:2228.0,go:36682}
+      U:{moexTicker:'PTU6',exp:'2026-09-18',fut:1837.0,go:26965},
+      Z:{moexTicker:'PTZ6',exp:'2026-12-18',fut:1894.8,go:29711},
+      H:{moexTicker:'PTH7',exp:'2027-03-19',fut:1968.7,go:29179}
     }},
   PALL:{label:'Palladium',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
     lotStep:.1,lotMin:.05,lotMax:2,swap:-4.117,repo:21,iv:25,spot:1548.71,fxSpread:6.27,fxSymbol:'XPD/USD',
     contracts:{
-      M:{moexTicker:'PDM6',exp:'2026-06-19',fut:1554.00,go:28288},
-      U:{moexTicker:'PDU6',exp:'2026-09-18',fut:1618.74,go:29968},
-      Z:{moexTicker:'PDZ6',exp:'2026-12-18',fut:1683.94,go:31004}
+      U:{moexTicker:'PDU6',exp:'2026-09-18',fut:1383.99,go:23730},
+      Z:{moexTicker:'PDZ6',exp:'2026-12-18',fut:1443.01,go:24514},
+      H:{moexTicker:'PDH7',exp:'2027-03-19',fut:1496.46,go:25488}
     }},
   // === Crypto: MOEX delivery vs Bitget USDT perpetual ===
   // lpc: 1 "lot" (1 BTC or 1 ETH on perp) = N MOEX contracts
@@ -1525,12 +1525,14 @@ const MODES={
   // Для BRENT: 25.587 × 0.01 × 1000 = $256/день/лот short. Это стандартная формула,
   // никаких отдельных множителей для свопа не нужно (как и для золота).
   BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
-    lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:114.7,fxSpread:0.036,fxSymbol:'BRN/USD',
-    // BRK6 (май-26) экспирировался — убран. Если появится новый ближний контракт (например, BRN6),
-    // добавь сюда K-ключ заново.
+    lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:78.50,fxSpread:0.036,fxSymbol:'BRN/USD',
+    // Brent на МОЕХ помесячный, до Янв-27 максимум. H7 (Мар-27) НЕ существует — оставляем
+    // ближайшие три квартальных эквивалента (N/U/Z = Июл/Сен/Дек). Если хочется месячного
+    // ближайшего — добавляй Q (BR-8.26), V (BR-10.26), X (BR-11.26).
     contracts:{
-      M:{moexTicker:'BRM6',exp:'2026-05-29',fut:115.5,go:11000},
-      N:{moexTicker:'BRN6',exp:'2026-06-30',fut:116.0,go:11000}
+      N:{moexTicker:'BRN6',exp:'2026-07-01',fut:79.10,go:12160},
+      U:{moexTicker:'BRU6',exp:'2026-08-31',fut:78.17,go:13214},
+      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:78.48,go:14057}
     }}
 };
 
@@ -1538,31 +1540,41 @@ const MODES={
 function getP(m,c){
   const base=MODES[m||mode];
   if(!base||!base.contracts)return base;
-  const ct=base.contracts[c||currentContract]||base.contracts.M;
+  // Fallback chain: запрошенный → первый существующий (т.к. M удалён в v0.0.10.s после Июн-26 экспиры)
+  const ct=base.contracts[c||currentContract]||base.contracts[Object.keys(base.contracts)[0]];
   return Object.assign({},base,ct);
+}
+// v0.0.10.s: ближайший контракт по экспирации (для legacy-кода, который полагался на .contracts.M)
+// MOEX-letter chronological order: F(Янв) G(Фев) H(Мар) J(Апр) K(Май) M(Июн) N(Июл) Q(Авг) U(Сен) V(Окт) X(Ноя) Z(Дек)
+function frontContract(modeObj){
+  if(!modeObj||!modeObj.contracts)return null;
+  const order=['M','N','Q','U','V','X','Z','F','G','H','J','K'];
+  for(const k of order) if(modeObj.contracts[k]) return modeObj.contracts[k];
+  const keys=Object.keys(modeObj.contracts);
+  return keys.length?modeObj.contracts[keys[0]]:null;
 }
 
 // Triple-arb contract data (Si/Cr/USDCNH and Eu/Cr/EURCNH)
 const TRIPLE_DATA={
   TRIPLE:{
     contracts:{
-      M:{siTk:'SiM6',crTk:'CRM6',exp:'2026-06-18',si:76310,  cr:11.210,siGo:12267,crGo:1087},
-      U:{siTk:'SiU6',crTk:'CRU6',exp:'2026-09-17',si:77555,  cr:11.405,siGo:12394,crGo:1163},
-      Z:{siTk:'SiZ6',crTk:'CRZ6',exp:'2026-12-17',si:79428,  cr:11.585,siGo:12930,crGo:1224}
+      U:{siTk:'SiU6',crTk:'CRU6',exp:'2026-09-17',si:74390,  cr:11.015,siGo:11465,crGo:1097},
+      Z:{siTk:'SiZ6',crTk:'CRZ6',exp:'2026-12-17',si:76175,  cr:11.275,siGo:11918,crGo:1104},
+      H:{siTk:'SiH7',crTk:'CRH7',exp:'2027-03-18',si:78358,  cr:11.514,siGo:12510,crGo:1235}
     }
   },
   TRIPLE_EU:{
     contracts:{
-      M:{euTk:'EuM6',crTk:'CRM6',exp:'2026-06-18',eu:89203,  cr:11.210,euGo:14452,crGo:1087},
-      U:{euTk:'EuU6',crTk:'CRU6',exp:'2026-09-17',eu:90598,  cr:11.405,euGo:14778,crGo:1163},
-      Z:{euTk:'EuZ6',crTk:'CRZ6',exp:'2026-12-17',eu:92950,  cr:11.585,euGo:15413,crGo:1224}
+      U:{euTk:'EuU6',crTk:'CRU6',exp:'2026-09-17',eu:86329,  cr:11.015,euGo:13475,crGo:1097},
+      Z:{euTk:'EuZ6',crTk:'CRZ6',exp:'2026-12-17',eu:87874,  cr:11.275,euGo:13994,crGo:1104},
+      H:{euTk:'EuH7',crTk:'CRH7',exp:'2027-03-18',eu:89896,  cr:11.514,euGo:14668,crGo:1235}
     }
   },
   TRIPLE_USD:{
     contracts:{
-      M:{euTk:'EuM6',siTk:'SiM6',exp:'2026-06-18',eu:89203,  si:76310,  euGo:14452,siGo:12267},
-      U:{euTk:'EuU6',siTk:'SiU6',exp:'2026-09-17',eu:90598,  si:77555,  euGo:14778,siGo:12394},
-      Z:{euTk:'EuZ6',siTk:'SiZ6',exp:'2026-12-17',eu:92950,  si:79428,  euGo:15413,siGo:12930}
+      U:{euTk:'EuU6',siTk:'SiU6',exp:'2026-09-17',eu:86329,  si:74390,  euGo:13475,siGo:11465},
+      Z:{euTk:'EuZ6',siTk:'SiZ6',exp:'2026-12-17',eu:87874,  si:76175,  euGo:13994,siGo:11918},
+      H:{euTk:'EuH7',siTk:'SiH7',exp:'2027-03-18',eu:89896,  si:78358,  euGo:14668,siGo:12510}
     }
   }
 };
@@ -1760,7 +1772,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE'){
     mode='TRIPLE';
-    currentContract=savedContract.TRIPLE||'M';
+    currentContract=savedContract.TRIPLE||'U';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
@@ -1784,7 +1796,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE_EU'){
     mode='TRIPLE_EU';
-    currentContract=savedContract.TRIPLE_EU||'M';
+    currentContract=savedContract.TRIPLE_EU||'U';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
@@ -1843,11 +1855,13 @@ function switchTo(m){
       if(goldSt.go)setNum('gmGoGold',goldSt.go);
       if(goldSt.swapAvg!=null)$('gmSwap').value=(+goldSt.swapAvg).toFixed(4);
     }
-    // Si/GD from front-month (M)
-    const siFront=TRIPLE_DATA.TRIPLE.contracts.M;
+    // Si/GD from front-month (auto-pick по chronological order — после удаления M в v0.0.10.s)
+    const _siKey=Object.keys(TRIPLE_DATA.TRIPLE.contracts)[0];
+    const siFront=TRIPLE_DATA.TRIPLE.contracts[_siKey];
     if(siFront){$('gmSi').value=siFront.si; setNum('gmGoSi',siFront.siGo);}
-    const gdFront=MODES.GOLD&&MODES.GOLD.contracts&&MODES.GOLD.contracts.M;
-    if(gdFront){$('gmGd').value=gdFront.fut; setNum('gmGoGd',gdFront.go); $('gmDaysToExp').value=daysToExp(gdFront.exp); $('gmLblGd').textContent=CONTRACT_SHORT.M; $('gmLblSi').textContent=CONTRACT_SHORT.M;}
+    const gdFront=frontContract(MODES.GOLD);
+    const _gdKey=gdFront?Object.keys(MODES.GOLD.contracts).find(k=>MODES.GOLD.contracts[k]===gdFront):'U';
+    if(gdFront){$('gmGd').value=gdFront.fut; setNum('gmGoGd',gdFront.go); $('gmDaysToExp').value=daysToExp(gdFront.exp); $('gmLblGd').textContent=CONTRACT_SHORT[_gdKey]||_gdKey; $('gmLblSi').textContent=CONTRACT_SHORT[_siKey]||_siKey;}
     // v0.0.7: apply overview preset (capital + optimal lots) if available
     applyOvwPresetToTab('PERP_GLD_MX','gm','gmLots');
     calcGldMx();
@@ -1875,7 +1889,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE_USD'){
     mode='TRIPLE_USD';
-    currentContract=savedContract.TRIPLE_USD||'M';
+    currentContract=savedContract.TRIPLE_USD||'U';
     $('tabTripleU').className='tab on';$('tabTripleU').style.background='#3B82F6';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
@@ -1899,7 +1913,7 @@ function switchTo(m){
   }
 
   mode=m;
-  currentContract=savedContract[m]||'M';
+  currentContract=savedContract[m]||(MODES[m]&&MODES[m].isCrypto?'M':'U');
   const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
@@ -2022,7 +2036,7 @@ function updateContractPills(overrideColor){
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#FB923C'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
-  ['M','U','Z'].forEach(k=>{
+  ['U','Z','H'].forEach(k=>{
     const btn=$('cp'+k);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -3269,8 +3283,9 @@ function calcOvw(){
   // v0.0.7: Gold triple (Klevtsov fair-spread model) — all on MOEX, no Forex leg
   {
     const goldSt=PERP_STATE.GLDRUBF;
-    const siFront=TRIPLE_DATA.TRIPLE.contracts.M;
-    const gdFront=MODES.GOLD&&MODES.GOLD.contracts&&MODES.GOLD.contracts.M;
+    // v0.0.10.s: M удалён — берём первый доступный (по chronological frontContract)
+    const siFront=TRIPLE_DATA.TRIPLE.contracts[Object.keys(TRIPLE_DATA.TRIPLE.contracts)[0]];
+    const gdFront=frontContract(MODES.GOLD);
     if(goldSt&&siFront&&gdFront){
       const GOLD=goldSt.price||9000, Si=siFront.si||76310, GD=gdFront.fut||3900;
       const goGold=goldSt.go||900, goSi=siFront.siGo||12267, goGd=gdFront.go||30000;
@@ -5798,7 +5813,8 @@ async function fetchPrices(){
       // v0.0.10.l: ВАЖНО — обновляем И stepPr, И stepSz из MOEX ISS, иначе формула
       // mxPct = mxPips × stepSz / fut получает несогласованные данные (cTrader stepSz vs MOEX stepPr).
       // Без этого buffer на металлах показывал в 10× больше реального → σ казалась комфортной при опасной позиции.
-      const mf=mx[v.contracts.M&&v.contracts.M.moexTicker];
+      const fc=frontContract(v);
+      const mf=fc?mx[fc.moexTicker]:null;
       if(mf&&mf.stepPrice)v.stepPr=mf.stepPrice;
       if(mf&&mf.minStep)   v.stepSz=mf.minStep;
     }
@@ -5874,12 +5890,17 @@ async function fetchPrices(){
     mxOk=Object.keys(mx).length;
     // Build details — show front-month per instrument to keep message short
     for(const[k,v] of Object.entries(MODES)){
-      const m=mx[v.contracts.M&&v.contracts.M.moexTicker];
-      if(m)details.push(v.contracts.M.moexTicker+':'+m.price);
+      const fc=frontContract(v);
+      if(!fc)continue;
+      const m=mx[fc.moexTicker];
+      if(m)details.push(fc.moexTicker+':'+m.price);
     }
-    if(mx['SiM6'])details.push('SiM6:'+mx['SiM6'].price);
-    if(mx['CRM6'])details.push('CRM6:'+mx['CRM6'].price);
-    if(mx['EuM6'])details.push('EuM6:'+mx['EuM6'].price);
+    // Front-month triples (Si/Cr/Eu) — берём первый ключ из TRIPLE_DATA после удаления M
+    {const tri=TRIPLE_DATA.TRIPLE&&Object.values(TRIPLE_DATA.TRIPLE.contracts)[0];
+     if(tri&&mx[tri.siTk])details.push(tri.siTk+':'+mx[tri.siTk].price);
+     if(tri&&mx[tri.crTk])details.push(tri.crTk+':'+mx[tri.crTk].price);}
+    {const teu=TRIPLE_DATA.TRIPLE_EU&&Object.values(TRIPLE_DATA.TRIPLE_EU.contracts)[0];
+     if(teu&&mx[teu.euTk])details.push(teu.euTk+':'+mx[teu.euTk].price);}
     setFetchUI('✅ МОЕХ ('+mxOk+'). Forex...','var(--green)',true);
   }catch(e){setFetchUI('❌ МОЕХ: '+e.message,'var(--red)',true);}
 
@@ -5902,7 +5923,8 @@ async function fetchPrices(){
       // v0.0.10.q: m.swap для старого кода — выбираем по ФАКТИЧЕСКОЙ раздвижке,
       // а не по хардкоду m.dir. Иначе при перевороте рынка (например, золото
       // ушло в бэквордацию из контанго) m.swap остаётся на проигрышной стороне.
-      const _ctFut = (m.contracts && m.contracts.M && m.contracts.M.fut) || null;
+      const _ctFront = frontContract(m);
+      const _ctFut = (_ctFront && _ctFront.fut) || null;
       const _ctSpot = m.spot || null;
       let _activeDir = m.dir;
       if(!m.isCrypto && typeof _ctSpot==='number' && typeof _ctFut==='number' && _ctSpot>0 && _ctFut>0){
@@ -6057,7 +6079,7 @@ async function fetchPrices(){
 mode='OVW';
 $('hdrTitle').textContent='Обзор всех инструментов';
 $('hdrSub').textContent='Оптимальный сплит капитала | σ ≥ 1.2';
-$('inDays').value=daysToExp(MODES.EURUSD.contracts.M.exp);
+$('inDays').value=daysToExp((frontContract(MODES.EURUSD)||{exp:'2026-09-17'}).exp);
 // v0.0.4: initialize category navigation to "ALL"
 filterByCategory('ALL');
 calcOvw();
