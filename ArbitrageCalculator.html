@@ -185,6 +185,9 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPall"      data-cat="METAL"  onclick="switchTo('PALL')">Palladium</button>
       <button class="tab" id="tabBTC"       data-cat="CRYPTO" onclick="switchTo('BTC')" style="font-size:13px">BTC</button>
       <button class="tab" id="tabETH"       data-cat="CRYPTO" onclick="switchTo('ETH')" style="font-size:13px">ETH</button>
+      <button class="tab" id="tabXRP"       data-cat="CRYPTO" onclick="switchTo('XRP')" style="font-size:13px">XRP</button>
+      <button class="tab" id="tabTRX"       data-cat="CRYPTO" onclick="switchTo('TRX')" style="font-size:13px">TRX</button>
+      <button class="tab" id="tabSOL"       data-cat="CRYPTO" onclick="switchTo('SOL')" style="font-size:13px">SOL</button>
       <button class="tab" id="tabBrent"     data-cat="COMM"   onclick="switchTo('BRENT')" style="font-size:12px">🛢 Brent</button>
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
@@ -194,16 +197,16 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpH" onclick="switchContract('H')">Мар 27</button>
     </div>
     <div class="contract-pills" id="contractPillsCrypto" style="display:none">
-      <button class="cpill on" id="cpCM" onclick="switchContract('M')">Июн 26</button>
-      <button class="cpill"    id="cpN"  onclick="switchContract('N')">Июл 26</button>
+      <button class="cpill on" id="cpN"  onclick="switchContract('N')">Июл 26</button>
       <button class="cpill"    id="cpQ"  onclick="switchContract('Q')">Авг 26</button>
+      <button class="cpill"    id="cpCU" onclick="switchContract('U')">Сен 26</button>
     </div>
     </div>
     <div class="hdr-right">
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.s</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.u</p>
     </div>
   </div>
 
@@ -1329,13 +1332,13 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 let mode='EURUSD';
 let currentContract='U'; // U=Сен, Z=Дек, H=Мар (M=Июн удалён 18.06.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'M',ETH:'M',BRENT:'N',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
+const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'N',ETH:'N',XRP:'N',TRX:'N',SOL:'N',BRENT:'N',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
   EURUSD:'currency', UCNY:'currency',
   GOLD:'metal', SILVER:'metal', PLAT:'metal', PALL:'metal',
-  BTC:'crypto', ETH:'crypto',
+  BTC:'crypto', ETH:'crypto', XRP:'crypto', TRX:'crypto', SOL:'crypto',
   BRENT:'commodity',
   TRIPLE:'currency_triple', TRIPLE_EU:'currency_triple', TRIPLE_USD:'currency_triple',
   PERP_UCNH:'perp_triple', PERP_ECNH:'perp_triple', PERP_EU:'perp_triple',
@@ -1349,7 +1352,7 @@ const CATEGORY_MAP={
   CUR_TRI:   ['tabTriple','tabTripleEu','tabTripleU'],
   PERP_TRI:  ['tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx'],
   METAL:     ['tabGold','tabSilver','tabPlat','tabPall'],
-  CRYPTO:    ['tabBTC','tabETH'],
+  CRYPTO:    ['tabBTC','tabETH','tabXRP','tabTRX','tabSOL'],
   COMM:      ['tabBrent'],
   PORTFOLIO: ['tabPortfolio']
 };
@@ -1414,7 +1417,7 @@ function showStub(key){
   $('contractPills').style.display='none';
   {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
   // clear active state on instrument tabs
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabXRP','tabTRX','tabSOL'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
   // activate stub tab
   const stubTabMap={PERP_UCNH:'tabPerpUCNH',PERP_ECNH:'tabPerpECNH',PERP_EU:'tabPerpEU'};
@@ -1443,7 +1446,7 @@ function applyOvwFilter(){
     else tr.classList.add('ovw-row-hidden');
   });
 }
-const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95};
+const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95,XRP:95,TRX:95,SOL:95};
 const CONTRACT_LABELS={N:'Июл 26',Q:'Авг 26',U:'Сен 26',Z:'Дек 26',H:'Мар 27'};
 const CONTRACT_SHORT ={N:'7.26',Q:'8.26',U:'9.26',Z:'12.26',H:'3.27'};
 const MODES={
@@ -1502,16 +1505,42 @@ const MODES={
   BTC:{label:'BTC',pipSz:1,pipVal:1,stepSz:1,stepPr:0.07524,lpc:1000,comm:122,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.01,lotMin:0.01,lotMax:20,fundingRate:-0.00007,repo:21,iv:40,spot:76137,fxSpread:0,fxSymbol:'BTCUSDT',cryptoSymbol:'BTCUSDT',isCrypto:true,
     contracts:{
-      M:{moexTicker:'BTM6',exp:'2026-06-26',fut:74455,go:1516},
-      N:{moexTicker:'BTN6',exp:'2026-07-31',fut:75239,go:1527},
-      Q:{moexTicker:'BTQ6',exp:'2026-08-28',fut:75738,go:1542}
+      N:{moexTicker:'BTN6',exp:'2026-07-31',fut:60835,go:1222},
+      Q:{moexTicker:'BTQ6',exp:'2026-08-28',fut:61553,go:1232},
+      U:{moexTicker:'BTU6',exp:'2026-09-25',fut:62283,go:1244}
     }},
   ETH:{label:'ETH',pipSz:0.1,pipVal:1,stepSz:0.1,stepPr:0.07524,lpc:100,comm:3,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.1,lotMin:0.1,lotMax:200,fundingRate:-0.00014,repo:21,iv:50,spot:2319.53,fxSpread:0,fxSymbol:'ETHUSDT',cryptoSymbol:'ETHUSDT',isCrypto:true,
     contracts:{
-      M:{moexTicker:'EHM6',exp:'2026-06-26',fut:2046.1,go:578},
-      N:{moexTicker:'EHN6',exp:'2026-07-31',fut:2066.2,go:582},
-      Q:{moexTicker:'EHQ6',exp:'2026-08-28',fut:2099.7,go:586}
+      N:{moexTicker:'EHN6',exp:'2026-07-31',fut:1636.3,go:521},
+      Q:{moexTicker:'EHQ6',exp:'2026-08-28',fut:1659.1,go:524},
+      U:{moexTicker:'EHU6',exp:'2026-09-25',fut:1681.0,go:527}
+    }},
+  // === v0.0.10.t: XRP, TRX, SOL — новые крипто-фьючи MOEX (асс. XR, TX, S3) ===
+  // Размер контракта на MOEX: 1 XR = 100 XRP, 1 TX = 100 TRX, 1 S3 = 1 SOL.
+  // Сторона Bitget USDT-M: 1 contract = 1 coin. Для удобства совмещаем "1 лот" с 1 MOEX-контрактом.
+  // → XRP/TRX: 1 лот = 100 монет (cSize=100, lpc=1). SOL: 1 лот = 1 SOL (cSize=1, lpc=1).
+  // comm round-trip: Bitget taker 0.06% × notional × 2 + MOEX BUYSELLFEE × lpc/USDRUB
+  XRP:{label:'XRP',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.5,cSize:100,fxLev:20,dir:'cont',
+    lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000005,repo:21,iv:60,spot:1.165,fxSpread:0,fxSymbol:'XRPUSDT',cryptoSymbol:'XRPUSDT',isCrypto:true,
+    contracts:{
+      N:{moexTicker:'XRN6',exp:'2026-07-31',fut:1.0721,go:4215},
+      Q:{moexTicker:'XRQ6',exp:'2026-08-28',fut:1.0816,go:4280},
+      U:{moexTicker:'XRU6',exp:'2026-09-25',fut:1.0780,go:4263}
+    }},
+  TRX:{label:'TRX',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.2,cSize:100,fxLev:20,dir:'cont',
+    lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000248,repo:21,iv:65,spot:0.3204,fxSpread:0,fxSymbol:'TRXUSDT',cryptoSymbol:'TRXUSDT',isCrypto:true,
+    contracts:{
+      N:{moexTicker:'TXN6',exp:'2026-07-31',fut:0.3188,go:879},
+      Q:{moexTicker:'TXQ6',exp:'2026-08-28',fut:0.3198,go:896},
+      U:{moexTicker:'TXU6',exp:'2026-09-25',fut:0.3205,go:892}
+    }},
+  SOL:{label:'SOL',pipSz:0.01,pipVal:1,stepSz:0.01,stepPr:0.00988,lpc:1,comm:0.5,cSize:1,fxLev:20,dir:'cont',
+    lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.00003,repo:21,iv:55,spot:70.95,fxSpread:0,fxSymbol:'SOLUSDT',cryptoSymbol:'SOLUSDT',isCrypto:true,
+    contracts:{
+      N:{moexTicker:'S3N6',exp:'2026-07-31',fut:77.76,go:2706},
+      Q:{moexTicker:'S3Q6',exp:'2026-08-28',fut:78.77,go:2751},
+      U:{moexTicker:'S3U6',exp:'2026-09-25',fut:79.00,go:2740}
     }},
   // Brent: cTrader BRNUSD_xp UI = 1000 bbl/lot, $9.94/pip (НЕ 10000 как возвращает API!).
   // ⚠ cTrader API для нефти у xpbee возвращает lotSize=10000 (видимо в "0.1-bbl" единицах) —
@@ -1752,10 +1781,10 @@ function switchTo(m){
   // Save state for old mode before switching (belt-and-suspenders)
   if(mode!=='OVW'&&mode!=='TRIPLE'&&mode!=='TRIPLE_EU'&&mode!=='TRIPLE_USD'){savedLots[mode]=+$('inLots').value;savedContract[mode]=currentContract;}
   else if(mode==='TRIPLE'||mode==='TRIPLE_EU'||mode==='TRIPLE_USD')savedContract[mode]=currentContract;
-  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabBrent','tabPortfolio'];
+  const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabPerpUCNH','tabPerpECNH','tabPerpEU','tabPerpGldMx','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabXRP','tabTRX','tabSOL','tabBrent','tabPortfolio'];
   // v0.0.4.b: use classList.remove instead of className='tab' to preserve hidden-by-cat filter class
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#FB923C',OVW:'var(--green)'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',XRP:'#23292F',TRX:'#FF060A',SOL:'#9945FF',BRENT:'#FB923C',OVW:'var(--green)'};
 
   if(m==='OVW'){
     mode='OVW';
@@ -1913,7 +1942,7 @@ function switchTo(m){
   }
 
   mode=m;
-  currentContract=savedContract[m]||(MODES[m]&&MODES[m].isCrypto?'M':'U');
+  currentContract=savedContract[m]||(MODES[m]&&MODES[m].isCrypto?'N':'U');
   const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
@@ -1928,7 +1957,7 @@ function switchTo(m){
     $('contractPills').style.display='';
     const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';
   }
-  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH',BRENT:'tabBrent'};
+  const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH',XRP:'tabXRP',TRX:'tabTRX',SOL:'tabSOL',BRENT:'tabBrent'};
   $(tabMap[m]).className='tab on';$(tabMap[m]).style.background=colMap[m];
   $('inSpot').value=p.spot;$('inFut').value=p.fut;$('inDays').value=daysToExp(p.exp);$('inIV').value=p.iv;
   // v0.0.10.k: два swap-поля (long/short) если есть, иначе используем p.swap для совместимости
@@ -2033,7 +2062,7 @@ function switchContract(c){
 }
 
 function updateContractPills(overrideColor){
-  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',BRENT:'#FB923C'};
+  const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',XRP:'#23292F',TRX:'#FF060A',SOL:'#9945FF',BRENT:'#FB923C'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
   ['U','Z','H'].forEach(k=>{
@@ -2041,8 +2070,8 @@ function updateContractPills(overrideColor){
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Crypto pills: M/N/Q (id cpCM/cpN/cpQ — 'M' uses cpCM to not clash with standard cpM); K (Май 26) expired 29.05.2026 — убран
-  [['M','cpCM'],['N','cpN'],['Q','cpQ']].forEach(([k,id])=>{
+  // Crypto pills: N/Q/U (id cpN/cpQ/cpCU — 'U' uses cpCU to not clash with standard cpU); M (Июн 26) expired 26.06.2026 — убран
+  [['N','cpN'],['Q','cpQ'],['U','cpCU']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -6025,7 +6054,7 @@ async function fetchPrices(){
   // Crypto: прямой запрос в Bitget из браузера ученика (Bitget блокирует Cloudflare IP,
   // поэтому не через воркер). Публичный endpoint, ключи не нужны.
   let cryptoOk=0;
-  for(const m of ['BTC','ETH']){
+  for(const m of ['BTC','ETH','XRP','TRX','SOL']){
     const sym=MODES[m].cryptoSymbol;
     try{
       const r=await fetch('https://api.bitget.com/api/v2/mix/market/ticker?symbol='+sym+'&productType=usdt-futures');
