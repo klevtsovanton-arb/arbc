@@ -197,16 +197,16 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpH" onclick="switchContract('H')">Мар 27</button>
     </div>
     <div class="contract-pills" id="contractPillsCrypto" style="display:none">
-      <button class="cpill on" id="cpN"  onclick="switchContract('N')">Июл 26</button>
-      <button class="cpill"    id="cpQ"  onclick="switchContract('Q')">Авг 26</button>
-      <button class="cpill"    id="cpCU" onclick="switchContract('U')">Сен 26</button>
+      <button class="cpill on" id="cpCU" onclick="switchContract('U')">Сен 26</button>
+      <button class="cpill"    id="cpV"  onclick="switchContract('V')">Окт 26</button>
+      <button class="cpill"    id="cpX"  onclick="switchContract('X')">Ноя 26</button>
     </div>
     </div>
     <div class="hdr-right">
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.u</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.v</p>
     </div>
   </div>
 
@@ -281,7 +281,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>Si-<span id="trLblSi">6.26</span> (₽/1000$)</label><input id="trSi" type="number" step="1" value="75970" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
           <div class="row"><label>CNY-<span id="trLblCr">6.26</span> (₽/юань)</label><input id="trCr" type="number" step="0.001" value="11.222" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽</div></div>
           <div class="row"><label>USD/CNH (Forex)</label><input id="trFx" type="number" step="0.001" value="6.81" oninput="calcTriple()" onchange="calcTriple()"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="trRub" type="number" step="0.01" value="77" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="trRub" type="number" step="0.01" value="83" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="trDays" type="number" step="1" value="65" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="trIV" type="number" step="0.5" value="7.5" oninput="calcTriple()" onchange="calcTriple()"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -387,7 +387,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>Eu-<span id="teLblEu">6.26</span> (₽/1000€)</label><input id="teEu" type="number" step="1" value="88982" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
           <div class="row"><label>CNY-<span id="teLblCr">6.26</span> (₽/юань)</label><input id="teCr" type="number" step="0.001" value="11.212" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽</div></div>
           <div class="row"><label>EUR/CNH (Forex)</label><input id="teFx" type="number" step="0.001" value="8.0325" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="teRub" type="number" step="0.01" value="77" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="teRub" type="number" step="0.01" value="83" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="teDays" type="number" step="1" value="65" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="teIV" type="number" step="0.5" value="7.5" oninput="calcTripleEu()" onchange="calcTripleEu()"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -491,7 +491,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>Eu-<span id="tuLblEu">6.26</span> (₽/1000€)</label><input id="tuEu" type="number" step="1" value="89203" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">₽</div></div>
           <div class="row"><label>Si-<span id="tuLblSi">6.26</span> (₽/1000$)</label><input id="tuSi" type="number" step="1" value="76310" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">₽</div></div>
           <div class="row"><label>EUR/USD (Forex)</label><input id="tuFx" type="number" step="0.00001" value="1.17304" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="tuRub" type="number" step="0.01" value="77" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="tuRub" type="number" step="0.01" value="83" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="tuDays" type="number" step="1" value="65" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="tuIV" type="number" step="0.5" value="7.5" oninput="calcTripleU()" onchange="calcTripleU()"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -592,10 +592,10 @@ tr.ovw-row-hidden{display:none !important}
       <div>
         <div class="card">
           <div class="card-t" style="color:#9333EA">♾️ Цены ног (вечники + форекс)</div>
-          <div class="row"><label>USDRUBF (₽/$)</label><input id="puL1" type="number" step="0.01" value="77.00" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>USDRUBF (₽/$)</label><input id="puL1" type="number" step="0.01" value="83.00" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
           <div class="row"><label>CNYRUBF (₽/юань)</label><input id="puL2" type="number" step="0.001" value="11.210" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
           <div class="row"><label>USD/CNH (Forex)</label><input id="puFx" type="number" step="0.001" value="6.810" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="puRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="puRub" type="number" step="0.01" value="83" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="puDays" type="number" step="1" value="10" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="puIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -609,7 +609,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>МОЕХ (свои)</label><input id="puMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('puMxOwn');fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
           <div class="row"><label>Плечо пропа</label><input id="puPropLev" type="number" step="0.5" value="5" oninput="syncCap('puPropLev');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">×</div></div>
           <div class="row"><label>Морж МОЕХ</label><input id="puMxRisk" type="number" step="5" value="50" oninput="syncCap('puMxRisk');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
-          <div class="row"><label>ГО USDRUBF</label><input id="puGoL1" type="text" inputmode="numeric" value="7 700" oninput="fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО USDRUBF</label><input id="puGoL1" type="text" inputmode="numeric" value="12 500" oninput="fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
           <div class="row"><label>ГО CNYRUBF</label><input id="puGoL2" type="text" inputmode="numeric" value="1 120" oninput="fmtOnInput(this);calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">₽</div></div>
           <div class="row"><label>Стоп-аут FX</label><input id="puStopout" type="number" step="5" value="50" oninput="syncCap('puStopout');calcPerp('PERP_UCNH')" onchange="calcPerp('PERP_UCNH')"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -705,7 +705,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>EURRUBF (₽/€)</label><input id="peL1" type="number" step="0.01" value="89.20" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
           <div class="row"><label>CNYRUBF (₽/юань)</label><input id="peL2" type="number" step="0.001" value="11.210" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽</div></div>
           <div class="row"><label>EUR/CNH (Forex)</label><input id="peFx" type="number" step="0.001" value="8.0325" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="peRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="peRub" type="number" step="0.01" value="83" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="peDays" type="number" step="1" value="10" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="peIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_ECNH')" onchange="calcPerp('PERP_ECNH')"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -813,9 +813,9 @@ tr.ovw-row-hidden{display:none !important}
         <div class="card">
           <div class="card-t" style="color:#9333EA">♾️ Цены ног (вечники + форекс)</div>
           <div class="row"><label>EURRUBF (₽/€)</label><input id="prL1" type="number" step="0.01" value="89.20" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
-          <div class="row"><label>USDRUBF (₽/$)</label><input id="prL2" type="number" step="0.01" value="77.00" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>USDRUBF (₽/$)</label><input id="prL2" type="number" step="0.01" value="83.00" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
           <div class="row"><label>EUR/USD (Forex)</label><input id="prFx" type="number" step="0.00001" value="1.17304" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit"></div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="prRub" type="number" step="0.01" value="77" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="prRub" type="number" step="0.01" value="83" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней в позиции</label><input id="prDays" type="number" step="1" value="10" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">дн</div></div>
           <div class="row"><label>IV спреда</label><input id="prIV" type="number" step="0.5" value="7.5" oninput="calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
           <div class="sep"></div>
@@ -830,7 +830,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>Плечо пропа</label><input id="prPropLev" type="number" step="0.5" value="5" oninput="syncCap('prPropLev');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">×</div></div>
           <div class="row"><label>Морж МОЕХ</label><input id="prMxRisk" type="number" step="5" value="50" oninput="syncCap('prMxRisk');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
           <div class="row"><label>ГО EURRUBF</label><input id="prGoL1" type="text" inputmode="numeric" value="8 920" oninput="fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
-          <div class="row"><label>ГО USDRUBF</label><input id="prGoL2" type="text" inputmode="numeric" value="7 700" oninput="fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО USDRUBF</label><input id="prGoL2" type="text" inputmode="numeric" value="12 500" oninput="fmtOnInput(this);calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">₽</div></div>
           <div class="row"><label>Стоп-аут FX</label><input id="prStopout" type="number" step="5" value="50" oninput="syncCap('prStopout');calcPerp('PERP_EU')" onchange="calcPerp('PERP_EU')"><div class="unit">%</div></div>
           <div class="sep"></div>
           <div class="card-t" style="color:var(--red)">💸 Фандинг вечников (SWAPRATE)</div>
@@ -925,7 +925,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="9000" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>Si-<span id="gmLblSi">6.26</span> (₽/1000$)</label><input id="gmSi" type="number" step="1" value="76310" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>GD-<span id="gmLblGd">6.26</span> ($/унц.)</label><input id="gmGd" type="number" step="0.1" value="3900" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">$</div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="77" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="83" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней до экспирации GD</label><input id="gmDaysToExp" type="number" step="1" value="57" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
           <div class="row"><label>Дней в квартале</label><input id="gmQdays" type="number" step="1" value="92" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
           <div class="row"><label>Ставка ЦБ</label><input id="gmCbr" type="number" step="0.5" value="16" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
@@ -1149,7 +1149,7 @@ tr.ovw-row-hidden{display:none !important}
         <div class="card-t" id="accentLabel" style="color:var(--cyan)">📊 Рыночные данные</div>
         <div class="row"><label id="lblInSpot">Цена спот (Forex)</label><input id="inSpot" oninput="calc()" onchange="calc()" type="number" step="0.001" value="1.17304"><div class="unit"></div></div>
         <div class="row"><label>Цена фьючерса (МОЕХ)</label><input id="inFut" oninput="calc()" onchange="calc()" type="number" step="0.001" value="1.16741"><div class="unit"></div></div>
-        <div class="row"><label>Курс USD/RUB</label><input id="inRub" oninput="calc()" onchange="calc()" type="number" step="0.01" value="77"><div class="unit">₽/$</div></div>
+        <div class="row"><label>Курс USD/RUB</label><input id="inRub" oninput="calc()" onchange="calc()" type="number" step="0.01" value="83"><div class="unit">₽/$</div></div>
         <div class="row"><label>Дней до экспирации</label><input id="inDays" oninput="calc()" onchange="calc()" type="number" step="1" value="68"><div class="unit">дн</div></div>
         <div class="row"><label>IV (implied vol)</label><input id="inIV" oninput="calc()" onchange="calc()" type="number" step="0.1" value="7.51"><div class="unit">%</div></div>
         <div class="sep"></div>
@@ -1332,7 +1332,7 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 let mode='EURUSD';
 let currentContract='U'; // U=Сен, Z=Дек, H=Мар (M=Июн удалён 18.06.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'N',ETH:'N',XRP:'N',TRX:'N',SOL:'N',BRENT:'N',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
+const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'U',ETH:'U',XRP:'U',TRX:'U',SOL:'U',BRENT:'U',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
@@ -1447,8 +1447,8 @@ function applyOvwFilter(){
   });
 }
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95,XRP:95,TRX:95,SOL:95};
-const CONTRACT_LABELS={N:'Июл 26',Q:'Авг 26',U:'Сен 26',Z:'Дек 26',H:'Мар 27'};
-const CONTRACT_SHORT ={N:'7.26',Q:'8.26',U:'9.26',Z:'12.26',H:'3.27'};
+const CONTRACT_LABELS={U:'Сен 26',V:'Окт 26',X:'Ноя 26',Z:'Дек 26',H:'Мар 27'};
+const CONTRACT_SHORT ={U:'9.26',V:'10.26',X:'11.26',Z:'12.26',H:'3.27'};
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
@@ -1505,16 +1505,16 @@ const MODES={
   BTC:{label:'BTC',pipSz:1,pipVal:1,stepSz:1,stepPr:0.07524,lpc:1000,comm:122,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.01,lotMin:0.01,lotMax:20,fundingRate:-0.00007,repo:21,iv:40,spot:76137,fxSpread:0,fxSymbol:'BTCUSDT',cryptoSymbol:'BTCUSDT',isCrypto:true,
     contracts:{
-      N:{moexTicker:'BTN6',exp:'2026-07-31',fut:60835,go:1222},
-      Q:{moexTicker:'BTQ6',exp:'2026-08-28',fut:61553,go:1232},
-      U:{moexTicker:'BTU6',exp:'2026-09-25',fut:62283,go:1244}
+      U:{moexTicker:'BTU6',exp:'2026-09-25',fut:77350,go:1644},
+      V:{moexTicker:'BTV6',exp:'2026-10-30',fut:77600,go:1663},
+      X:{moexTicker:'BTX6',exp:'2026-11-27',fut:79050,go:1681}
     }},
   ETH:{label:'ETH',pipSz:0.1,pipVal:1,stepSz:0.1,stepPr:0.07524,lpc:100,comm:3,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.1,lotMin:0.1,lotMax:200,fundingRate:-0.00014,repo:21,iv:50,spot:2319.53,fxSpread:0,fxSymbol:'ETHUSDT',cryptoSymbol:'ETHUSDT',isCrypto:true,
     contracts:{
-      N:{moexTicker:'EHN6',exp:'2026-07-31',fut:1636.3,go:521},
-      Q:{moexTicker:'EHQ6',exp:'2026-08-28',fut:1659.1,go:524},
-      U:{moexTicker:'EHU6',exp:'2026-09-25',fut:1681.0,go:527}
+      U:{moexTicker:'EHU6',exp:'2026-09-25',fut:2405.0,go:808},
+      V:{moexTicker:'EHV6',exp:'2026-10-30',fut:2414.3,go:814},
+      X:{moexTicker:'EHX6',exp:'2026-11-27',fut:2538.0,go:821}
     }},
   // === v0.0.10.t: XRP, TRX, SOL — новые крипто-фьючи MOEX (асс. XR, TX, S3) ===
   // Размер контракта на MOEX: 1 XR = 100 XRP, 1 TX = 100 TRX, 1 S3 = 1 SOL.
@@ -1524,23 +1524,23 @@ const MODES={
   XRP:{label:'XRP',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.5,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000005,repo:21,iv:60,spot:1.165,fxSpread:0,fxSymbol:'XRPUSDT',cryptoSymbol:'XRPUSDT',isCrypto:true,
     contracts:{
-      N:{moexTicker:'XRN6',exp:'2026-07-31',fut:1.0721,go:4215},
-      Q:{moexTicker:'XRQ6',exp:'2026-08-28',fut:1.0816,go:4280},
-      U:{moexTicker:'XRU6',exp:'2026-09-25',fut:1.0780,go:4263}
+      U:{moexTicker:'XRU6',exp:'2026-09-25',fut:1.4066,go:5853},
+      V:{moexTicker:'XRV6',exp:'2026-10-30',fut:1.4026,go:5939},
+      X:{moexTicker:'XRX6',exp:'2026-11-27',fut:1.4154,go:5902}
     }},
   TRX:{label:'TRX',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.2,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000248,repo:21,iv:65,spot:0.3204,fxSpread:0,fxSymbol:'TRXUSDT',cryptoSymbol:'TRXUSDT',isCrypto:true,
     contracts:{
-      N:{moexTicker:'TXN6',exp:'2026-07-31',fut:0.3188,go:879},
-      Q:{moexTicker:'TXQ6',exp:'2026-08-28',fut:0.3198,go:896},
-      U:{moexTicker:'TXU6',exp:'2026-09-25',fut:0.3205,go:892}
+      U:{moexTicker:'TXU6',exp:'2026-09-25',fut:0.3426,go:997},
+      V:{moexTicker:'TXV6',exp:'2026-10-30',fut:0.3461,go:1016},
+      X:{moexTicker:'TXX6',exp:'2026-11-27',fut:0.3437,go:1008}
     }},
   SOL:{label:'SOL',pipSz:0.01,pipVal:1,stepSz:0.01,stepPr:0.00988,lpc:1,comm:0.5,cSize:1,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.00003,repo:21,iv:55,spot:70.95,fxSpread:0,fxSymbol:'SOLUSDT',cryptoSymbol:'SOLUSDT',isCrypto:true,
     contracts:{
-      N:{moexTicker:'S3N6',exp:'2026-07-31',fut:77.76,go:2706},
-      Q:{moexTicker:'S3Q6',exp:'2026-08-28',fut:78.77,go:2751},
-      U:{moexTicker:'S3U6',exp:'2026-09-25',fut:79.00,go:2740}
+      U:{moexTicker:'S3U6',exp:'2026-09-25',fut:91.61,go:3373},
+      V:{moexTicker:'S3V6',exp:'2026-10-30',fut:93.51,go:3429},
+      X:{moexTicker:'S3X6',exp:'2026-11-27',fut:92.14,go:3403}
     }},
   // Brent: cTrader BRNUSD_xp UI = 1000 bbl/lot, $9.94/pip (НЕ 10000 как возвращает API!).
   // ⚠ cTrader API для нефти у xpbee возвращает lotSize=10000 (видимо в "0.1-bbl" единицах) —
@@ -1616,7 +1616,7 @@ const PERP_CONFIG={
     prefix:'pu', color:'#9333EA', contentId:'perpUcnhContent', tabId:'tabPerpUCNH',
     title:'Вечники USDRUBF÷CNYRUBF vs USD/CNH',
     legend:'USDRUBF÷CNYRUBF → синтетический USD/CNH, торгуем против форекса',
-    leg1:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)',   baseUnit:'$',    lotVol:1000, swapUnit:'₽/$/дн',    defaultPrice:77.00, defaultGo:7700,  defaultSwap:0.10},
+    leg1:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)',   baseUnit:'$',    lotVol:1000, swapUnit:'₽/$/дн',    defaultPrice:83.00, defaultGo:12500,  defaultSwap:0.10},
     leg2:{ticker:'CNYRUBF', shortLbl:'CNYRUBF', priceLbl:'CNYRUBF (₽/юань)', baseUnit:'юань', lotVol:1000, swapUnit:'₽/юань/дн', defaultPrice:11.21, defaultGo:1120,  defaultSwap:0.015},
     fx:{symbol:'USD/CNH', lbl:'USD/CNH (Forex)', defaultPrice:6.81, pipSize:0.001, pipValMode:'cnh', swapS:-0.717, swapL:0.245}
   },
@@ -1633,17 +1633,34 @@ const PERP_CONFIG={
     title:'Вечники EURRUBF÷USDRUBF vs EUR/USD',
     legend:'EURRUBF÷USDRUBF → синтетический EUR/USD, торгуем против форекса',
     leg1:{ticker:'EURRUBF', shortLbl:'EURRUBF', priceLbl:'EURRUBF (₽/€)', baseUnit:'€', lotVol:1000, swapUnit:'₽/€/дн', defaultPrice:89.20, defaultGo:8920, defaultSwap:0.11},
-    leg2:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)', baseUnit:'$', lotVol:1000, swapUnit:'₽/$/дн', defaultPrice:77.00, defaultGo:7700, defaultSwap:0.10},
+    leg2:{ticker:'USDRUBF', shortLbl:'USDRUBF', priceLbl:'USDRUBF (₽/$)', baseUnit:'$', lotVol:1000, swapUnit:'₽/$/дн', defaultPrice:83.00, defaultGo:12500, defaultSwap:0.10},
     fx:{symbol:'EUR/USD', lbl:'EUR/USD (Forex)', defaultPrice:1.17304, pipSize:0.0001, pipValMode:'usd', swapS:-0.3, swapL:0.1}
   }
 };
 // Live state: updated by fetchPrices. Keeps last-known prices/funding for each ticker.
+// USDRUBF.price — единый источник USDRUB для всего калькулятора. Обновляется каждый fetch из ISS.
 const PERP_STATE={
-  USDRUBF:{price:77.00, go:7700, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
+  USDRUBF:{price:83.00, go:7700, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   CNYRUBF:{price:11.21, go:1120, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   EURRUBF:{price:89.20, go:8920, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   GLDRUBF:{price:9000,  go:900,  lotVol:1,    swapAvg:null, swapLast:null, swapInfo:''}
 };
+// v0.0.10.v: единый live USDRUB. Читай через getLiveUSDRUB() везде, где нужен курс —
+// он тянется прямо из MOEX USDRUBF perpetual (обновляется на каждый fetchPrices).
+// НЕ хардкодить 77/83 — только fallback если PERP_STATE ещё не проинициализирован.
+function getLiveUSDRUB(){
+  const v = PERP_STATE && PERP_STATE.USDRUBF && +PERP_STATE.USDRUBF.price;
+  return (isFinite(v) && v>0) ? v : 83;
+}
+// Broadcast live USDRUB во все rub-инпуты (вызывается после fetchPrices)
+function broadcastUSDRUB(){
+  const v = getLiveUSDRUB();
+  const s = v.toFixed(2);
+  ['inRub','trRub','teRub','tuRub','puRub','peRub','prRub','gmRub'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && !el.dataset.userEdited) el.value = s;
+  });
+}
 
 
 // === Formatted input helpers ===
@@ -1942,7 +1959,7 @@ function switchTo(m){
   }
 
   mode=m;
-  currentContract=savedContract[m]||(MODES[m]&&MODES[m].isCrypto?'N':'U');
+  currentContract=savedContract[m]||'U';
   const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
@@ -2070,8 +2087,8 @@ function updateContractPills(overrideColor){
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Crypto pills: N/Q/U (id cpN/cpQ/cpCU — 'U' uses cpCU to not clash with standard cpU); M (Июн 26) expired 26.06.2026 — убран
-  [['N','cpN'],['Q','cpQ'],['U','cpCU']].forEach(([k,id])=>{
+  // Crypto pills: U/V/X (id cpCU/cpV/cpX — 'U' uses cpCU to not clash with standard cpU); N (Июл), Q (Авг) expired — убраны
+  [['U','cpCU'],['V','cpV'],['X','cpX']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -2661,7 +2678,7 @@ function calc(){
 
 // === OVERVIEW ===
 function ovwSyncFromRub(){
-  const rub=+$('inRub').value||77;
+  const rub=+$('inRub').value||getLiveUSDRUB();
   const usd=Math.round(nv('ovwRub')/rub);
   const eqEl=$('ovwUsdEq');if(eqEl)eqEl.textContent=fmtInt(usd);
   $('ovwRate').textContent=rub.toFixed(2);
@@ -2706,7 +2723,7 @@ function renderOvwSort(){
 
 function calcOvw(){
   const totalRub=nv('ovwRub');
-  const rub=+$('inRub').value||77;
+  const rub=+$('inRub').value||getLiveUSDRUB();
   const propLev=+$('ovwProp').value;
   const mxRisk=+$('ovwRisk').value/100;
   const stopout=+$('ovwStop').value/100;
@@ -5239,7 +5256,7 @@ function pfCalcPortfolioStats(){
 function pfRender(){
   const tb = $('pfBody'); if(!tb) return;
   tb.innerHTML='';
-  const rub = +$('inRub').value || 77;
+  const rub = +$('inRub').value || getLiveUSDRUB();
   // Group legs by strategy
   const groups = {};
   PF_LEGS.forEach(l=>{(groups[l.strategy]=groups[l.strategy]||[]).push(l);});
@@ -5903,6 +5920,8 @@ async function fetchPrices(){
         if(m.go)PERP_STATE[tk].go=Math.round(m.go);
       }
     }
+    // v0.0.10.v: раскидываем свежий USDRUB (из USDRUBF perpetual) во все rub-поля калькулятора
+    if(typeof broadcastUSDRUB==='function') broadcastUSDRUB();
     // Find LOTVOLUME in securities block if present (column LOTVOLUME)
     {
       const siCols=d.securities.columns, siRows=d.securities.data;
@@ -6082,7 +6101,7 @@ async function fetchPrices(){
     else setFetchUI('Готово ('+t+')','var(--tm)',false);
   console.log('Fetch details:',details.join(' | '));
   // Sync rate everywhere
-  const rub=+$('inRub').value||77;
+  const rub=+$('inRub').value||getLiveUSDRUB();
   {const eq=$('ovwUsdEq');if(eq)eq.textContent=fmtInt(Math.round(nv('ovwRub')/rub));}
   $('ovwRate').textContent=rub.toFixed(2);
   $('trRub').value=rub.toFixed(2);
