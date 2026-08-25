@@ -212,7 +212,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.y</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.z</p>
     </div>
   </div>
 
@@ -929,7 +929,7 @@ tr.ovw-row-hidden{display:none !important}
       <div>
         <div class="card">
           <div class="card-t" style="color:var(--gold)">🥇 Цены трёх ног (МОЕХ)</div>
-          <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="9000" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="12220" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>Si-<span id="gmLblSi">6.26</span> (₽/1000$)</label><input id="gmSi" type="number" step="1" value="76310" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>GD-<span id="gmLblGd">6.26</span> ($/унц.)</label><input id="gmGd" type="number" step="0.1" value="3900" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">$</div></div>
           <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="83" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/$</div></div>
@@ -949,7 +949,7 @@ tr.ovw-row-hidden{display:none !important}
           <div class="row"><label>МОЕХ (свои)</label><input id="gmMxOwn" type="text" inputmode="numeric" value="1 000 000" oninput="syncCap('gmMxOwn');fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>Плечо пропа</label><input id="gmPropLev" type="number" step="0.5" value="5" oninput="syncCap('gmPropLev');calcGldMx()" onchange="calcGldMx()"><div class="unit">×</div></div>
           <div class="row"><label>Морж МОЕХ</label><input id="gmMxRisk" type="number" step="5" value="50" oninput="syncCap('gmMxRisk');calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
-          <div class="row"><label>ГО GLDRUBF</label><input id="gmGoGold" type="text" inputmode="numeric" value="900" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>ГО GLDRUBF</label><input id="gmGoGold" type="text" inputmode="numeric" value="1 350" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>ГО Si</label><input id="gmGoSi" type="text" inputmode="numeric" value="12 267" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="row"><label>ГО GD</label><input id="gmGoGd" type="text" inputmode="numeric" value="30 000" oninput="fmtOnInput(this);calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
           <div class="sep"></div>
@@ -1652,7 +1652,7 @@ const PERP_STATE={
   USDRUBF:{price:83.00, go:7700, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   CNYRUBF:{price:11.21, go:1120, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
   EURRUBF:{price:89.20, go:8920, lotVol:1000, swapAvg:null, swapLast:null, swapInfo:''},
-  GLDRUBF:{price:9000,  go:900,  lotVol:1,    swapAvg:null, swapLast:null, swapInfo:''}
+  GLDRUBF:{price:12220, go:1350, lotVol:1,    swapAvg:null, swapLast:null, swapInfo:''}
 };
 // v0.0.10.v: единый live USDRUB. Читай через getLiveUSDRUB() везде, где нужен курс —
 // он тянется прямо из MOEX USDRUBF perpetual (обновляется на каждый fetchPrices).
@@ -6086,6 +6086,34 @@ async function fetchPrices(){
     if(PERP_STATE.GLDRUBF && PERP_STATE.GLDRUBF.swapAvg!=null){
       $('gmSwap').value = (+PERP_STATE.GLDRUBF.swapAvg).toFixed(4);
     }
+    // v0.0.10.z: полный refresh полей золотого тройника из свежих ISS-данных.
+    // Раньше обновлялся ТОЛЬКО swap, а цены GLDRUBF/Si/GD оставались стартовыми (9000/84836/4632)
+    // → спред рассчитывался неправильно (получалось 71% вместо реальных ~98.6%).
+    if(PERP_STATE.GLDRUBF && PERP_STATE.GLDRUBF.price){
+      const gm = $('gmGold'); if(gm) gm.value = (+PERP_STATE.GLDRUBF.price).toFixed(2);
+      if(PERP_STATE.GLDRUBF.go){ const gg=$('gmGoGold'); if(gg) setNum('gmGoGold', PERP_STATE.GLDRUBF.go); }
+    }
+    // Si/GD — берём front-month из TRIPLE_DATA.TRIPLE и MODES.GOLD
+    {
+      const siKey = Object.keys(TRIPLE_DATA.TRIPLE.contracts)[0];
+      const siFront = TRIPLE_DATA.TRIPLE.contracts[siKey];
+      if(siFront){
+        const gsi=$('gmSi'); if(gsi) gsi.value = siFront.si;
+        if(siFront.siGo){ setNum('gmGoSi', siFront.siGo); }
+      }
+      const gdFront = frontContract(MODES.GOLD);
+      if(gdFront){
+        const ggd=$('gmGd'); if(ggd) ggd.value = gdFront.fut;
+        if(gdFront.go){ setNum('gmGoGd', gdFront.go); }
+        const gde=$('gmDaysToExp'); if(gde) gde.value = daysToExp(gdFront.exp);
+      }
+    }
+    // Курс USD/RUB — из live USDRUBF
+    if(typeof getLiveUSDRUB==='function'){
+      const gru=$('gmRub'); if(gru && !gru.dataset.userEdited) gru.value = getLiveUSDRUB().toFixed(2);
+    }
+    // Перерасчёт если пользователь сейчас на золотом тройнике
+    if(mode==='PERP_GLD_MX' && typeof calcGldMx==='function') calcGldMx();
     details.push('SWAPRATE:'+perpOk+'/4');
   }catch(e){details.push('SWAPRATE:⚠'+String(e.message||e).slice(0,30));}
 
