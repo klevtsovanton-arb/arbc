@@ -2,6 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Калькулятор арбитража | Грамотный Трейдинг</title>
 <style>
@@ -212,7 +215,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.z</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ac</p>
     </div>
   </div>
 
@@ -929,10 +932,10 @@ tr.ovw-row-hidden{display:none !important}
       <div>
         <div class="card">
           <div class="card-t" style="color:var(--gold)">🥇 Цены трёх ног (МОЕХ)</div>
-          <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="12220" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
-          <div class="row"><label>Si-<span id="gmLblSi">6.26</span> (₽/1000$)</label><input id="gmSi" type="number" step="1" value="76310" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽</div></div>
-          <div class="row"><label>GD-<span id="gmLblGd">6.26</span> ($/унц.)</label><input id="gmGd" type="number" step="0.1" value="3900" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">$</div></div>
-          <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="83" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">₽/$</div></div>
+          <div class="row"><label>GLDRUBF (₽/грамм)</label><input id="gmGold" type="number" step="0.01" value="12220" oninput="this.dataset.userEdited='1';calcGldMx()" onchange="this.dataset.userEdited='1';calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>Si-<span id="gmLblSi">6.26</span> (₽/1000$)</label><input id="gmSi" type="number" step="1" value="76310" oninput="this.dataset.userEdited='1';calcGldMx()" onchange="this.dataset.userEdited='1';calcGldMx()"><div class="unit">₽</div></div>
+          <div class="row"><label>GD-<span id="gmLblGd">6.26</span> ($/унц.)</label><input id="gmGd" type="number" step="0.1" value="3900" oninput="this.dataset.userEdited='1';calcGldMx()" onchange="this.dataset.userEdited='1';calcGldMx()"><div class="unit">$</div></div>
+          <div class="row"><label>Курс USD/RUB</label><input id="gmRub" type="number" step="0.01" value="83" oninput="this.dataset.userEdited='1';calcGldMx()" onchange="this.dataset.userEdited='1';calcGldMx()"><div class="unit">₽/$</div></div>
           <div class="row"><label>Дней до экспирации GD</label><input id="gmDaysToExp" type="number" step="1" value="57" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
           <div class="row"><label>Дней в квартале</label><input id="gmQdays" type="number" step="1" value="92" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">дн</div></div>
           <div class="row"><label>Ставка ЦБ</label><input id="gmCbr" type="number" step="0.5" value="16" oninput="calcGldMx()" onchange="calcGldMx()"><div class="unit">%</div></div>
@@ -4390,6 +4393,35 @@ function adjGldMxLots(dir){
 }
 
 function calcGldMx(){
+  // v0.0.10.ac: read-through ТОЛЬКО если поле НЕ редактировалось пользователем.
+  // (v0.0.10.ab блокировал ручной ввод — на каждый oninput сразу перезаписывал.)
+  // userEdited флаг ставится в oninput handler'е самого поля (см. HTML gmGold/gmSi/gmGd/gmRub).
+  try{
+    const st=PERP_STATE&&PERP_STATE.GLDRUBF;
+    if(st&&st.price>0){
+      const gm=$('gmGold');
+      if(gm && !gm.dataset.userEdited) gm.value=(+st.price).toFixed(2);
+    }
+    if(typeof frontContract==='function' && MODES.GOLD){
+      const gdF=frontContract(MODES.GOLD);
+      if(gdF && gdF.fut>0){
+        const gd=$('gmGd');
+        if(gd && !gd.dataset.userEdited) gd.value=gdF.fut;
+      }
+    }
+    if(TRIPLE_DATA&&TRIPLE_DATA.TRIPLE&&TRIPLE_DATA.TRIPLE.contracts){
+      const siKey=Object.keys(TRIPLE_DATA.TRIPLE.contracts)[0];
+      const siF=TRIPLE_DATA.TRIPLE.contracts[siKey];
+      if(siF && siF.si>0){
+        const gs=$('gmSi');
+        if(gs && !gs.dataset.userEdited) gs.value=siF.si;
+      }
+    }
+    if(typeof getLiveUSDRUB==='function'){
+      const gr=$('gmRub'), live=getLiveUSDRUB();
+      if(gr && !gr.dataset.userEdited && live>0) gr.value=live.toFixed(2);
+    }
+  }catch(_){}
   const GOLD=+$('gmGold').value, Si=+$('gmSi').value, GD=+$('gmGd').value, rub=+$('gmRub').value;
   const daysToExp=Math.max(1,+$('gmDaysToExp').value||57);
   const qdays=Math.max(1,+$('gmQdays').value||92);
@@ -5843,22 +5875,42 @@ async function fetchPrices(){
     // Build ticker list: all instruments × all contracts + triple-arb + perpetual futures
     const tickerSet=new Set();
     for(const p of Object.values(MODES))for(const c of Object.values(p.contracts))tickerSet.add(c.moexTicker);
-    ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
+    // v0.0.10.ac: SiM6/CRM6/EuM6 экспирировали 18.06.2026 — убраны из запроса.
+    ['SiU6','SiZ6','CRU6','CRZ6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
     // v0.0.5: perpetual tickers for PERP_DATA tab and overview row
     // v0.0.7: + GLDRUBF for gold triple
     ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF'].forEach(t=>tickerSet.add(t));
-    const tickers=[...tickerSet].join(',');
-    const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+tickers);
-    const d=await r.json();
-    const mc=d.marketdata.columns,mr=d.marketdata.data;
-    const sc=d.securities.columns,sr=d.securities.data;
+    // v0.0.10.ac: воркер режет ответ на ~20KB (примерно 30 тикеров с полной marketdata).
+    // Разбиваем на пачки по 25 и делаем параллельные запросы, потом объединяем.
+    const allTickers=[...tickerSet];
+    const BATCH=25;
+    const batches=[];
+    for(let i=0;i<allTickers.length;i+=BATCH) batches.push(allTickers.slice(i,i+BATCH));
+    const responses=await Promise.all(
+      batches.map(b=>fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+b.join(','))
+        .then(r=>r.json())
+        .catch(e=>({_err:String(e.message||e)})))
+    );
+    // Объединяем marketdata и securities колонки из первого валидного ответа
+    let mc=null,sc=null;
+    const mrAll=[], srAll=[];
+    for(const d of responses){
+      if(d && d.marketdata && d.securities){
+        if(!mc){ mc=d.marketdata.columns; sc=d.securities.columns; }
+        for(const row of d.marketdata.data) mrAll.push(row);
+        for(const row of d.securities.data) srAll.push(row);
+      }
+    }
+    if(!mc||!sc) throw new Error('все пачки MOEX вернули пусто');
     const ci=n=>mc.indexOf(n),si=n=>sc.indexOf(n);
     const mx={};
-    for(const row of mr){
+    for(const row of mrAll){
       const id=row[ci('SECID')],last=row[ci('LAST')]||row[ci('SETTLEPRICE')];
       if(id&&last)mx[id]={price:last,time:row[ci('UPDATETIME')]||''};
     }
-    for(const row of sr){
+    // Обёртка для совместимости с остальным кодом (использует d.securities.columns/data)
+    const d={marketdata:{columns:mc,data:mrAll},securities:{columns:sc,data:srAll}};
+    for(const row of srAll){
       const id=row[si('SECID')];
       if(!id||!mx[id])continue;
       const im=row[si('INITIALMARGIN')],sp=row[si('STEPPRICE')],ms=row[si('MINSTEP')];
@@ -5941,6 +5993,32 @@ async function fetchPrices(){
     }
     // v0.0.10.v: раскидываем свежий USDRUB (из USDRUBF perpetual) во все rub-поля калькулятора
     if(typeof broadcastUSDRUB==='function') broadcastUSDRUB();
+    // v0.0.10.aa: полный refresh полей золотого тройника (перенесено сюда из SWAPRATE-блока,
+    // чтоб не зависеть от успешности отдельного /moex-history запроса).
+    // v0.0.10.ac: сбрасываем userEdited перед каждым fetch — "Обновить цены" всегда затирает live-ценами.
+    ['gmGold','gmSi','gmGd','gmRub'].forEach(id=>{const e=$(id); if(e && e.dataset.userEdited) delete e.dataset.userEdited;});
+    if(PERP_STATE.GLDRUBF && PERP_STATE.GLDRUBF.price){
+      const gm=$('gmGold'); if(gm) gm.value=(+PERP_STATE.GLDRUBF.price).toFixed(2);
+      if(PERP_STATE.GLDRUBF.go){ const gg=$('gmGoGold'); if(gg) setNum('gmGoGold',PERP_STATE.GLDRUBF.go); }
+    }
+    {
+      const siKey=Object.keys(TRIPLE_DATA.TRIPLE.contracts)[0];
+      const siFront=TRIPLE_DATA.TRIPLE.contracts[siKey];
+      if(siFront){
+        const gsi=$('gmSi'); if(gsi) gsi.value=siFront.si;
+        if(siFront.siGo){ setNum('gmGoSi',siFront.siGo); }
+      }
+      const gdFront=(typeof frontContract==='function')?frontContract(MODES.GOLD):null;
+      if(gdFront){
+        const ggd=$('gmGd'); if(ggd) ggd.value=gdFront.fut;
+        if(gdFront.go){ setNum('gmGoGd',gdFront.go); }
+        const gde=$('gmDaysToExp'); if(gde) gde.value=daysToExp(gdFront.exp);
+      }
+    }
+    if(typeof getLiveUSDRUB==='function'){
+      const gru=$('gmRub'); if(gru && !gru.dataset.userEdited) gru.value=getLiveUSDRUB().toFixed(2);
+    }
+    if(mode==='PERP_GLD_MX' && typeof calcGldMx==='function') calcGldMx();
     // Find LOTVOLUME in securities block if present (column LOTVOLUME)
     {
       const siCols=d.securities.columns, siRows=d.securities.data;
