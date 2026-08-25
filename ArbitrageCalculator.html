@@ -201,12 +201,18 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpV"  onclick="switchContract('V')">Окт 26</button>
       <button class="cpill"    id="cpX"  onclick="switchContract('X')">Ноя 26</button>
     </div>
+    <div class="contract-pills" id="contractPillsBrent" style="display:none">
+      <button class="cpill on" id="cpBrU" onclick="switchContract('U')">Сен 26</button>
+      <button class="cpill"    id="cpBrV" onclick="switchContract('V')">Окт 26</button>
+      <button class="cpill"    id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
+      <button class="cpill"    id="cpBrZ" onclick="switchContract('Z')">Дек 26</button>
+    </div>
     </div>
     <div class="hdr-right">
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.v</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.y</p>
     </div>
   </div>
 
@@ -257,6 +263,7 @@ tr.ovw-row-hidden{display:none !important}
         <label><input type="checkbox" data-cat="perp_triple"     checked onchange="applyOvwFilter()"> ♾️ Вечники</label>
         <label><input type="checkbox" data-cat="gold_triple"     checked onchange="applyOvwFilter()"> 🥇 Золото-тройничок</label>
         <label><input type="checkbox" data-cat="metal"           checked onchange="applyOvwFilter()"> 🥇 Металлы</label>
+        <label><input type="checkbox" data-cat="commodity"       checked onchange="applyOvwFilter()"> 🛢 Нефть</label>
         <label><input type="checkbox" data-cat="crypto"          checked onchange="applyOvwFilter()"> ₿ Крипта</label>
       </div>
       <div style="font-size:11px;color:var(--tm);margin-bottom:8px;line-height:1.5;">
@@ -1416,6 +1423,7 @@ function showStub(key){
   $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
   $('contractPills').style.display='none';
   {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+  {const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
   // clear active state on instrument tabs
   const allTabs=['tabOvw','tabEU','tabUCNY','tabTriple','tabTripleEu','tabTripleU','tabGold','tabSilver','tabPlat','tabPall','tabBTC','tabETH','tabXRP','tabTRX','tabSOL'];
   allTabs.forEach(t=>{const el=$(t);if(el){el.classList.remove('on');el.style.background='';}});
@@ -1554,14 +1562,15 @@ const MODES={
   // Для BRENT: 25.587 × 0.01 × 1000 = $256/день/лот short. Это стандартная формула,
   // никаких отдельных множителей для свопа не нужно (как и для золота).
   BRENT:{label:'Brent',pipSz:.01,pipVal:10,stepSz:.01,stepPr:8,lpc:100,comm:5,cSize:1000,fxLev:20,dir:'back',
-    lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:78.50,fxSpread:0.036,fxSymbol:'BRN/USD',
+    lotStep:.05,lotMin:.05,lotMax:5,swap:17.3,repo:21,iv:30,spot:92.45,fxSpread:0.036,fxSymbol:'BRN/USD',
     // Brent на МОЕХ помесячный, до Янв-27 максимум. H7 (Мар-27) НЕ существует — оставляем
     // ближайшие три квартальных эквивалента (N/U/Z = Июл/Сен/Дек). Если хочется месячного
     // ближайшего — добавляй Q (BR-8.26), V (BR-10.26), X (BR-11.26).
     contracts:{
-      N:{moexTicker:'BRN6',exp:'2026-07-01',fut:79.10,go:12160},
-      U:{moexTicker:'BRU6',exp:'2026-08-31',fut:78.17,go:13214},
-      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:78.48,go:14057}
+      U:{moexTicker:'BRU6',exp:'2026-08-31',fut:94.40,go:16407},
+      V:{moexTicker:'BRV6',exp:'2026-10-01',fut:92.62,go:18287},
+      X:{moexTicker:'BRX6',exp:'2026-11-02',fut:90.04,go:17980},
+      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:87.94,go:18093}
     }}
 };
 
@@ -1808,7 +1817,7 @@ function switchTo(m){
     // v0.0.10.k: если пользователь явно не кликал сортировку — всегда показываем по «Год.» (annBest desc)
     if(!ovwSortUserChosen){ ovwSortKey='annBest'; ovwSortDir='desc'; }
     $('tabOvw').className='tab on';$('tabOvw').style.background=colMap.OVW;
-    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}{const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
     $('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
     $('ovwContent').style.display='';
     $('hdrTitle').textContent='Обзор всех инструментов';
@@ -1868,7 +1877,7 @@ function switchTo(m){
   if(m==='PORTFOLIO'){
     mode='PORTFOLIO';
     $('tabPortfolio').classList.add('on');$('tabPortfolio').style.background='#EC4899';
-    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}{const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
     $('portfolioContent').style.display='';
@@ -1888,7 +1897,7 @@ function switchTo(m){
   if(m==='PERP_GLD_MX'){
     mode='PERP_GLD_MX';
     $('tabPerpGldMx').classList.add('on');$('tabPerpGldMx').style.background='var(--gold)';
-    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}{const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     ['perpUcnhContent','perpEcnhContent','perpEuContent','portfolioContent'].forEach(pid=>{const el=$(pid);if(el)el.style.display='none';});
     $('gldMxContent').style.display='';
@@ -1919,7 +1928,7 @@ function switchTo(m){
     if(!cfg){return;}
     mode=m;
     $(cfg.tabId).classList.add('on');$(cfg.tabId).style.background=cfg.color;
-    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}{const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
     // hide other perp panels
     ['perpUcnhContent','perpEcnhContent','perpEuContent','gldMxContent','portfolioContent'].forEach(pid=>{if(pid!==cfg.contentId){const el=$(pid);if(el)el.style.display='none';}});
@@ -1966,13 +1975,17 @@ function switchTo(m){
   $('tripleEuContent').style.display='none';
   $('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
   $('mainContent').style.display='';
-  // Show correct pill row: crypto has 4 contracts (J/K/M/N), others have 3 (M/U/Z)
+  // Show correct pill row: crypto (U/V/X), Brent (U/V/X/Z monthly), others (U/Z/H quarterly)
+  // Сначала прячем всё
+  $('contractPills').style.display='none';
+  {const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
+  {const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='none';}
   if(p.isCrypto){
-    $('contractPills').style.display='none';{const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';}
     $('contractPillsCrypto').style.display='';
+  } else if(m==='BRENT'){
+    const cpb=$('contractPillsBrent');if(cpb)cpb.style.display='';
   } else {
     $('contractPills').style.display='';
-    const cpc=$('contractPillsCrypto');if(cpc)cpc.style.display='none';
   }
   const tabMap={EURUSD:'tabEU',UCNY:'tabUCNY',GOLD:'tabGold',SILVER:'tabSilver',PLAT:'tabPlat',PALL:'tabPall',BTC:'tabBTC',ETH:'tabETH',XRP:'tabXRP',TRX:'tabTRX',SOL:'tabSOL',BRENT:'tabBrent'};
   $(tabMap[m]).className='tab on';$(tabMap[m]).style.background=colMap[m];
@@ -2089,6 +2102,12 @@ function updateContractPills(overrideColor){
   });
   // Crypto pills: U/V/X (id cpCU/cpV/cpX — 'U' uses cpCU to not clash with standard cpU); N (Июл), Q (Авг) expired — убраны
   [['U','cpCU'],['V','cpV'],['X','cpX']].forEach(([k,id])=>{
+    const btn=$(id);if(!btn)return;
+    if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
+    else{btn.className='cpill';btn.style.background='';}
+  });
+  // Brent pills: U/V/X/Z (id cpBrU/cpBrV/cpBrX/cpBrZ) — помесячный контракт
+  [['U','cpBrU'],['V','cpBrV'],['X','cpBrX'],['Z','cpBrZ']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
