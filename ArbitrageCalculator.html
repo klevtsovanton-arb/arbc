@@ -195,27 +195,27 @@ tr.ovw-row-hidden{display:none !important}
       <button class="tab" id="tabPortfolio" data-cat="PORTFOLIO" onclick="switchTo('PORTFOLIO')" style="font-size:12px">💼 Мои позиции</button>
     </div>
     <div class="contract-pills" id="contractPills" style="display:none">
-      <button class="cpill on" id="cpU" onclick="switchContract('U')">Сен 26</button>
-      <button class="cpill"    id="cpZ" onclick="switchContract('Z')">Дек 26</button>
+      <button class="cpill on" id="cpZ" onclick="switchContract('Z')">Дек 26</button>
       <button class="cpill"    id="cpH" onclick="switchContract('H')">Мар 27</button>
+      <button class="cpill"    id="cpM" onclick="switchContract('M')">Июн 27</button>
     </div>
     <div class="contract-pills" id="contractPillsCrypto" style="display:none">
-      <button class="cpill on" id="cpCU" onclick="switchContract('U')">Сен 26</button>
-      <button class="cpill"    id="cpV"  onclick="switchContract('V')">Окт 26</button>
+      <button class="cpill on" id="cpV"  onclick="switchContract('V')">Окт 26</button>
       <button class="cpill"    id="cpX"  onclick="switchContract('X')">Ноя 26</button>
+      <button class="cpill"    id="cpCZ" onclick="switchContract('Z')">Дек 26</button>
     </div>
     <div class="contract-pills" id="contractPillsBrent" style="display:none">
-      <button class="cpill on" id="cpBrU" onclick="switchContract('U')">Сен 26</button>
-      <button class="cpill"    id="cpBrV" onclick="switchContract('V')">Окт 26</button>
+      <button class="cpill on" id="cpBrV" onclick="switchContract('V')">Окт 26</button>
       <button class="cpill"    id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
       <button class="cpill"    id="cpBrZ" onclick="switchContract('Z')">Дек 26</button>
+      <button class="cpill"    id="cpBrF" onclick="switchContract('F')">Янв 27</button>
     </div>
     </div>
     <div class="hdr-right">
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ac</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ad</p>
     </div>
   </div>
 
@@ -1340,9 +1340,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
 const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.abs(n).toFixed(d);const[i,dc]=a.split('.');return s+i.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(dc?'.'+dc:'');};
 
 let mode='EURUSD';
-let currentContract='U'; // U=Сен, Z=Дек, H=Мар (M=Июн удалён 18.06.2026)
+let currentContract='Z'; // Z=Дек26, H=Мар27, M=Июн27 (U=Сен26 экспирировал 17-18.09.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'U',UCNY:'U',GOLD:'U',SILVER:'U',PLAT:'U',PALL:'U',BTC:'U',ETH:'U',XRP:'U',TRX:'U',SOL:'U',BRENT:'U',TRIPLE:'U',TRIPLE_EU:'U',TRIPLE_USD:'U'};
+const savedContract={EURUSD:'Z',UCNY:'Z',GOLD:'Z',SILVER:'Z',PLAT:'Z',PALL:'Z',BTC:'V',ETH:'V',XRP:'V',TRX:'V',SOL:'V',BRENT:'V',TRIPLE:'Z',TRIPLE_EU:'Z',TRIPLE_USD:'Z'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
@@ -1458,50 +1458,50 @@ function applyOvwFilter(){
   });
 }
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95,XRP:95,TRX:95,SOL:95};
-const CONTRACT_LABELS={U:'Сен 26',V:'Окт 26',X:'Ноя 26',Z:'Дек 26',H:'Мар 27'};
-const CONTRACT_SHORT ={U:'9.26',V:'10.26',X:'11.26',Z:'12.26',H:'3.27'};
+const CONTRACT_LABELS={V:'Окт 26',X:'Ноя 26',Z:'Дек 26',F:'Янв 27',H:'Мар 27',M:'Июн 27'};
+const CONTRACT_SHORT ={V:'10.26',X:'11.26',Z:'12.26',F:'1.27',H:'3.27',M:'6.27'};
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
     contracts:{
-      U:{moexTicker:'EDU6',exp:'2026-09-17',fut:1.1591,go:5610},
-      Z:{moexTicker:'EDZ6',exp:'2026-12-17',fut:1.1545,go:6115},
-      H:{moexTicker:'EDH7',exp:'2027-03-18',fut:1.1561,go:6755}
+      Z:{moexTicker:'EDZ6',exp:'2026-12-17',fut:1.1451,go:6407},
+      H:{moexTicker:'EDH7',exp:'2027-03-18',fut:1.1450,go:6978},
+      M:{moexTicker:'EDM7',exp:'2027-06-17',fut:1.1444,go:7707}
     }},
   UCNY:{label:'USD/CNH',pipSz:.001,pipVal:100,stepSz:.001,stepPr:11.24,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',pipValForeign:true,
     lotStep:.5,lotMin:.5,lotMax:5,swap:-.717,repo:21,iv:5,spot:6.8305,fxSpread:0,fxSymbol:'USD/CNH',
     contracts:{
-      U:{moexTicker:'UCU6',exp:'2026-09-17',fut:6.754,go:7318},
-      Z:{moexTicker:'UCZ6',exp:'2026-12-17',fut:6.746,go:7771},
-      H:{moexTicker:'UCH7',exp:'2027-03-18',fut:6.690,go:8326}
+      Z:{moexTicker:'UCZ6',exp:'2026-12-17',fut:6.688,go:8517},
+      H:{moexTicker:'UCH7',exp:'2027-03-18',fut:6.688,go:9030},
+      M:{moexTicker:'UCM7',exp:'2027-06-17',fut:6.699,go:9689}
     }},
   GOLD:{label:'Gold',pipSz:.01,pipVal:1,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:100,dir:'cont',
     lotStep:.1,lotMin:.1,lotMax:2,swap:-6.841,repo:21,iv:15,spot:4795.93,fxSpread:0,fxSymbol:'XAU/USD',
     contracts:{
-      U:{moexTicker:'GDU6',exp:'2026-09-18',fut:4356.0,go:28245},
-      Z:{moexTicker:'GDZ6',exp:'2026-12-18',fut:4421.7,go:30267},
-      H:{moexTicker:'GDH7',exp:'2027-03-19',fut:4477.6,go:32838}
+      Z:{moexTicker:'GDZ6',exp:'2026-12-18',fut:4428.2,go:32768},
+      H:{moexTicker:'GDH7',exp:'2027-03-19',fut:4484.7,go:34951},
+      M:{moexTicker:'GDM7',exp:'2027-06-18',fut:4546.2,go:37983}
     }},
   SILVER:{label:'Silver',pipSz:.001,pipVal:5,stepSz:.01,stepPr:7.70,lpc:500,comm:5,cSize:5000,fxLev:100,dir:'cont',
     lotStep:.05,lotMin:.01,lotMax:2,swap:-9.415,repo:21,iv:25,spot:79.52,fxSpread:0,fxSymbol:'XAG/USD',
     contracts:{
-      U:{moexTicker:'SVU6',exp:'2026-09-18',fut:72.43,go:11981},
-      Z:{moexTicker:'SVZ6',exp:'2026-12-18',fut:74.93,go:12026},
-      H:{moexTicker:'SVH7',exp:'2027-03-19',fut:77.15,go:12515}
+      Z:{moexTicker:'SVZ6',exp:'2026-12-18',fut:67.59,go:12398},
+      H:{moexTicker:'SVH7',exp:'2027-03-19',fut:68.93,go:13210},
+      M:{moexTicker:'SVM7',exp:'2027-06-18',fut:70.37,go:13363}
     }},
   PLAT:{label:'Platinum',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
     lotStep:.1,lotMin:.05,lotMax:2,swap:-3.847,repo:21,iv:20,spot:2083.98,fxSpread:7.09,fxSymbol:'XPT/USD',
     contracts:{
-      U:{moexTicker:'PTU6',exp:'2026-09-18',fut:1837.0,go:26965},
-      Z:{moexTicker:'PTZ6',exp:'2026-12-18',fut:1894.8,go:29711},
-      H:{moexTicker:'PTH7',exp:'2027-03-19',fut:1968.7,go:29179}
+      Z:{moexTicker:'PTZ6',exp:'2026-12-18',fut:1820.0,go:30598},
+      H:{moexTicker:'PTH7',exp:'2027-03-19',fut:1856.5,go:33821},
+      M:{moexTicker:'PTM7',exp:'2027-06-18',fut:1887.7,go:33146}
     }},
   PALL:{label:'Palladium',pipSz:.1,pipVal:10,stepSz:.1,stepPr:7.70,lpc:100,comm:5,cSize:100,fxLev:10,dir:'cont',
     lotStep:.1,lotMin:.05,lotMax:2,swap:-4.117,repo:21,iv:25,spot:1548.71,fxSpread:6.27,fxSymbol:'XPD/USD',
     contracts:{
-      U:{moexTicker:'PDU6',exp:'2026-09-18',fut:1383.99,go:23730},
-      Z:{moexTicker:'PDZ6',exp:'2026-12-18',fut:1443.01,go:24514},
-      H:{moexTicker:'PDH7',exp:'2027-03-19',fut:1496.46,go:25488}
+      Z:{moexTicker:'PDZ6',exp:'2026-12-18',fut:1325.57,go:26189},
+      H:{moexTicker:'PDH7',exp:'2027-03-19',fut:1364.22,go:27078},
+      M:{moexTicker:'PDM7',exp:'2027-06-18',fut:1397.00,go:28146}
     }},
   // === Crypto: MOEX delivery vs Bitget USDT perpetual ===
   // lpc: 1 "lot" (1 BTC or 1 ETH on perp) = N MOEX contracts
@@ -1516,16 +1516,16 @@ const MODES={
   BTC:{label:'BTC',pipSz:1,pipVal:1,stepSz:1,stepPr:0.07524,lpc:1000,comm:122,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.01,lotMin:0.01,lotMax:20,fundingRate:-0.00007,repo:21,iv:40,spot:76137,fxSpread:0,fxSymbol:'BTCUSDT',cryptoSymbol:'BTCUSDT',isCrypto:true,
     contracts:{
-      U:{moexTicker:'BTU6',exp:'2026-09-25',fut:77350,go:1644},
-      V:{moexTicker:'BTV6',exp:'2026-10-30',fut:77600,go:1663},
-      X:{moexTicker:'BTX6',exp:'2026-11-27',fut:79050,go:1681}
+      V:{moexTicker:'BTV6',exp:'2026-10-30',fut:80997,go:1752},
+      X:{moexTicker:'BTX6',exp:'2026-11-27',fut:81447,go:1767},
+      Z:{moexTicker:'BTZ6',exp:'2026-12-25',fut:83833,go:1787}
     }},
   ETH:{label:'ETH',pipSz:0.1,pipVal:1,stepSz:0.1,stepPr:0.07524,lpc:100,comm:3,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.1,lotMin:0.1,lotMax:200,fundingRate:-0.00014,repo:21,iv:50,spot:2319.53,fxSpread:0,fxSymbol:'ETHUSDT',cryptoSymbol:'ETHUSDT',isCrypto:true,
     contracts:{
-      U:{moexTicker:'EHU6',exp:'2026-09-25',fut:2405.0,go:808},
-      V:{moexTicker:'EHV6',exp:'2026-10-30',fut:2414.3,go:814},
-      X:{moexTicker:'EHX6',exp:'2026-11-27',fut:2538.0,go:821}
+      V:{moexTicker:'EHV6',exp:'2026-10-30',fut:2594.9,go:887},
+      X:{moexTicker:'EHX6',exp:'2026-11-27',fut:2606.8,go:892},
+      Z:{moexTicker:'EHZ6',exp:'2026-12-25',fut:2609.4,go:899}
     }},
   // === v0.0.10.t: XRP, TRX, SOL — новые крипто-фьючи MOEX (асс. XR, TX, S3) ===
   // Размер контракта на MOEX: 1 XR = 100 XRP, 1 TX = 100 TRX, 1 S3 = 1 SOL.
@@ -1535,23 +1535,23 @@ const MODES={
   XRP:{label:'XRP',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.5,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000005,repo:21,iv:60,spot:1.165,fxSpread:0,fxSymbol:'XRPUSDT',cryptoSymbol:'XRPUSDT',isCrypto:true,
     contracts:{
-      U:{moexTicker:'XRU6',exp:'2026-09-25',fut:1.4066,go:5853},
-      V:{moexTicker:'XRV6',exp:'2026-10-30',fut:1.4026,go:5939},
-      X:{moexTicker:'XRX6',exp:'2026-11-27',fut:1.4154,go:5902}
+      V:{moexTicker:'XRV6',exp:'2026-10-30',fut:1.3969,go:6022},
+      X:{moexTicker:'XRX6',exp:'2026-11-27',fut:1.4300,go:5977},
+      Z:{moexTicker:'XRZ6',exp:'2026-12-25',fut:1.4019,go:5935}
     }},
   TRX:{label:'TRX',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.2,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000248,repo:21,iv:65,spot:0.3204,fxSpread:0,fxSymbol:'TRXUSDT',cryptoSymbol:'TRXUSDT',isCrypto:true,
     contracts:{
-      U:{moexTicker:'TXU6',exp:'2026-09-25',fut:0.3426,go:997},
-      V:{moexTicker:'TXV6',exp:'2026-10-30',fut:0.3461,go:1016},
-      X:{moexTicker:'TXX6',exp:'2026-11-27',fut:0.3437,go:1008}
+      V:{moexTicker:'TXV6',exp:'2026-10-30',fut:0.3436,go:1020},
+      X:{moexTicker:'TXX6',exp:'2026-11-27',fut:0.3442,go:1030},
+      Z:{moexTicker:'TXZ6',exp:'2026-12-25',fut:0.3432,go:1022}
     }},
   SOL:{label:'SOL',pipSz:0.01,pipVal:1,stepSz:0.01,stepPr:0.00988,lpc:1,comm:0.5,cSize:1,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.00003,repo:21,iv:55,spot:70.95,fxSpread:0,fxSymbol:'SOLUSDT',cryptoSymbol:'SOLUSDT',isCrypto:true,
     contracts:{
-      U:{moexTicker:'S3U6',exp:'2026-09-25',fut:91.61,go:3373},
-      V:{moexTicker:'S3V6',exp:'2026-10-30',fut:93.51,go:3429},
-      X:{moexTicker:'S3X6',exp:'2026-11-27',fut:92.14,go:3403}
+      V:{moexTicker:'S3V6',exp:'2026-10-30',fut:113.49,go:4247},
+      X:{moexTicker:'S3X6',exp:'2026-11-27',fut:112.99,go:4254},
+      Z:{moexTicker:'S3Z6',exp:'2026-12-25',fut:112.60,go:4223}
     }},
   // Brent: cTrader BRNUSD_xp UI = 1000 bbl/lot, $9.94/pip (НЕ 10000 как возвращает API!).
   // ⚠ cTrader API для нефти у xpbee возвращает lotSize=10000 (видимо в "0.1-bbl" единицах) —
@@ -1570,10 +1570,10 @@ const MODES={
     // ближайшие три квартальных эквивалента (N/U/Z = Июл/Сен/Дек). Если хочется месячного
     // ближайшего — добавляй Q (BR-8.26), V (BR-10.26), X (BR-11.26).
     contracts:{
-      U:{moexTicker:'BRU6',exp:'2026-08-31',fut:94.40,go:16407},
-      V:{moexTicker:'BRV6',exp:'2026-10-01',fut:92.62,go:18287},
-      X:{moexTicker:'BRX6',exp:'2026-11-02',fut:90.04,go:17980},
-      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:87.94,go:18093}
+      V:{moexTicker:'BRV6',exp:'2026-10-01',fut:104.35,go:18514},
+      X:{moexTicker:'BRX6',exp:'2026-11-02',fut:99.96,go:20629},
+      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:96.60,go:20138},
+      F:{moexTicker:'BRF7',exp:'2027-01-04',fut:94.25,go:20360}
     }}
 };
 
@@ -1589,7 +1589,8 @@ function getP(m,c){
 // MOEX-letter chronological order: F(Янв) G(Фев) H(Мар) J(Апр) K(Май) M(Июн) N(Июл) Q(Авг) U(Сен) V(Окт) X(Ноя) Z(Дек)
 function frontContract(modeObj){
   if(!modeObj||!modeObj.contracts)return null;
-  const order=['M','N','Q','U','V','X','Z','F','G','H','J','K'];
+  // v0.0.10.ad: хронология для текущего набора: V(Окт26) X(Ноя26) Z(Дек26) F(Янв27) G H(Мар27) J K M(Июн27)
+  const order=['V','X','Z','F','G','H','J','K','M','N','Q','U'];
   for(const k of order) if(modeObj.contracts[k]) return modeObj.contracts[k];
   const keys=Object.keys(modeObj.contracts);
   return keys.length?modeObj.contracts[keys[0]]:null;
@@ -1599,23 +1600,23 @@ function frontContract(modeObj){
 const TRIPLE_DATA={
   TRIPLE:{
     contracts:{
-      U:{siTk:'SiU6',crTk:'CRU6',exp:'2026-09-17',si:74390,  cr:11.015,siGo:11465,crGo:1097},
-      Z:{siTk:'SiZ6',crTk:'CRZ6',exp:'2026-12-17',si:76175,  cr:11.275,siGo:11918,crGo:1104},
-      H:{siTk:'SiH7',crTk:'CRH7',exp:'2027-03-18',si:78358,  cr:11.514,siGo:12510,crGo:1235}
+      Z:{siTk:'SiZ6',crTk:'CRZ6',exp:'2026-12-17',si:86008,  cr:12.849,siGo:13409,crGo:1280},
+      H:{siTk:'SiH7',crTk:'CRH7',exp:'2027-03-18',si:87527,  cr:13.058,siGo:13864,crGo:1290},
+      M:{siTk:'SiM7',crTk:'CRM7',exp:'2027-06-17',si:89247,  cr:13.272,siGo:14524,crGo:1434}
     }
   },
   TRIPLE_EU:{
     contracts:{
-      U:{euTk:'EuU6',crTk:'CRU6',exp:'2026-09-17',eu:86329,  cr:11.015,euGo:13475,crGo:1097},
-      Z:{euTk:'EuZ6',crTk:'CRZ6',exp:'2026-12-17',eu:87874,  cr:11.275,euGo:13994,crGo:1104},
-      H:{euTk:'EuH7',crTk:'CRH7',exp:'2027-03-18',eu:89896,  cr:11.514,euGo:14668,crGo:1235}
+      Z:{euTk:'EuZ6',crTk:'CRZ6',exp:'2026-12-17',eu:98499,  cr:12.849,euGo:15392,crGo:1280},
+      H:{euTk:'EuH7',crTk:'CRH7',exp:'2027-03-18',eu:100153, cr:13.058,euGo:16106,crGo:1290},
+      M:{euTk:'EuM7',crTk:'CRM7',exp:'2027-06-17',eu:101970, cr:13.272,euGo:16859,crGo:1434}
     }
   },
   TRIPLE_USD:{
     contracts:{
-      U:{euTk:'EuU6',siTk:'SiU6',exp:'2026-09-17',eu:86329,  si:74390,  euGo:13475,siGo:11465},
-      Z:{euTk:'EuZ6',siTk:'SiZ6',exp:'2026-12-17',eu:87874,  si:76175,  euGo:13994,siGo:11918},
-      H:{euTk:'EuH7',siTk:'SiH7',exp:'2027-03-18',eu:89896,  si:78358,  euGo:14668,siGo:12510}
+      Z:{euTk:'EuZ6',siTk:'SiZ6',exp:'2026-12-17',eu:98499,  si:86008,  euGo:15392,siGo:13409},
+      H:{euTk:'EuH7',siTk:'SiH7',exp:'2027-03-18',eu:100153, si:87527,  euGo:16106,siGo:13864},
+      M:{euTk:'EuM7',siTk:'SiM7',exp:'2027-06-17',eu:101970, si:89247,  euGo:16859,siGo:14524}
     }
   }
 };
@@ -1830,7 +1831,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE'){
     mode='TRIPLE';
-    currentContract=savedContract.TRIPLE||'U';
+    currentContract=savedContract.TRIPLE||'Z';
     $('tabTriple').className='tab on';$('tabTriple').style.background='var(--orange)';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleEuContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
@@ -1854,7 +1855,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE_EU'){
     mode='TRIPLE_EU';
-    currentContract=savedContract.TRIPLE_EU||'U';
+    currentContract=savedContract.TRIPLE_EU||'Z';
     $('tabTripleEu').className='tab on';$('tabTripleEu').style.background='#E5C100';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleUContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}{const pu=$('perpUcnhContent');if(pu)pu.style.display='none';}{const pe=$('perpEcnhContent');if(pe)pe.style.display='none';}{const pr=$('perpEuContent');if(pr)pr.style.display='none';}{const gm=$('gldMxContent');if(gm)gm.style.display='none';}{const pf=$('portfolioContent');if(pf)pf.style.display='none';}
@@ -1947,7 +1948,7 @@ function switchTo(m){
   }
   if(m==='TRIPLE_USD'){
     mode='TRIPLE_USD';
-    currentContract=savedContract.TRIPLE_USD||'U';
+    currentContract=savedContract.TRIPLE_USD||'Z';
     $('tabTripleU').className='tab on';$('tabTripleU').style.background='#3B82F6';
     $('contractPills').style.display='';
     $('ovwContent').style.display='none';$('mainContent').style.display='none';$('tripleContent').style.display='none';$('tripleEuContent').style.display='none';{const sc=$('stubContent');if(sc)sc.style.display='none';}
@@ -1971,7 +1972,7 @@ function switchTo(m){
   }
 
   mode=m;
-  currentContract=savedContract[m]||'U';
+  currentContract=savedContract[m]||'Z';
   const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
@@ -2098,19 +2099,19 @@ function updateContractPills(overrideColor){
   const colMap={EURUSD:'var(--cyan)',UCNY:'#DE2910',GOLD:'var(--gold)',SILVER:'#C0C0C0',PLAT:'#E5E4E2',PALL:'#B87333',BTC:'#F7931A',ETH:'#627EEA',XRP:'#23292F',TRX:'#FF060A',SOL:'#9945FF',BRENT:'#FB923C'};
   const activeColor=overrideColor||colMap[mode]||'var(--cyan)';
   // Standard pills: M/U/Z (id cpM, cpU, cpZ)
-  ['U','Z','H'].forEach(k=>{
+  ['Z','H','M'].forEach(k=>{
     const btn=$('cp'+k);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Crypto pills: U/V/X (id cpCU/cpV/cpX — 'U' uses cpCU to not clash with standard cpU); N (Июл), Q (Авг) expired — убраны
-  [['U','cpCU'],['V','cpV'],['X','cpX']].forEach(([k,id])=>{
+  // Crypto pills: V/X/Z (id cpV/cpX/cpCZ — 'Z' uses cpCZ to not clash with standard cpZ); U (Сен 26) exp 25.09.2026 — убран при ролле 21.09
+  [['V','cpV'],['X','cpX'],['Z','cpCZ']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Brent pills: U/V/X/Z (id cpBrU/cpBrV/cpBrX/cpBrZ) — помесячный контракт
-  [['U','cpBrU'],['V','cpBrV'],['X','cpBrX'],['Z','cpBrZ']].forEach(([k,id])=>{
+  // Brent pills: V/X/Z/F (id cpBrV/cpBrX/cpBrZ/cpBrF) — помесячный контракт
+  [['V','cpBrV'],['X','cpBrX'],['Z','cpBrZ'],['F','cpBrF']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -5696,7 +5697,7 @@ function pfClear(){
       }
     }
   }
-  ['SiM6','SiU6','SiZ6','CRM6','CRU6','CRZ6','EuM6','EuU6','EuZ6'].forEach(addOpt);
+  ['SiZ6','SiH7','SiM7','CRZ6','CRH7','CRM7','EuZ6','EuH7','EuM7','USDRUBF','CNYRUBF','EURRUBF','GLDRUBF'].forEach(addOpt);
   document.body.appendChild(dl);
 })();
 // v0.0.8.d: populate Trade Bundles dropdown
@@ -5876,7 +5877,7 @@ async function fetchPrices(){
     const tickerSet=new Set();
     for(const p of Object.values(MODES))for(const c of Object.values(p.contracts))tickerSet.add(c.moexTicker);
     // v0.0.10.ac: SiM6/CRM6/EuM6 экспирировали 18.06.2026 — убраны из запроса.
-    ['SiU6','SiZ6','CRU6','CRZ6','EuU6','EuZ6'].forEach(t=>tickerSet.add(t));
+    ['SiZ6','SiH7','SiM7','CRZ6','CRH7','CRM7','EuZ6','EuH7','EuM7'].forEach(t=>tickerSet.add(t));
     // v0.0.5: perpetual tickers for PERP_DATA tab and overview row
     // v0.0.7: + GLDRUBF for gold triple
     ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF'].forEach(t=>tickerSet.add(t));
