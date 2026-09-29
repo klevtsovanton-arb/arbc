@@ -205,7 +205,8 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpCZ" onclick="switchContract('Z')">Дек 26</button>
     </div>
     <div class="contract-pills" id="contractPillsBrent" style="display:none">
-      <button class="cpill on" id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
+      <button class="cpill on" id="cpBrV" onclick="switchContract('V')">Окт 26</button>
+      <button class="cpill"    id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
       <button class="cpill"    id="cpBrZ" onclick="switchContract('Z')">Дек 26</button>
       <button class="cpill"    id="cpBrF" onclick="switchContract('F')">Янв 27</button>
       <button class="cpill"    id="cpBrG" onclick="switchContract('G')">Фев 27</button>
@@ -215,7 +216,7 @@ tr.ovw-row-hidden{display:none !important}
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ae</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.af</p>
     </div>
   </div>
 
@@ -1342,7 +1343,7 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 let mode='EURUSD';
 let currentContract='Z'; // Z=Дек26, H=Мар27, M=Июн27 (U=Сен26 экспирировал 17-18.09.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'Z',UCNY:'Z',GOLD:'Z',SILVER:'Z',PLAT:'Z',PALL:'Z',BTC:'V',ETH:'V',XRP:'V',TRX:'V',SOL:'V',BRENT:'X',TRIPLE:'Z',TRIPLE_EU:'Z',TRIPLE_USD:'Z'};
+const savedContract={EURUSD:'Z',UCNY:'Z',GOLD:'Z',SILVER:'Z',PLAT:'Z',PALL:'Z',BTC:'V',ETH:'V',XRP:'V',TRX:'V',SOL:'V',BRENT:'V',TRIPLE:'Z',TRIPLE_EU:'Z',TRIPLE_USD:'Z'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
@@ -1570,6 +1571,7 @@ const MODES={
     // ближайшие три квартальных эквивалента (N/U/Z = Июл/Сен/Дек). Если хочется месячного
     // ближайшего — добавляй Q (BR-8.26), V (BR-10.26), X (BR-11.26).
     contracts:{
+      V:{moexTicker:'BRV6',exp:'2026-10-01',fut:105.44,go:18844},
       X:{moexTicker:'BRX6',exp:'2026-11-02',fut:98.02,go:21007},
       Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:94.62,go:20673},
       F:{moexTicker:'BRF7',exp:'2027-01-04',fut:92.69,go:20818},
@@ -1578,11 +1580,19 @@ const MODES={
 };
 
 // Merge instrument base + specific contract into flat object (legacy callsites read p.fut, p.exp, p.go, p.moexTicker)
+// v0.0.10.af: контракт уже экспирировал? (exp < сегодня). ISS отдаёт мёртвые тикеры ещё несколько дней
+// со stale-ценой — без guard'а они подставлялись бы как «ближние». Критично для Brent (помесячный).
+function ctExpired(ct){
+  if(!ct||!ct.exp)return false;
+  const today=new Date(); today.setHours(0,0,0,0);
+  return new Date(ct.exp+'T00:00:00')<today;
+}
 function getP(m,c){
   const base=MODES[m||mode];
   if(!base||!base.contracts)return base;
-  // Fallback chain: запрошенный → первый существующий (т.к. M удалён в v0.0.10.s после Июн-26 экспиры)
-  const ct=base.contracts[c||currentContract]||base.contracts[Object.keys(base.contracts)[0]];
+  // Fallback chain: запрошенный (если жив) → ближайший неэкспирированный → первый существующий
+  const want=base.contracts[c||currentContract];
+  const ct=(want&&!ctExpired(want))?want:(frontContract(base)||base.contracts[Object.keys(base.contracts)[0]]);
   return Object.assign({},base,ct);
 }
 // v0.0.10.s: ближайший контракт по экспирации (для legacy-кода, который полагался на .contracts.M)
@@ -1591,6 +1601,8 @@ function frontContract(modeObj){
   if(!modeObj||!modeObj.contracts)return null;
   // v0.0.10.ad: хронология для текущего набора: V(Окт26) X(Ноя26) Z(Дек26) F(Янв27) G H(Мар27) J K M(Июн27)
   const order=['V','X','Z','F','G','H','J','K','M','N','Q','U'];
+  // v0.0.10.af: пропускаем экспирированные (для Brent — ближний BR = текущий ICE-месяц CFD)
+  for(const k of order) if(modeObj.contracts[k]&&!ctExpired(modeObj.contracts[k])) return modeObj.contracts[k];
   for(const k of order) if(modeObj.contracts[k]) return modeObj.contracts[k];
   const keys=Object.keys(modeObj.contracts);
   return keys.length?modeObj.contracts[keys[0]]:null;
@@ -1973,6 +1985,11 @@ function switchTo(m){
 
   mode=m;
   currentContract=savedContract[m]||'Z';
+  // v0.0.10.af: сохранённый контракт мог экспирировать — переключаемся на ближний живой
+  {const _m=MODES[m]; if(_m&&_m.contracts&&(!_m.contracts[currentContract]||ctExpired(_m.contracts[currentContract]))){
+    const fc=frontContract(_m); const fk=fc?Object.keys(_m.contracts).find(k=>_m.contracts[k]===fc):null;
+    if(fk){currentContract=fk; savedContract[m]=fk;}
+  }}
   const p=getP();
   $('ovwContent').style.display='none';
   $('tripleContent').style.display='none';
@@ -2013,7 +2030,8 @@ function switchTo(m){
   $('hdrTitle').textContent='Калькулятор арбитража '+p.label;
   // hdrSub: для крипты Bitget вместо Forex
   const _side=p.isCrypto?'Bitget':'Forex';
-  $('hdrSub').textContent=(p.dir==='back'?'SHORT '+_side+' × LONG MOEX':'LONG '+_side+' × SHORT MOEX')+' | Эксп. '+expDisp;
+  $('hdrSub').textContent=(p.dir==='back'?'SHORT '+_side+' × LONG MOEX':'LONG '+_side+' × SHORT MOEX')+' | Эксп. '+expDisp
+    +(m==='BRENT'?' | ⚠ CFD xpbee = ближайший ICE-месяц → базис только с ближним BR, дальние = календарный спред':'');
   // scTitle: для крипты — "всё на Bitget"
   const _scTitle=$('scTitle');if(_scTitle)_scTitle.textContent='📋 Таблица сценариев — базовый (всё на '+_side+')';
   document.querySelectorAll('[id=accentLabel],[id=scTitle],[id=rebTitle]').forEach(e=>e.style.color=ac);
@@ -2110,9 +2128,11 @@ function updateContractPills(overrideColor){
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Brent pills: X/Z/F/G (id cpBrX/cpBrZ/cpBrF/cpBrG) — помесячный; V (BR-10.26) exp 01.10.2026 — убран 29.09
-  [['X','cpBrX'],['Z','cpBrZ'],['F','cpBrF'],['G','cpBrG']].forEach(([k,id])=>{
+  // Brent pills: V/X/Z/F/G — помесячный. v0.0.10.af: экспирированные пилюли прячем автоматически.
+  [['V','cpBrV'],['X','cpBrX'],['Z','cpBrZ'],['F','cpBrF'],['G','cpBrG']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
+    const ct=MODES.BRENT&&MODES.BRENT.contracts[k];
+    btn.style.display=(!ct||ctExpired(ct))?'none':'';
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
@@ -2764,6 +2784,12 @@ function calcOvw(){
 
   for(const[key,base] of Object.entries(MODES)){
     for(const[ckey,ct] of Object.entries(base.contracts)){
+    // v0.0.10.af: мёртвые контракты в Обзор не попадают
+    if(ctExpired(ct)) continue;
+    // v0.0.10.af: BRENT — только ближний контракт. xpbee BRNUSD_xp = CFD на ближайший ICE-месяц,
+    // дальние BR против него = календарный спред ICE, а не базис (на ролле CFD брокер делает
+    // roll-adjustment и «раздвижка» исчезает без денег). Парим CFD только с ближним BR.
+    if(key==='BRENT' && ct!==frontContract(base)) continue;
     const p=Object.assign({},base,ct);
     // v0.0.10.p: auto-detect dir from live prices (как в calc() v0.0.10.k).
     // Без этого Обзор брал хардкод dir из MODES.* и при инверсии раздвижки
