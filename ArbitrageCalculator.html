@@ -205,17 +205,17 @@ tr.ovw-row-hidden{display:none !important}
       <button class="cpill"    id="cpCZ" onclick="switchContract('Z')">Дек 26</button>
     </div>
     <div class="contract-pills" id="contractPillsBrent" style="display:none">
-      <button class="cpill on" id="cpBrV" onclick="switchContract('V')">Окт 26</button>
-      <button class="cpill"    id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
+      <button class="cpill on" id="cpBrX" onclick="switchContract('X')">Ноя 26</button>
       <button class="cpill"    id="cpBrZ" onclick="switchContract('Z')">Дек 26</button>
       <button class="cpill"    id="cpBrF" onclick="switchContract('F')">Янв 27</button>
+      <button class="cpill"    id="cpBrG" onclick="switchContract('G')">Фев 27</button>
     </div>
     </div>
     <div class="hdr-right">
       <div style="margin-bottom:6px"><button id="themeBtn" class="theme-btn" onclick="cycleTheme()" title="Переключить тему оформления (Classic / GT Dark / GT Light)"><span id="themeBtnLabel">⚙ CLASSIC</span></button></div>
       <h1 id="hdrTitle">Калькулятор арбитража EUR/USD</h1>
       <p id="hdrSub">SHORT Forex × LONG MOEX | Эксп. 18.06.2026</p>
-      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ad</p>
+      <p style="font-size:10px;color:var(--tm);margin-top:2px;font-weight:700">v0.0.10.ae</p>
     </div>
   </div>
 
@@ -1342,7 +1342,7 @@ const fm=(n,d=0)=>{if(!isFinite(n))return'—';const s=n<0?'-':'';const a=Math.a
 let mode='EURUSD';
 let currentContract='Z'; // Z=Дек26, H=Мар27, M=Июн27 (U=Сен26 экспирировал 17-18.09.2026)
 const savedLots={EURUSD:2,UCNY:2,GOLD:0.25,SILVER:0.10,PLAT:0.25,PALL:0.25,BRENT:0.5};
-const savedContract={EURUSD:'Z',UCNY:'Z',GOLD:'Z',SILVER:'Z',PLAT:'Z',PALL:'Z',BTC:'V',ETH:'V',XRP:'V',TRX:'V',SOL:'V',BRENT:'V',TRIPLE:'Z',TRIPLE_EU:'Z',TRIPLE_USD:'Z'};
+const savedContract={EURUSD:'Z',UCNY:'Z',GOLD:'Z',SILVER:'Z',PLAT:'Z',PALL:'Z',BTC:'V',ETH:'V',XRP:'V',TRX:'V',SOL:'V',BRENT:'X',TRIPLE:'Z',TRIPLE_EU:'Z',TRIPLE_USD:'Z'};
 
 // === v0.0.4 === Asset classification (декоративно сейчас; пригодится в v0.0.6+ для калькуляторов лейблов)
 const ASSET_TYPES={
@@ -1458,8 +1458,8 @@ function applyOvwFilter(){
   });
 }
 const savedStopout={EURUSD:50,UCNY:50,GOLD:50,SILVER:50,PLAT:50,PALL:50,BTC:95,ETH:95,XRP:95,TRX:95,SOL:95};
-const CONTRACT_LABELS={V:'Окт 26',X:'Ноя 26',Z:'Дек 26',F:'Янв 27',H:'Мар 27',M:'Июн 27'};
-const CONTRACT_SHORT ={V:'10.26',X:'11.26',Z:'12.26',F:'1.27',H:'3.27',M:'6.27'};
+const CONTRACT_LABELS={V:'Окт 26',X:'Ноя 26',Z:'Дек 26',F:'Янв 27',G:'Фев 27',H:'Мар 27',M:'Июн 27'};
+const CONTRACT_SHORT ={V:'10.26',X:'11.26',Z:'12.26',F:'1.27',G:'2.27',H:'3.27',M:'6.27'};
 const MODES={
   EURUSD:{label:'EUR/USD',pipSz:.0001,pipVal:10,stepSz:.0001,stepPr:7.70,lpc:100,comm:5,cSize:100000,fxLev:100,dir:'back',
     lotStep:.5,lotMin:.5,lotMax:5,swap:.104,repo:21,iv:7.51,spot:1.17665,fxSpread:0,fxSymbol:'EUR/USD',
@@ -1516,16 +1516,16 @@ const MODES={
   BTC:{label:'BTC',pipSz:1,pipVal:1,stepSz:1,stepPr:0.07524,lpc:1000,comm:122,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.01,lotMin:0.01,lotMax:20,fundingRate:-0.00007,repo:21,iv:40,spot:76137,fxSpread:0,fxSymbol:'BTCUSDT',cryptoSymbol:'BTCUSDT',isCrypto:true,
     contracts:{
-      V:{moexTicker:'BTV6',exp:'2026-10-30',fut:80997,go:1752},
-      X:{moexTicker:'BTX6',exp:'2026-11-27',fut:81447,go:1767},
-      Z:{moexTicker:'BTZ6',exp:'2026-12-25',fut:83833,go:1787}
+      V:{moexTicker:'BTV6',exp:'2026-10-30',fut:85003,go:1822},
+      X:{moexTicker:'BTX6',exp:'2026-11-27',fut:85513,go:1838},
+      Z:{moexTicker:'BTZ6',exp:'2026-12-25',fut:85963,go:1857}
     }},
   ETH:{label:'ETH',pipSz:0.1,pipVal:1,stepSz:0.1,stepPr:0.07524,lpc:100,comm:3,cSize:1,fxLev:20,dir:'cont',
     lotStep:0.1,lotMin:0.1,lotMax:200,fundingRate:-0.00014,repo:21,iv:50,spot:2319.53,fxSpread:0,fxSymbol:'ETHUSDT',cryptoSymbol:'ETHUSDT',isCrypto:true,
     contracts:{
-      V:{moexTicker:'EHV6',exp:'2026-10-30',fut:2594.9,go:887},
-      X:{moexTicker:'EHX6',exp:'2026-11-27',fut:2606.8,go:892},
-      Z:{moexTicker:'EHZ6',exp:'2026-12-25',fut:2609.4,go:899}
+      V:{moexTicker:'EHV6',exp:'2026-10-30',fut:2746.1,go:925},
+      X:{moexTicker:'EHX6',exp:'2026-11-27',fut:2754.7,go:931},
+      Z:{moexTicker:'EHZ6',exp:'2026-12-25',fut:2775.6,go:938}
     }},
   // === v0.0.10.t: XRP, TRX, SOL — новые крипто-фьючи MOEX (асс. XR, TX, S3) ===
   // Размер контракта на MOEX: 1 XR = 100 XRP, 1 TX = 100 TRX, 1 S3 = 1 SOL.
@@ -1535,23 +1535,23 @@ const MODES={
   XRP:{label:'XRP',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.5,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000005,repo:21,iv:60,spot:1.165,fxSpread:0,fxSymbol:'XRPUSDT',cryptoSymbol:'XRPUSDT',isCrypto:true,
     contracts:{
-      V:{moexTicker:'XRV6',exp:'2026-10-30',fut:1.3969,go:6022},
-      X:{moexTicker:'XRX6',exp:'2026-11-27',fut:1.4300,go:5977},
-      Z:{moexTicker:'XRZ6',exp:'2026-12-25',fut:1.4019,go:5935}
+      V:{moexTicker:'XRV6',exp:'2026-10-30',fut:1.5164,go:6378},
+      X:{moexTicker:'XRX6',exp:'2026-11-27',fut:1.5320,go:6477},
+      Z:{moexTicker:'XRZ6',exp:'2026-12-25',fut:1.5277,go:6576}
     }},
   TRX:{label:'TRX',pipSz:0.0001,pipVal:0.01,stepSz:0.0001,stepPr:0.00988,lpc:1,comm:0.2,cSize:100,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.000248,repo:21,iv:65,spot:0.3204,fxSpread:0,fxSymbol:'TRXUSDT',cryptoSymbol:'TRXUSDT',isCrypto:true,
     contracts:{
-      V:{moexTicker:'TXV6',exp:'2026-10-30',fut:0.3436,go:1020},
-      X:{moexTicker:'TXX6',exp:'2026-11-27',fut:0.3442,go:1030},
-      Z:{moexTicker:'TXZ6',exp:'2026-12-25',fut:0.3432,go:1022}
+      V:{moexTicker:'TXV6',exp:'2026-10-30',fut:0.3362,go:1000},
+      X:{moexTicker:'TXX6',exp:'2026-11-27',fut:0.3381,go:1020},
+      Z:{moexTicker:'TXZ6',exp:'2026-12-25',fut:0.3391,go:1012}
     }},
   SOL:{label:'SOL',pipSz:0.01,pipVal:1,stepSz:0.01,stepPr:0.00988,lpc:1,comm:0.5,cSize:1,fxLev:20,dir:'cont',
     lotStep:1,lotMin:1,lotMax:500,fundingRate:-0.00003,repo:21,iv:55,spot:70.95,fxSpread:0,fxSymbol:'SOLUSDT',cryptoSymbol:'SOLUSDT',isCrypto:true,
     contracts:{
-      V:{moexTicker:'S3V6',exp:'2026-10-30',fut:113.49,go:4247},
-      X:{moexTicker:'S3X6',exp:'2026-11-27',fut:112.99,go:4254},
-      Z:{moexTicker:'S3Z6',exp:'2026-12-25',fut:112.60,go:4223}
+      V:{moexTicker:'S3V6',exp:'2026-10-30',fut:120.50,go:4484},
+      X:{moexTicker:'S3X6',exp:'2026-11-27',fut:123.20,go:4559},
+      Z:{moexTicker:'S3Z6',exp:'2026-12-25',fut:124.66,go:4971}
     }},
   // Brent: cTrader BRNUSD_xp UI = 1000 bbl/lot, $9.94/pip (НЕ 10000 как возвращает API!).
   // ⚠ cTrader API для нефти у xpbee возвращает lotSize=10000 (видимо в "0.1-bbl" единицах) —
@@ -1570,10 +1570,10 @@ const MODES={
     // ближайшие три квартальных эквивалента (N/U/Z = Июл/Сен/Дек). Если хочется месячного
     // ближайшего — добавляй Q (BR-8.26), V (BR-10.26), X (BR-11.26).
     contracts:{
-      V:{moexTicker:'BRV6',exp:'2026-10-01',fut:104.35,go:18514},
-      X:{moexTicker:'BRX6',exp:'2026-11-02',fut:99.96,go:20629},
-      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:96.60,go:20138},
-      F:{moexTicker:'BRF7',exp:'2027-01-04',fut:94.25,go:20360}
+      X:{moexTicker:'BRX6',exp:'2026-11-02',fut:98.02,go:21007},
+      Z:{moexTicker:'BRZ6',exp:'2026-12-01',fut:94.62,go:20673},
+      F:{moexTicker:'BRF7',exp:'2027-01-04',fut:92.69,go:20818},
+      G:{moexTicker:'BRG7',exp:'2027-02-01',fut:91.70,go:21259}
     }}
 };
 
@@ -2110,8 +2110,8 @@ function updateContractPills(overrideColor){
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
   });
-  // Brent pills: V/X/Z/F (id cpBrV/cpBrX/cpBrZ/cpBrF) — помесячный контракт
-  [['V','cpBrV'],['X','cpBrX'],['Z','cpBrZ'],['F','cpBrF']].forEach(([k,id])=>{
+  // Brent pills: X/Z/F/G (id cpBrX/cpBrZ/cpBrF/cpBrG) — помесячный; V (BR-10.26) exp 01.10.2026 — убран 29.09
+  [['X','cpBrX'],['Z','cpBrZ'],['F','cpBrF'],['G','cpBrG']].forEach(([k,id])=>{
     const btn=$(id);if(!btn)return;
     if(k===currentContract){btn.className='cpill on';btn.style.background=activeColor;}
     else{btn.className='cpill';btn.style.background='';}
@@ -5881,17 +5881,35 @@ async function fetchPrices(){
     // v0.0.5: perpetual tickers for PERP_DATA tab and overview row
     // v0.0.7: + GLDRUBF for gold triple
     ['USDRUBF','CNYRUBF','EURRUBF','GLDRUBF'].forEach(t=>tickerSet.add(t));
-    // v0.0.10.ac: воркер режет ответ на ~20KB (примерно 30 тикеров с полной marketdata).
-    // Разбиваем на пачки по 25 и делаем параллельные запросы, потом объединяем.
+    // v0.0.10.ae: воркер флейкает — ISS душит параллельные запросы и воркер отдаёт ПУСТОЕ тело
+    // (0 байт) или обрезанный JSON на больших пачках. Поэтому: пачки по 15, ПОСЛЕДОВАТЕЛЬНО,
+    // до 3 попыток на пачку, а ошибка — только если упали ВСЕ пачки (частичный результат принимаем).
     const allTickers=[...tickerSet];
-    const BATCH=25;
+    const BATCH=15;
     const batches=[];
     for(let i=0;i<allTickers.length;i+=BATCH) batches.push(allTickers.slice(i,i+BATCH));
-    const responses=await Promise.all(
-      batches.map(b=>fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+b.join(','))
-        .then(r=>r.json())
-        .catch(e=>({_err:String(e.message||e)})))
-    );
+    async function fetchBatch(b){
+      for(let attempt=1;attempt<=3;attempt++){
+        try{
+          const r=await fetch('https://arb-moex-proxy.klevtsov-anton.workers.dev/?t='+b.join(',')+'&_r='+attempt+Date.now());
+          const txt=await r.text();
+          if(txt&&txt.length>50){
+            const d=JSON.parse(txt);
+            if(d&&d.marketdata&&d.securities&&d.marketdata.data&&d.marketdata.data.length) return d;
+          }
+        }catch(_){}
+        await new Promise(res=>setTimeout(res,400*attempt));
+      }
+      return null;
+    }
+    const responses=[];
+    let okBatches=0;
+    for(let i=0;i<batches.length;i++){
+      setFetchUI('⏳ МОЕХ пачка '+(i+1)+'/'+batches.length+'...','var(--yellow)',true);
+      const d=await fetchBatch(batches[i]);
+      responses.push(d);
+      if(d) okBatches++;
+    }
     // Объединяем marketdata и securities колонки из первого валидного ответа
     let mc=null,sc=null;
     const mrAll=[], srAll=[];
@@ -5902,7 +5920,8 @@ async function fetchPrices(){
         for(const row of d.securities.data) srAll.push(row);
       }
     }
-    if(!mc||!sc) throw new Error('все пачки MOEX вернули пусто');
+    if(!mc||!sc) throw new Error('все '+batches.length+' пачек MOEX вернули пусто (воркер/ISS недоступен) — попробуй ещё раз');
+    if(okBatches<batches.length) details.push('⚠ МОЕХ: '+okBatches+'/'+batches.length+' пачек (часть тикеров не обновилась)');
     const ci=n=>mc.indexOf(n),si=n=>sc.indexOf(n);
     const mx={};
     for(const row of mrAll){
